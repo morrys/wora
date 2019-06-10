@@ -1,4 +1,4 @@
-# [@wora/detect-network](https://github.com/morrys/react-relay-offline)
+# [@wora/detect-network](https://github.com/morrys/wora)
 
 ## React
 
