@@ -1,0 +1,40 @@
+{
+  "name": "@wora/detect-network",
+  "version": "0.1.0",
+  "keywords": [
+    "wora",
+    "react-native",
+    "detect",
+    "network",
+    "react",
+    "hooks"
+  ],
+  "main": "lib/index.js",
+  "license": "SEE LICENSE IN LICENSE",
+  "description": "@wora Detect Network",
+  "author": {
+    "name": "morrys"
+  },
+  "homepage": "https://github.com/morrys/wora",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morrys/wora"
+  },
+  "scripts": {
+    "prepare": "tsc"
+  },
+  "dependencies": {
+    "array-find-index": "1.0.2"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "typescript": "3.5.1",
+    "react": "16.8.6",
+    "@types/react": "16.8.14",
+    "@types/react-dom": "16.8.4",
+    "react-native": "0.59.9",
+    "@react-native-community/netinfo": "3.2.1"
+  }
+}
