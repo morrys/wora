@@ -4,7 +4,7 @@ import TodoTextInput from './TodoTextInput';
 import Todo from './Todo';
 import { useEffect } from 'react';
 import { useState } from 'react';
-import Cache, { DataCache } from 'cache-persist';
+import Cache, { DataCache } from '@wora/cache-persist';
 
 const StyledHeader = styled.div`
   padding: 10px;

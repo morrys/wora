@@ -2,8 +2,8 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import styled from 'styled-components';
 import TodoList from './components/TodoList';
-import IDBStorage from 'cache-persist/lib/idbstorage';
-import Cache, { CacheStorage }  from 'cache-persist';
+import IDBStorage from '@wora/cache-persist/lib/idbstorage';
+import Cache, { CacheStorage }  from '@wora/cache-persist';
 import { createGlobalStyle } from 'styled-components';
 
 const GlobalStyle = createGlobalStyle`

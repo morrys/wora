@@ -1,13 +1,12 @@
-# cache-persist
-cache-persist
+# [@wora/cache-persist](https://github.com/morrys/wora)
 
 
 ## Installation
 
-Install cache-persist using yarn or npm:
+Install @wora/cache-persist using yarn or npm:
 
 ```
-yarn add cache-persist
+yarn add @wora/cache-persist
 ```
 
 ## Options
@@ -50,7 +49,7 @@ remove(key: string): Promise<any>; // remove value in state (sync) and in storag
 
 ## Usage default
 ```ts
-import { Cache } from "cache-persist";
+import { Cache } from "@wora/cache-persist";
 const cache = new Cache();
 cache.restore().then(() => {
     const state = cache.getState();
@@ -60,8 +59,8 @@ cache.restore().then(() => {
 ## Usage indexedDB
 
 ```ts
-import Cache, { CacheStorage, CacheOptions } from "cache-persist";
-import IDBStorage from 'cache-persist/lib/idbstorage';
+import Cache, { CacheStorage, CacheOptions } from "@wora/cache-persist";
+import IDBStorage from '@wora/cache-persist/lib/idbstorage';
 
 const idbStorages: CacheStorage[] = IDBStorage.create("cache", ["persist", "persist2"]);
 
@@ -90,7 +89,7 @@ cacheidb1.restore().then(() => {
 ```ts
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import { DataCache } from 'cache-persist';
+import { DataCache } from '@wora/cache-persist';
 
 const [result, setResult] = useState<{loading: boolean, data: DataCache}>({loading: true, data: {}});
 
