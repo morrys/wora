@@ -75,13 +75,10 @@ class Cache {
     }
 
     delete(key: string): Promise<any> {
-        //if (!key) return handleError('remove', 'a key');
-        this.data[key] = null;
-        return this.storage.setItem(key, null);
+        return this.set(key, null)
     }
 
     remove(key: string): Promise<any> {
-        //if (!key) return handleError('remove', 'a key');
         delete this.data[key];
         return this.storage.removeItem(key);
     }
