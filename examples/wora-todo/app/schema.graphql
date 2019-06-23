@@ -1,0 +1,649 @@
+"""
+
+    Represents the details for cinemas listed on EtMDB.
+    
+"""
+type CinemaDetailNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  hallName: String!
+  numberOfSeats: Int!
+  technology: String!
+  cinemascheduleSet(before: String, after: String, first: Int, last: Int): CinemaScheduleNodeConnection
+}
+
+type CinemaDetailNodeConnection {
+  pageInfo: PageInfo!
+  edges: [CinemaDetailNodeEdge]!
+}
+
+type CinemaDetailNodeEdge {
+  """The item at the end of the edge"""
+  node: CinemaDetailNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+
+    Represents a Cinema Schedule.
+    
+"""
+type CinemaScheduleNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  showStartDate: DateTime
+  showEndDate: DateTime
+  movie: MovieMetaDataNode!
+  cinemaDetail: CinemaDetailNode!
+}
+
+type CinemaScheduleNodeConnection {
+  pageInfo: PageInfo!
+  edges: [CinemaScheduleNodeEdge]!
+}
+
+type CinemaScheduleNodeEdge {
+  """The item at the end of the edge"""
+  node: CinemaScheduleNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+
+    Represents the details for cinemas listed on EtMDB.
+    
+"""
+type CompanyNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  companyName: String!
+  establishedIn: DateTime!
+  description: String!
+  opensAt: Time!
+  closesAt: Time!
+  companyPosterImage: String
+  jobboardSet(before: String, after: String, first: Int, last: Int, company: ID, company_Icontains: ID, company_Istartswith: ID, genderMf: String, jobTitle: String, jobTitle_Icontains: String, jobTitle_Istartswith: String): JobBoardNodeConnection
+}
+
+type CompanyNodeConnection {
+  pageInfo: PageInfo!
+  edges: [CompanyNodeEdge]!
+}
+
+type CompanyNodeEdge {
+  """The item at the end of the edge"""
+  node: CompanyNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+
+    Represents a Content tag.
+    
+"""
+type ContentTagNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  keyword: String!
+  summary: String
+  newstagSet(before: String, after: String, first: Int, last: Int): NewsTagNodeConnection
+  jobtagSet(before: String, after: String, first: Int, last: Int): JobTagNodeConnection
+}
+
+type ContentTagNodeConnection {
+  pageInfo: PageInfo!
+  edges: [ContentTagNodeEdge]!
+}
+
+type ContentTagNodeEdge {
+  """The item at the end of the edge"""
+  node: ContentTagNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+The `DateTime` scalar type represents a DateTime
+value as specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar DateTime
+
+"""
+
+    Represents the types of filmographies.
+    
+"""
+type FilmographyTypeNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  filmographyDescription: String!
+  summary: String
+}
+
+type FilmographyTypeNodeConnection {
+  pageInfo: PageInfo!
+  edges: [FilmographyTypeNodeEdge]!
+}
+
+type FilmographyTypeNodeEdge {
+  """The item at the end of the edge"""
+  node: FilmographyTypeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+
+    Represents the types of movie genres.
+    
+"""
+type GenreTypeNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  genreDescription: String!
+  summary: String
+}
+
+type GenreTypeNodeConnection {
+  pageInfo: PageInfo!
+  edges: [GenreTypeNodeEdge]!
+}
+
+type GenreTypeNodeEdge {
+  """The item at the end of the edge"""
+  node: GenreTypeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+enum JobBoardAgeLevel {
+  """Any Age"""
+  A_1
+
+  """Under 13"""
+  A_2
+
+  """13-17"""
+  A_3
+
+  """18-24"""
+  A_4
+
+  """25-34"""
+  A_5
+
+  """50-69"""
+  A_6
+
+  """50-69"""
+  A_6_6
+
+  """Over 18"""
+  A_7
+
+  """16-65"""
+  A_8
+}
+
+enum JobBoardGenderMf {
+  """Male"""
+  MALE
+
+  """Female"""
+  FEMALE
+
+  """Not specified"""
+  NOTSPECIFIED
+}
+
+enum JobBoardLocation {
+  """Addis Ababa"""
+  A_1
+
+  """Adama"""
+  A_2
+
+  """Gondar"""
+  A_3
+
+  """Mekele"""
+  A_4
+
+  """Hawassa"""
+  A_5
+
+  """Bahir Dar"""
+  A_6
+
+  """Dire Dawa"""
+  A_7
+
+  """Dessie"""
+  A_8
+
+  """Jimma"""
+  A_9
+
+  """Jijiga"""
+  A_10
+
+  """Shashamane"""
+  A_11
+
+  """Arba Minch"""
+  A_12
+
+  """Hosaena"""
+  A_13
+
+  """Woliso"""
+  A_14
+
+  """Asmara"""
+  A_15
+
+  """Debre Birhan"""
+  A_16
+
+  """Asella"""
+  A_17
+
+  """Harar"""
+  A_18
+
+  """Dila"""
+  A_19
+
+  """Nekemte"""
+  A_20
+
+  """Unspecified"""
+  A_21
+}
+
+"""
+
+    Represents the details for jobs listed on EtMDB.
+    
+"""
+type JobBoardNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  jobTitle: String!
+  location: JobBoardLocation
+  productionType: JobBoardProductionType
+  duration: String!
+  productionDate: DateTime
+  closingDate: DateTime!
+  description: String!
+  salary: String
+  genderMf: JobBoardGenderMf!
+  ageLevel: JobBoardAgeLevel!
+  company: CompanyNode!
+  jobtagSet(before: String, after: String, first: Int, last: Int): JobTagNodeConnection
+}
+
+type JobBoardNodeConnection {
+  pageInfo: PageInfo!
+  edges: [JobBoardNodeEdge]!
+}
+
+type JobBoardNodeEdge {
+  """The item at the end of the edge"""
+  node: JobBoardNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+enum JobBoardProductionType {
+  """Feature"""
+  A_1
+
+  """Documentary"""
+  A_2
+
+  """TV-Series"""
+  A_3
+
+  """Short film"""
+  A_4
+
+  """Silent film"""
+  A_5
+
+  """Biography"""
+  A_6
+
+  """Other type"""
+  A_7
+}
+
+"""
+
+    Represents a Job tag.
+    
+"""
+type JobTagNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  jobBoard: JobBoardNode!
+  contentTag: ContentTagNode!
+}
+
+type JobTagNodeConnection {
+  pageInfo: PageInfo!
+  edges: [JobTagNodeEdge]!
+}
+
+type JobTagNodeEdge {
+  """The item at the end of the edge"""
+  node: JobTagNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+enum MovieMetaDataAgeRestriction {
+  """G (General Audiences)"""
+  A_1
+
+  """PG (Parental Guidance Suggested)"""
+  A_2
+
+  """PG-13 (Parents Strongly Cautioned)"""
+  A_3
+
+  """R18 (Restricted)"""
+  A_4
+
+  """R21 (Adults Only) """
+  A_5
+
+  """U (Unrated)"""
+  A_6
+}
+
+"""
+
+    Represents a movie on EtMDB.
+    
+"""
+type MovieMetaDataNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  movieTitle: String!
+  releaseDate: DateTime!
+  durationMinutes: Int!
+  ageRestriction: MovieMetaDataAgeRestriction!
+  budget: Int!
+  gross: Int!
+  originalLanguage: String!
+  flagSeries: Boolean!
+  flagIncinema: Boolean!
+  plot: String!
+  slogan: String
+  posterImage: String
+  cinemascheduleSet(before: String, after: String, first: Int, last: Int): CinemaScheduleNodeConnection
+}
+
+"""
+
+    Represents a News and Articles.
+    
+"""
+type NewsNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  title: String!
+  content: String!
+  newsImage: String
+  newstagSet(before: String, after: String, first: Int, last: Int): NewsTagNodeConnection
+}
+
+type NewsNodeConnection {
+  pageInfo: PageInfo!
+  edges: [NewsNodeEdge]!
+}
+
+type NewsNodeEdge {
+  """The item at the end of the edge"""
+  node: NewsNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+
+    Represents a News and Articles tags.
+    
+"""
+type NewsTagNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  news: NewsNode!
+  contentTag: ContentTagNode!
+}
+
+type NewsTagNodeConnection {
+  pageInfo: PageInfo!
+  edges: [NewsTagNodeEdge]!
+}
+
+type NewsTagNodeEdge {
+  """The item at the end of the edge"""
+  node: NewsTagNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""An object with an ID"""
+interface Node {
+  """The ID of the object."""
+  id: ID!
+}
+
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+type Query {
+  """The ID of the object"""
+  cinemaDetail(id: ID!): CinemaDetailNode
+  allCinemaDetails(before: String, after: String, first: Int, last: Int): CinemaDetailNodeConnection
+
+  """The ID of the object"""
+  filmographyType(id: ID!): FilmographyTypeNode
+  allFilmographyTypes(before: String, after: String, first: Int, last: Int): FilmographyTypeNodeConnection
+
+  """The ID of the object"""
+  genreType(id: ID!): GenreTypeNode
+  allGenreTypes(before: String, after: String, first: Int, last: Int): GenreTypeNodeConnection
+
+  """The ID of the object"""
+  job(id: ID!): JobBoardNode
+  allJobs(before: String, after: String, first: Int, last: Int, company: ID, company_Icontains: ID, company_Istartswith: ID, genderMf: String, jobTitle: String, jobTitle_Icontains: String, jobTitle_Istartswith: String): JobBoardNodeConnection
+
+  """The ID of the object"""
+  company(id: ID!): CompanyNode
+  allCompanies(before: String, after: String, first: Int, last: Int, companyName: String, establishedIn: String): CompanyNodeConnection
+
+  """The ID of the object"""
+  jobsTag(id: ID!): JobTagNode
+  allJobTags(before: String, after: String, first: Int, last: Int): JobTagNodeConnection
+
+  """The ID of the object"""
+  newsTag(id: ID!): NewsTagNode
+  allNewsTags(before: String, after: String, first: Int, last: Int): NewsTagNodeConnection
+
+  """The ID of the object"""
+  news(id: ID!): NewsNode
+  allNews(before: String, after: String, first: Int, last: Int): NewsNodeConnection
+
+  """The ID of the object"""
+  role(id: ID!): RoleNode
+  allRoles(before: String, after: String, first: Int, last: Int): RoleNodeConnection
+
+  """The ID of the object"""
+  contentTag(id: ID!): ContentTagNode
+  allContentTags(before: String, after: String, first: Int, last: Int): ContentTagNodeConnection
+
+  """The ID of the object"""
+  cinemaSchedule(id: ID!): CinemaScheduleNode
+  allCinemaSchedules(before: String, after: String, first: Int, last: Int): CinemaScheduleNodeConnection
+
+  """The ID of the object"""
+  showtime(id: ID!): ShowtimeNode
+  allShowtimes(before: String, after: String, first: Int, last: Int): ShowtimeNodeConnection
+}
+
+"""
+
+    Represents a Movie Roles for cast.
+    
+"""
+type RoleNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  roleDescription: String!
+  summary: String
+}
+
+type RoleNodeConnection {
+  pageInfo: PageInfo!
+  edges: [RoleNodeEdge]!
+}
+
+type RoleNodeEdge {
+  """The item at the end of the edge"""
+  node: RoleNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+enum ShowtimeDayOfWeek {
+  """Monday"""
+  A_1
+
+  """Tuesday"""
+  A_2
+
+  """Wednesday"""
+  A_3
+
+  """Thursday"""
+  A_4
+
+  """Friday"""
+  A_5
+
+  """Saturday"""
+  A_6
+
+  """Sunday"""
+  A_7
+
+  """All week"""
+  A_8
+
+  """Week days"""
+  A_9
+
+  """Weekend"""
+  A_10
+}
+
+"""
+
+    Represents a Cinema Show times.
+    
+"""
+type ShowtimeNode implements Node {
+  """The ID of the object."""
+  id: ID!
+  createdDate: DateTime!
+  updatedDate: DateTime!
+  slug: String
+  showtime: Time!
+  dayOfWeek: ShowtimeDayOfWeek!
+}
+
+type ShowtimeNodeConnection {
+  pageInfo: PageInfo!
+  edges: [ShowtimeNodeEdge]!
+}
+
+type ShowtimeNodeEdge {
+  """The item at the end of the edge"""
+  node: ShowtimeNode
+
+  """A cursor for use in pagination"""
+  cursor: String!
+}
+
+"""
+The `Time` scalar type represents a Time value as
+specified by
+[iso8601](https://en.wikipedia.org/wiki/ISO_8601).
+"""
+scalar Time
+

@@ -1,0 +1,52 @@
+{
+  "name": "WoraTodo",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "cli": "node node_modules/react-native/local-cli/cli.js",
+    "start": "npm run cli -- start",
+    "start-reset": "react-native start --reset-cache",
+    "run-android": "npm run cli -- run-android",
+    "debug": "react-native log-android",
+    "relay:compile": "relay-compiler --src ./src --schema ./server/data/schema.graphql --language typescript",
+    "test": "jest",
+    "netinfo": "react-native --verbose link @react-native-community/netinfo",
+    "getIP": "node getIP.js",
+    "server": "cd ./server && npm run start"
+  },
+  "dependencies": {
+    "@react-native-community/netinfo": "3.2.1",
+    "react": "16.8.3",
+    "react-native": "0.59.5",
+    "react-native-elements": "^1.1.0",
+    "react-native-vector-icons": "^6.5.0",
+    "react-relay": "^4.0.0",
+    "react-relay-offline": "0.5.0",
+    "relay-runtime": "^4.0.0",
+    "styled-components": "4.3.1",
+    "uuid": "3.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.4",
+    "@babel/runtime": "^7.4.4",
+    "@types/jest": "^24.0.12",
+    "@types/react": "^16.8.15",
+    "@types/react-native": "^0.57.51",
+    "@types/react-relay": "^1.3.14",
+    "@types/react-test-renderer": "^16.8.1",
+    "@types/relay-runtime": "^1.3.12",
+    "babel-jest": "^24.7.1",
+    "babel-plugin-relay": "^4.0.0",
+    "graphql": "^14.2.1",
+    "ip": "1.1.5",
+    "jest": "^24.7.1",
+    "metro-react-native-babel-preset": "^0.53.1",
+    "react-test-renderer": "16.8.3",
+    "relay-compiler": "^4.0.0",
+    "relay-compiler-language-typescript": "^4.3.0",
+    "typescript": "^3.4.5"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@wora/mui",
+  "version": "0.0.1-a5",
+  "keywords": [
+    "wora",
+    "react-native",
+    "mui",
+    "react",
+    "hooks"
+  ],
+  "main": "lib/index.js",
+  "license": "MIT",
+  "description": "@wora Mui",
+  "author": {
+    "name": "morrys"
+  },
+  "homepage": "https://github.com/morrys/wora",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morrys/wora"
+  },
+  "scripts": {
+    "prepare": "tsc"
+  },
+  "dependencies": {
+    "styled-components": "4.3.2",
+    "@material-ui/core": "4.1.2",
+    "react-native-material-ui": "1.30.1",
+    "react-native-typography": "1.4.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "typescript": "3.5.1",
+    "react": "16.8.6",
+    "@types/react": "16.8.14",
+    "@types/react-dom": "16.8.4",
+    "react-native": "0.59.9",
+    "react-native-elements": "1.1.0"
+  }
+}

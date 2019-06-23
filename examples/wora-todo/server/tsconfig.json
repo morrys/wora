@@ -1,0 +1,68 @@
+{
+    "compilerOptions": {
+        "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "isolatedModules": true,
+        "module": "commonjs",
+        "target": "esnext",
+        "lib": [
+            "es6",
+            "dom",
+            "esnext.asynciterable"
+        ],
+        "noEmit": true,
+        "esModuleInterop": true,
+        "jsx": "react",
+        "noImplicitAny": false,
+        "moduleResolution": "node",
+        "sourceMap": true,
+        "outDir": "build/dist",
+        "rootDirs": [
+            "./src",
+        ],
+        "paths": {
+            "*": [
+                "node_modules/*",
+                "node_modules/@types/*"
+            ],
+            "shared/*": [
+                "../shared/*"
+            ],
+            "web/*": [
+                "../web/*"
+            ]
+        },
+        "baseUrl": ".",
+    },
+    "exclude": [
+        "node_modules",
+        "../../../../packages/mui/node_modules",
+        "../../web/node_modules",
+        "build",
+        "scripts",
+        "acceptance-tests",
+        "webpack.server.js",
+        "jest",
+        "src/setupTests.ts",
+        "config",
+        "typedoc.js",
+        "babel.config.js",
+        "metro.config.js",
+        "jest.config.js"
+    ],
+}
+/*
+
+
+	"compilerOptions": {
+        "jsx": "react",
+		"target": "es5", 
+		"module": "commonjs", 
+		"lib": [
+			"es2015"
+        ], 
+        "strict": true, 
+		"baseUrl": "." 
+		}
+}
+*/
