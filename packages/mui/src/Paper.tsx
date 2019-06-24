@@ -10,7 +10,7 @@ const Paper = (props: any) => {
     const customStyle = props.customStyle;
     const Component = styledDiv`
         background-color: white;
-        box-shadow: ${shadows[elevation]};
+        ${shadows[elevation]};
         ${(square) ? "" : "border-radius: 4px;" }
         ${customStyle}
     `;

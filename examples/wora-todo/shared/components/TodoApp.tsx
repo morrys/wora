@@ -46,7 +46,7 @@ const TodoApp = ({relay, user}: any) => {
     <Paper>
       <Paper customStyle={StyledTodoApp}>
         <Paper>
-          <Typography variant="h2" align="center">Todos</Typography>
+          <Typography variant="h6" align="center">Todos</Typography>
         </Paper>
         {hasTodos && <TodoListFooter user={user} />}
         </Paper>

@@ -1,5 +1,5 @@
 import { AppRegistry } from 'react-native';
-import App from './src/App';
+import App from '../shared/App';
 import { name } from './app.json';
 
 /**

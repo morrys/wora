@@ -59,7 +59,7 @@ const TodoListFooter = ({
   return (
     <Paper customStyle={StyledContainer}>
       <Paper customStyle={StyleButtonContainer}>
-        <Typography variant="h3" align="center">
+        <Typography variant="subtitle1" align="center">
           {numRemainingTodos + " Item" + (numRemainingTodos === 1 ? '' : 's') + " left"}
         </Typography>
       </Paper>

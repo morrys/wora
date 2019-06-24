@@ -7,8 +7,8 @@ import RelayNetworkLogger from 'relay-runtime/lib/RelayNetworkLogger'
  * Define fetch query
  */
 const fetchQuery = async (operation: any, variables: any) => {
-  
-  const response = await  fetch('http://localhost:3000/graphql', {
+  const localIp = "192.168.1.105";
+  const response = await  fetch('http://'+localIp+':3000/graphql', {
     body: JSON.stringify({
       query: operation.text,
       variables,

@@ -10,21 +10,14 @@
     "debug": "react-native log-android",
     "relay:compile": "relay-compiler --src ./src --schema ./server/data/schema.graphql --language typescript",
     "test": "jest",
-    "netinfo": "react-native --verbose link @react-native-community/netinfo",
+    "linkall": "react-native --verbose link react-native-vector-icons && react-native --verbose link @react-native-community/netinfo",
     "getIP": "node getIP.js",
     "server": "cd ./server && npm run start"
   },
   "dependencies": {
     "@react-native-community/netinfo": "3.2.1",
-    "react": "16.8.3",
     "react-native": "0.59.5",
-    "react-native-elements": "^1.1.0",
-    "react-native-vector-icons": "^6.5.0",
-    "react-relay": "^4.0.0",
-    "react-relay-offline": "0.5.0",
-    "relay-runtime": "^4.0.0",
-    "styled-components": "4.3.1",
-    "uuid": "3.3.2"
+    "react-native-vector-icons": "^6.5.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.4",

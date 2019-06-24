@@ -12,7 +12,7 @@
     "graphql": "^14.1.1",
     "graphql-relay": "^0.6.0",
     "uuid": "3.3.2",
-    "@wora/mui": "file:./wora-mui-0.0.1-a5.tgz"
+    "@wora/mui": "file:./wora-mui-0.0.1-a6.tgz"
   },
   "resolutions": {
     "@types/react": "16.8.18"
