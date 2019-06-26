@@ -1,9 +1,0 @@
-{
-  "presets": ["@babel/typescript", "@babel/preset-react", "@babel/preset-env", "@babel/preset-flow"],
-  "plugins": [
-    ["relay", { "artifactDirectory": "./shared/__generated__/relay/" }],
-    "@babel/plugin-transform-runtime",
-    "@babel/plugin-proposal-class-properties"
-  ],
-  
-}
