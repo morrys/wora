@@ -8,13 +8,15 @@ const Paper = (props: any) => {
     const square = props.square;
     const elevation = props.elevation || 2;
     const customStyle = props.customStyle;
+    console.log("paper", shadows[elevation])
+    console.log(shadows[elevation])
     const Component = styledDiv`
         background-color: white;
         ${shadows[elevation]};
         ${(square) ? "" : "border-radius: 4px;" }
         ${customStyle}
     `;
-    return <Component> {props.children} </Component>
+    return <Component>{props.children}</Component>
 }
 
 export default Paper;

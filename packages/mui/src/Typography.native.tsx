@@ -18,7 +18,7 @@ const variantNativeMapping = {
 const Typography = (props: TypographyProps) => {
     const { variant, children, align } = props;
     const variantNative = variantNativeMapping[variant] || variant;
-    return <Text styles={[material[variantNative], {
+    return <Text style={[material[variantNative], {
         textAlign: align
     }]}>{children}</Text>;
 }
