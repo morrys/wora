@@ -20,8 +20,9 @@ import {createFragmentContainer, graphql } from 'react-relay-offline';
 // import TodoListFooter from './TodoListFooter';
 import styled, { css } from "styled-components";
 import { Paper } from '@wora/mui';
-import { Typography } from '@wora/mui';
+import { Typography, View } from '@wora/mui';
 import TodoListFooter from "./TodoListFooter";
+import TodoList from './TodoList';
 
 const StyledTodoApp = css`
   background-color: #fff;
@@ -43,14 +44,15 @@ const TodoApp = ({relay, user}: any) => {
   const hasTodos = user.totalCount > 0;
 
   return (
-    <Paper>
+    <View>
       <Paper customStyle={StyledTodoApp}>
-        <Paper>
+        <View>
           <Typography variant="h6" align="center">Todos</Typography>
-        </Paper>
+        </View>
+        <TodoList user={user} />
         {hasTodos && <TodoListFooter user={user} />}
         </Paper>
-    </Paper>
+    </View>
   );
 };
 
@@ -62,6 +64,7 @@ export default createFragmentContainer(TodoApp, {
       userId
       totalCount
       completedCount
+      ...TodoList_user
       ...TodoListFooter_user
     }
   `,

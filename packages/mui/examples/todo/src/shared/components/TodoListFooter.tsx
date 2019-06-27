@@ -18,16 +18,17 @@ import { graphql, createFragmentContainer } from 'react-relay';
 
 
 import styled, { css } from "styled-components";
-import { Paper, Typography } from '@wora/mui';
+import { Paper, Typography, Button, View } from '@wora/mui';
 
 const StyledContainer = css`
   flex-direction: row;
   background-color: #fff;
   justify-content: center;
   align-items: center;
+  display: flex;
 `;
 
-const StyleButtonContainer = css`
+const StyleButtonContainer = styled(View)`
   flex: 1;
 `;
 
@@ -58,20 +59,20 @@ const TodoListFooter = ({
 
   return (
     <Paper customStyle={StyledContainer}>
-      <Paper customStyle={StyleButtonContainer}>
+      <StyleButtonContainer>
         <Typography variant="subtitle1" align="center">
           {numRemainingTodos + " Item" + (numRemainingTodos === 1 ? '' : 's') + " left"}
         </Typography>
-      </Paper>
+      </StyleButtonContainer>
 
-      <Paper customStyle={StyleButtonContainer}>
-        {/*<Button
+      <StyleButtonContainer>
+        {<Button
         onPress={handleRemoveCompletedTodosClick}
         title="Clear completed"
         disabled={completedCount == 0}
         accessibilityLabel="Clear completed"
-        />*/}
-      </Paper>
+        />}
+      </StyleButtonContainer>
     </Paper>
   );
 };

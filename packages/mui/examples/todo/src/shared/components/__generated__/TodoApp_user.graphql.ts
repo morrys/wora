@@ -2,13 +2,14 @@
 
 import { ReaderFragment } from "relay-runtime";
 type TodoListFooter_user$ref = any;
+type TodoList_user$ref = any;
 export type TodoApp_user$ref = any;
 export type TodoApp_user = {
     readonly id: string;
     readonly userId: string;
     readonly totalCount: number;
     readonly completedCount: number;
-    readonly " $fragmentRefs": TodoListFooter_user$ref;
+    readonly " $fragmentRefs": TodoList_user$ref & TodoListFooter_user$ref;
     readonly " $refType": TodoApp_user$ref;
 };
 
@@ -51,10 +52,15 @@ const node: ReaderFragment = {
     },
     {
       "kind": "FragmentSpread",
+      "name": "TodoList_user",
+      "args": null
+    },
+    {
+      "kind": "FragmentSpread",
       "name": "TodoListFooter_user",
       "args": null
     }
   ]
 };
-(node as any).hash = '8d7ee9cf147e3c8996736105cd070674';
+(node as any).hash = '76587bf2d62dbe7c47a2f069f9c15857';
 export default node;

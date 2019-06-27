@@ -32,7 +32,31 @@ fragment TodoApp_user on User {
   userId
   totalCount
   completedCount
+  ...TodoList_user
   ...TodoListFooter_user
+}
+
+fragment TodoList_user on User {
+  todos(first: 2147483647) {
+    edges {
+      node {
+        id
+        complete
+        ...Todo_todo
+        __typename
+      }
+      cursor
+    }
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+  }
+  id
+  userId
+  totalCount
+  completedCount
+  ...Todo_user
 }
 
 fragment TodoListFooter_user on User {
@@ -54,6 +78,19 @@ fragment TodoListFooter_user on User {
     }
   }
   totalCount
+}
+
+fragment Todo_todo on Todo {
+  complete
+  id
+  text
+}
+
+fragment Todo_user on User {
+  id
+  userId
+  totalCount
+  completedCount
 }
 */
 
@@ -188,6 +225,13 @@ return {
                       {
                         "kind": "ScalarField",
                         "alias": null,
+                        "name": "text",
+                        "args": null,
+                        "storageKey": null
+                      },
+                      {
+                        "kind": "ScalarField",
+                        "alias": null,
                         "name": "__typename",
                         "args": null,
                         "storageKey": null
@@ -247,7 +291,7 @@ return {
     "operationKind": "query",
     "name": "AppQuery",
     "id": null,
-    "text": "query AppQuery(\n  $userId: String\n) {\n  user(id: $userId) {\n    ...TodoApp_user\n    id\n  }\n}\n\nfragment TodoApp_user on User {\n  id\n  userId\n  totalCount\n  completedCount\n  ...TodoListFooter_user\n}\n\nfragment TodoListFooter_user on User {\n  id\n  userId\n  completedCount\n  todos(first: 2147483647) {\n    edges {\n      node {\n        id\n        complete\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      endCursor\n      hasNextPage\n    }\n  }\n  totalCount\n}\n",
+    "text": "query AppQuery(\n  $userId: String\n) {\n  user(id: $userId) {\n    ...TodoApp_user\n    id\n  }\n}\n\nfragment TodoApp_user on User {\n  id\n  userId\n  totalCount\n  completedCount\n  ...TodoList_user\n  ...TodoListFooter_user\n}\n\nfragment TodoList_user on User {\n  todos(first: 2147483647) {\n    edges {\n      node {\n        id\n        complete\n        ...Todo_todo\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      endCursor\n      hasNextPage\n    }\n  }\n  id\n  userId\n  totalCount\n  completedCount\n  ...Todo_user\n}\n\nfragment TodoListFooter_user on User {\n  id\n  userId\n  completedCount\n  todos(first: 2147483647) {\n    edges {\n      node {\n        id\n        complete\n        __typename\n      }\n      cursor\n    }\n    pageInfo {\n      endCursor\n      hasNextPage\n    }\n  }\n  totalCount\n}\n\nfragment Todo_todo on Todo {\n  complete\n  id\n  text\n}\n\nfragment Todo_user on User {\n  id\n  userId\n  totalCount\n  completedCount\n}\n",
     "metadata": {}
   }
 };

@@ -5,7 +5,7 @@ import { Loading } from '@wora/mui';
 import TodoApp from './components/TodoApp';
 
 const isServer = typeof window === 'undefined'
-const App = (props) =>
+const App = (props: any) =>
 <QueryRenderer
       environment={environment}
       dataFrom={"NETWORK_ONLY"}

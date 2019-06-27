@@ -14,10 +14,8 @@
 import {
   commitMutation,
   graphql,
-  Disposable,
-  Environment,
   // RecordSourceSelectorProxy,
-} from 'react-relay-offline';
+} from 'react-relay';
 
 import {ConnectionHandler} from 'relay-runtime';
 
@@ -48,7 +46,7 @@ function sharedUpdater(
 }
 
 function commit(
-  environment: Environment,
+  environment: any,
   todos: any,
   user: any,
 ) {

@@ -14,7 +14,7 @@
 import {
   commitMutation,
   graphql,
-} from 'react-relay-offline';
+} from 'react-relay';
 
 
 const mutation = graphql`

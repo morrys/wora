@@ -8,7 +8,7 @@ module.exports = webpackMerge(commonWebpackConfig, {
   node: {
     __dirname: false
 },
-  entry: ['./src/server/server.ts'],
+  entry: ['./src/server/index.tsx'],
   output: {
     filename: 'server/[name].js',
     sourceMapFilename: 'server/[name].map.js',

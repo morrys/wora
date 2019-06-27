@@ -1,0 +1,22 @@
+import styled from "styled-components";
+import shadows from "../theme/shadows";
+import * as React from "react";
+import View from "../View/View";
+
+
+const Paper = (props: any) => {
+    const square = props.square;
+    const elevation = props.elevation || 2;
+    const customStyle = props.customStyle;
+    console.log("paper", shadows[elevation])
+    console.log(shadows[elevation])
+    const Component = styled(View)`
+        background-color: white;
+        ${shadows[elevation]};
+        ${(square) ? "" : "border-radius: 4px;" }
+        ${customStyle}
+    `;
+    return <Component>{props.children}</Component>
+}
+
+export default Paper;

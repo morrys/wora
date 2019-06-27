@@ -11,7 +11,7 @@ const stripUselessLoaderOptions = value => value || undefined;
 module.exports = webpackMerge(commonWebpackConfig, {
     name: 'client',
     target: 'web',
-    entry: ['./src/web/index.ts'],
+    entry: ['./src/web/index.tsx'],
     output: {
       filename: 'client/[name].js',
       sourceMapFilename: 'client/[name].map.js',

@@ -14,11 +14,9 @@
 import {
   commitMutation,
    graphql,
-  Disposable,
-  Environment,
   // RecordProxy,
   // RecordSourceSelectorProxy,
-} from 'react-relay-offline';
+} from 'react-relay';
 
 // import graphql from "babel-plugin-relay/macro";
 
@@ -65,7 +63,7 @@ function sharedUpdater(store: any, user: any, newEdge: any) {
 
 
 function commit(
-  environment: Environment,
+  environment: any,
   text: string,
   user: any,
 ) {

@@ -14,9 +14,7 @@
 import {
   commitMutation,
   graphql,
-  Disposable,
-  Environment,
-} from 'react-relay-offline';
+} from 'react-relay';
 
 const mutation = graphql`
   mutation ChangeTodoStatusMutation($input: ChangeTodoStatusInput!) {
@@ -55,7 +53,7 @@ function getOptimisticResponse(
 }
 
 function commit(
-  environment: Environment,
+  environment: any,
   complete: boolean,
   todo: any,
   user: any,
