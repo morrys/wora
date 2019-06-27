@@ -1,57 +1,24 @@
-# [@wora/detect-network](https://github.com/morrys/wora)
-
-## React
-
-Install @wora/detect-network using yarn or npm:
-
-```
-yarn add @wora/detect-network
-```
-
-```ts
-import { NetInfo } from "@wora/detect-network";
-import { useIsConnected } from "@wora/detect-network";
-import { useNetInfo } from "@wora/detect-network";
-```
+# [@wora/mui](https://github.com/morrys/wora)
 
 
-## React Native ([react-native-community/react-native-netinfo](https://github.com/react-native-community/react-native-netinfo/blob/master/README.md))
+## Beta Example 
 
-Install @wora/detect-network using yarn or npm:
+in packages/mui
 
-```
-yarn add @wora/detect-network react-native @react-native-community/netinfo
-```
+npm install
+npm pack
 
-You then need to link the native parts of the library for the platforms you are using. The easiest way to link the library is using the CLI tool by running this command from the root of your project:
-
-`react-native link @react-native-community/netinfo`
-
-
-```ts
-import { NetInfo } from "@wora/detect-network";
-import { useIsConnected } from "@wora/detect-network";
-import { useNetInfo } from "@wora/detect-network";
-```
+cd examples/todo
+yarn
+yarn linkall
+yarn build-dev-web
+yarn start
 
 
-## React Native
+in another shell launch:
 
-Install @wora/detect-network using yarn or npm:
+cd examples/todo
 
-```
-yarn add @wora/detect-network react-native
-```
+yarn start-app
+yarn run-android
 
-```ts
-import { NetInfo } from "@wora/detect-network/lib/deprecated";
-import { useIsConnected } from "@wora/detect-network/lib/deprecated";
-import { useNetInfo } from "@wora/detect-network/lib/deprecated";
-```
-
-## Example
-
-```ts
-const isConnected: boolean = useIsConnected();
-const netInfo = useNetInfo();
-```
