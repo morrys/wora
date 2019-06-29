@@ -31,7 +31,7 @@ restore(): Promise<Cache>; // restore storage, set rehydratad
     
 getStorageName(): string;  // storage name
 
-purge(): void; // purge state and storage
+purge(): Promise<boolean>; // purge state and storage
 
 getState(): Readonly<{v[key: string]: any; }>; // return in memory state
 

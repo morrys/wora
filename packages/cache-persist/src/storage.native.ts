@@ -8,8 +8,11 @@ function NativeStorage(prefix: string): CacheStorage {
         getStorage: ():any => AsyncStorage,
         getCacheName: ():string => "AS-" + prefix,
         purge: () => {
-            AsyncStorage.getAllKeys().then((keys: Array<string>) =>
-                AsyncStorage.multiRemove(keys.filter((key => key.startsWith(prefixKey)))));
+            return AsyncStorage.getAllKeys().then((keys: Array<string>) => 
+                AsyncStorage.multiRemove(keys.filter((key => key.startsWith(prefixKey))))
+                .then(() => true)
+                .catch(() => false)
+            );
         },
         restore: (deserialize: boolean): Promise<DataCache> => {
             return AsyncStorage.getAllKeys().then((keys: Array<string>) =>

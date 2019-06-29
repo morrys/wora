@@ -15,7 +15,7 @@ export type DataCache = {
 export interface CacheStorage {
     getStorage: () => any;
     getCacheName: () => string;
-    purge: () => void;
+    purge: () => Promise<boolean>;
     restore: (deserialize: boolean) => Promise<DataCache>;
     setItem: (key: string, item: string | object) => Promise<void>;
     removeItem: (key: string) => Promise<void>;
@@ -54,9 +54,9 @@ class Cache {
         return this.storage.getCacheName()
     }
 
-    purge(): void {
+    purge(): Promise<boolean> {
         this.data = {};
-        this.storage.purge();
+        return this.storage.purge();
     }
 
     getState(): Readonly<{ [key: string]: any }> {

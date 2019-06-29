@@ -23,6 +23,13 @@ const StyledList = styled.ul`
   width: 250px;
 `;
 
+const StyledButton = styled.button`
+  margin: auto;
+  padding: 10px;
+  cursor: pointer;
+  display:-webkit-box;
+`;
+
 interface Props {
   cache: Cache
 }
@@ -54,6 +61,13 @@ const TodoList = (props: Props) => {
     return;
   };
 
+  const purge = () => {
+    console.log("purge");
+    cache.purge().then(() =>
+      setResult({...result, data: cache.getState()})
+    );
+  };
+
   
 
   const {loading, data} = result;
@@ -67,6 +81,7 @@ const TodoList = (props: Props) => {
 
   return <div>
     <StyledHeader>
+    <StyledButton onClick={purge} className="refetch" > Purge </StyledButton>
       <TodoTextInput
         placeholder={"Add Todo to "+cache.getStorageName()}
         onSave={handleTextInputSave}

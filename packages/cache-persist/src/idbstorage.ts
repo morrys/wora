@@ -37,7 +37,9 @@ function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, name: string, s
         getStorage: ():any => dbPromise,
         getCacheName: ():string => "IDB-" + name + "-" + storeName,
         purge: () => {
-            dbPromise.then(db => db.clear(storeName));
+            return dbPromise.then(db => {
+                return db.clear(storeName).then(() => true).catch(() => false);
+            });
         },
         restore: (deserialize: boolean): Promise<DataCache> => {
             return dbPromise.then(db =>

@@ -16,7 +16,7 @@ function hasStorage(storageType) {
     }
 
     try {
-        let storage = self[storageType]
+        let storage:any = self[storageType]
         const testKey = `cache-persist ${storageType} test`
         storage.setItem(testKey, 'test')
         storage.getItem(testKey)
@@ -44,12 +44,15 @@ function webStorage(prefix: string): CacheStorage {
         getCacheName: ():string => "LS-" + prefix,
 
         purge: () => {
-            for (var i = 0; i < storage.length; i++) {
-                const key: string = storage.key(i);
-                if (key.startsWith(prefixKey)) {
-                    storage.removeItem(key);
+            return new Promise((resolve, reject) => {
+                for (var i = 0; i < storage.length; i++) {
+                    const key: string = storage.key(i);
+                    if (key.startsWith(prefixKey)) {
+                        storage.removeItem(key);
+                    }
                 }
-            }
+                resolve(true)
+            });
         },
         restore: (deserialize: boolean): Promise<DataCache> => {
             return new Promise((resolve, reject) => {
