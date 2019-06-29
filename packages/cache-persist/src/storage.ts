@@ -45,8 +45,11 @@ function webStorage(prefix: string): CacheStorage {
 
         purge: () => {
             return new Promise((resolve, reject) => {
-                for (var i = 0; i < storage.length; i++) {
-                    const key: string = storage.key(i);
+                
+                const keys = Object.keys(storage)
+                const size = keys.length;
+                for (var i = 0; i < size; i++) {
+                    const key: string = keys[i];
                     if (key.startsWith(prefixKey)) {
                         storage.removeItem(key);
                     }
