@@ -1,0 +1,34 @@
+{
+  "name": "@wora/offline-first",
+  "version": "0.0.1",
+  "keywords": [
+    "cache",
+    "wora",
+    "detect-network",
+    "cache-persist",
+    "offline",
+    "offline-first",
+    "offline-capabilities"
+  ],
+  "main": "lib/index.js",
+  "license": "MIT",
+  "description": "@wora Offline First",
+  "author": {
+    "name": "morrys"
+  },
+  "homepage": "https://github.com/morrys/wora",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morrys/wora"
+  },
+  "scripts": {
+    "prepare": "tsc"
+  },
+  "dependencies": {
+    "@wora/detect-network": "0.1.0",
+    "@wora/cache-persist": "1.0.0"
+  },
+  "devDependencies": {
+    "typescript": "3.5.2"
+  }
+}
