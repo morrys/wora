@@ -25,7 +25,7 @@
     "prepare": "tsc"
   },
   "dependencies": {
-    "@wora/detect-network": "0.1.0",
+    "@wora/detect-network": "1.0.0",
     "@wora/cache-persist": "1.0.0"
   },
   "devDependencies": {
