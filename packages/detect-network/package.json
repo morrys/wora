@@ -1,6 +1,6 @@
 {
   "name": "@wora/detect-network",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "keywords": [
     "wora",
     "react-native",
@@ -10,7 +10,7 @@
     "hooks"
   ],
   "main": "lib/index.js",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "description": "@wora Detect Network",
   "author": {
     "name": "morrys"

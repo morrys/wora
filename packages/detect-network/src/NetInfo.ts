@@ -8,15 +8,12 @@
  * @flow
  */
 
-import * as ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
 import * as findIndex from 'array-find-index';
-import * as invariant from 'fbjs/lib/invariant';
 
 const connection =
-  ExecutionEnvironment.canUseDOM &&
-  ((window.navigator as any).connection ||
+  (window.navigator as any).connection ||
   (window.navigator as any).mozConnection ||
-  (window.navigator as any).webkitConnection);
+  (window.navigator as any).webkitConnection;
 
 // Prevent the underlying event handlers from leaking and include additional
 // properties available in browsers
@@ -67,7 +64,6 @@ const NetInfo = {
   removeEventListener(handler: Function): void {
 
     const listenerIndex = findIndex(netInfoListeners, pair => pair[0] === handler);
-    invariant(listenerIndex !== -1, 'Trying to remove NetInfo listener for unregistered handler');
     const [, wrappedHandler] = netInfoListeners[listenerIndex];
     connection.removeEventListener('change', wrappedHandler);
     netInfoListeners.splice(listenerIndex, 1);
@@ -99,10 +95,6 @@ const NetInfo = {
 
     removeEventListener(type: string, handler: Function): void {
       const listenerIndex = findIndex(connectionListeners, pair => pair[0] === handler);
-      invariant(
-        listenerIndex !== -1,
-        'Trying to remove NetInfo connection listener for unregistered handler'
-      );
       const [, onlineCallback, offlineCallback] = connectionListeners[listenerIndex];
 
       window.removeEventListener('online', onlineCallback, false);
