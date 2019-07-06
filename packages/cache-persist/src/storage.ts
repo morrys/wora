@@ -70,6 +70,14 @@ function webStorage(prefix: string): CacheStorage {
                 resolve(data)
             })
         },
+        replace: (data: any): Promise<void> => {
+            return new Promise((resolve, reject) => {
+                Object.keys(data).forEach(function(key) {
+                    storage.setItem(prefixKey+key, data[key]);
+                });
+                resolve();
+            });
+        },
         setItem: (key: string, item: string): Promise<void> => {
             return new Promise((resolve, reject) => {
                 resolve(storage.setItem(prefixKey+key, item))

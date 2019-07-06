@@ -12,7 +12,7 @@
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
     "styled-components": "4.2.0",
-    "@wora/cache-persist": "0.4.3"
+    "@wora/cache-persist": "file:../../wora-cache-persist-1.0.0-a2.tgz"
   },
   "scripts": {
     "start": "react-scripts-ts start",

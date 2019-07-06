@@ -1,6 +1,6 @@
 {
   "name": "@wora/cache-persist",
-  "version": "0.4.3",
+  "version": "1.0.0",
   "keywords": [
     "cache",
     "react-native",
@@ -10,7 +10,7 @@
     "indexeddb"
   ],
   "main": "lib/index.js",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "description": "@wora Cache Persist",
   "author": {
     "name": "morrys"
@@ -25,9 +25,6 @@
   },
   "dependencies": {
     "idb": "^4.0.0"
-  },
-  "peerDependencies": {
-    "react": ">=16.8.3"
   },
   "devDependencies": {
     "typescript": "3.1.1",

@@ -27,13 +27,19 @@ serialize: if it is true, the data will be serialized and deserialized JSON
 ## Cache
 isRehydrated(): boolean; // true if restored
 
+replace(data: any): 
+
 restore(): Promise<Cache>; // restore storage, set rehydratad
     
 getStorageName(): string;  // storage name
 
 purge(): Promise<boolean>; // purge state and storage
 
+clear(): Promise<boolean>; // purge state and storage
+
 getState(): Readonly<{v[key: string]: any; }>; // return in memory state
+
+toObject(): Readonly<{v[key: string]: any; }>; // return in memory state
 
 get(key: string): any; // get value from in memory state
 
@@ -44,6 +50,10 @@ set(key: string, value: any): Promise<any>; // set value in state (sync) and in 
 delete(key: string): Promise<any>; // delete value in state (sync) and in storage (async)
     
 remove(key: string): Promise<any>; // remove value in state (sync) and in storage (async)
+
+subscribe( callback: (message: string, state: any) => void, ): () => void // subscription management
+
+notify(message: string = "notify data"): void // notification of the message and status to all subscriptions
     
 
 
@@ -93,8 +103,15 @@ import { DataCache } from '@wora/cache-persist';
 
 const [result, setResult] = useState<{loading: boolean, data: DataCache}>({loading: true, data: {}});
 
-  useEffect(() => {
-    cache.restore().then(() => setResult({loading: false, data: cache.getState()}))
+ useEffect(() => {
+    const dispose = cache.subscribe((message, state) => {
+      setResult({loading: false, data: state});
+    });
+    cache.restore().then(() => {
+      cache.notify("restored");
+    })
+    return () => dispose();
+    
   },
     []);
 ```

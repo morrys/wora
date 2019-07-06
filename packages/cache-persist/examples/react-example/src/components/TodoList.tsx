@@ -42,7 +42,15 @@ const TodoList = (props: Props) => {
   const [result, setResult] = useState<{loading: boolean, data: DataCache}>({loading: true, data: new Map()});
 
   useEffect(() => {
-    cache.restore().then(() => setResult({loading: false, data: cache.getState()}))
+    const dispose = cache.subscribe((message, state) => {
+      console.log("subscription", message);
+      setResult({loading: false, data: state});
+    });
+    cache.restore().then(() => {
+      cache.notify("restored");
+    })
+    return () => dispose();
+    
   },
     []);
 
@@ -50,22 +58,27 @@ const TodoList = (props: Props) => {
   const handleTextInputSave = (text: string) => {
     const key = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     cache.set(key, text);
-    setResult({...result, data: cache.getState()});
+    cache.notify("set");
     return;
   };
 
   const deleteItem = (key: string) => {
-    console.log("clickkk", key);
     cache.remove(key);
-    setResult({...result, data: cache.getState()});
+    cache.notify("delete");
+    return;
+  };
+
+  const replaceItem = () => {
+    cache.replace({
+      replace1: "replace1",
+      replace2: "replace2",
+    });
+    cache.notify("replace");
     return;
   };
 
   const purge = () => {
-    console.log("purge");
-    cache.purge().then(() =>
-      setResult({...result, data: cache.getState()})
-    );
+    cache.purge().then(() => cache.notify("purge"));
   };
 
   
@@ -82,6 +95,7 @@ const TodoList = (props: Props) => {
   return <div>
     <StyledHeader>
     <StyledButton onClick={purge} className="refetch" > Purge </StyledButton>
+    <StyledButton onClick={replaceItem} className="refetch" > Replace </StyledButton>
       <TodoTextInput
         placeholder={"Add Todo to "+cache.getStorageName()}
         onSave={handleTextInputSave}

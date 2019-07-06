@@ -27,6 +27,14 @@ function NativeStorage(prefix: string): CacheStorage {
                     return result;
                 }));
         },
+        replace: (data: any): Promise<void> => {
+            const item = [];
+            Object.keys(data).forEach(function (key) {
+                item.push([prefixKey+key, data[key]])
+            });
+            return AsyncStorage.multiSet(item);
+                
+        },
         setItem: (key: string, item: string): Promise<void> => {
             return AsyncStorage.setItem(prefixKey+key, item);
         },
