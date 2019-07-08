@@ -18,7 +18,6 @@ import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache, Request } from "
 const persistOptionsStoreOffline = {
     prefix: 'example-offline',
     serialize: true,
-    ...persistOptions,
 };
 
 function execute(offlineRecord) {
@@ -41,7 +40,12 @@ const options: OfflineFirstOptions<Payload> = {
         onDiscard: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => discard(options),
             };
 
-const offlineFirst = new OfflineFirst(options, persistOptionsStoreOffline);    
+const offlineFirst = new OfflineFirst(options, persistOptionsStoreOffline);  
+
+
+// ...
+
+offlineFirst.restore().then(isRestored => setState(isRestored))
 
 // ...
 
