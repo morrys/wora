@@ -1,0 +1,36 @@
+{
+  "name": "@wora/apollo-cache",
+  "version": "0.0.1",
+  "keywords": [
+    "cache",
+    "wora",
+    "cache-persist",
+    "inmemory",
+    "apollo"
+  ],
+  "main": "lib/index.js",
+  "license": "MIT",
+  "description": "@wora Apollo Cache",
+  "author": {
+    "name": "morrys"
+  },
+  "homepage": "https://github.com/morrys/wora",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morrys/wora"
+  },
+  "scripts": {
+    "prepare": "tsc"
+  },
+  "dependencies": {
+  },
+  "peerDependencies": {
+    "@wora/cache-persist": ">=1.0.0",
+    "apollo-cache-inmemory": ">=1.6.2"
+  },
+  "devDependencies": {
+    "@wora/cache-persist": "^1.0.0",
+    "apollo-cache-inmemory": "^1.6.2",
+    "typescript": "3.5.2"
+  }
+}
