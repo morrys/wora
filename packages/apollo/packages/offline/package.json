@@ -1,0 +1,46 @@
+{
+  "name": "@wora/apollo-offline",
+  "version": "0.0.1",
+  "keywords": [
+    "wora",
+    "cache-persist",
+    "inmemory",
+    "apollo",
+    "detect-network",
+    "offline",
+    "offline-first",
+    "offline-capabilities"
+
+  ],
+  "main": "lib/index.js",
+  "license": "MIT",
+  "description": "@wora Apollo Offline Capabilities",
+  "author": {
+    "name": "morrys"
+  },
+  "homepage": "https://github.com/morrys/wora",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morrys/wora"
+  },
+  "scripts": {
+    "prepare": "tsc"
+  },
+  "dependencies": {
+    "uuid": "3.3.2"
+  },
+  "peerDependencies": {
+    "@wora/cache-persist": ">=1.0.0",
+    "@wora/offline-first": ">=0.0.1",
+    "apollo-client": ">=2.6.0",
+    "@wora/apollo-cache": ">=0.0.1"
+  },
+  "devDependencies": {
+    "@wora/apollo-cache": "^0.0.1",
+    "@wora/offline-first": "0.0.2",
+    "@wora/cache-persist": "^1.0.0",
+    "apollo-cache-inmemory": "^1.6.2",
+    "apollo-client": "^2.6.0",
+    "typescript": "3.5.2"
+  }
+}

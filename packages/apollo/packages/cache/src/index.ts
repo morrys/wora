@@ -9,7 +9,7 @@ class ApolloCache extends InMemoryCache implements PersistImpl {
 
     cache: Cache;
 
-    constructor(options?: InMemoryCacheConfig, persistOptions?:CacheOptions) {
+    constructor(options: InMemoryCacheConfig = {}, persistOptions:CacheOptions = {}) {
         super(options);
         const persistOptionsApollo = {
             prefix: 'apollo-cache',
