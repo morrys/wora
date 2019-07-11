@@ -17,7 +17,7 @@ CacheOptions {
 }
 
 
-storage: custom storage
+storage: custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.
 
 prefix: prefix keys
 
