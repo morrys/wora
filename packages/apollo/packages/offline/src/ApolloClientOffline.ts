@@ -1,19 +1,28 @@
-import { ApolloClient, ObservableQuery, OperationVariables } from "apollo-client";
+import { ApolloClient, ObservableQuery, OperationVariables, ApolloClientOptions } from "apollo-client";
 import { NetInfo } from '@wora/detect-network';
 import ApolloStoreOffline, { publish, OfflineOptions } from './ApolloStoreOffline';
 import { CacheOptions } from "@wora/cache-persist";
 import OfflineFirst from "@wora/offline-first";
+import ApolloStore from "@wora/apollo-cache";
+import { NormalizedCacheObject } from "apollo-cache-inmemory";
+
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+export type OfflineApolloClientOptions = Omit<ApolloClientOptions<NormalizedCacheObject>, "cache"> & {
+    cache: ApolloStore
+};
 
 
 
-class OfflineApolloClient<TCacheShape> extends ApolloClient<TCacheShape>  {
+
+class OfflineApolloClient extends ApolloClient<NormalizedCacheObject>  {
 
   _storeOffline: OfflineFirst<any>;
   _isRehydrated:boolean = false;
 
-  constructor(options, 
+  constructor(options: OfflineApolloClientOptions, 
+    offlineOptions:OfflineOptions = {},
     persistOptions:CacheOptions = {},
-    offlineOptions:OfflineOptions = {},) {
+    ) {
     super(options);
     (this.queryManager as any).isOnline = true;
     this._storeOffline = ApolloStoreOffline.create(this, persistOptions, offlineOptions);
@@ -34,11 +43,11 @@ class OfflineApolloClient<TCacheShape> extends ApolloClient<TCacheShape>  {
     }
   }
 
-  hydrated() {
+  public hydrated(): Promise<boolean> {
     if (this._isRehydrated) {
       return Promise.resolve(true);
     }
-    return Promise.all([this._storeOffline.restore(), (this.store as any).cache.hydrated()]).then(result => {
+    return Promise.all([this._storeOffline.restore(), (this.cache as ApolloStore).hydrated()]).then(result => {
       this._isRehydrated = true;
       return true;
     }).catch(error => {
@@ -47,19 +56,19 @@ class OfflineApolloClient<TCacheShape> extends ApolloClient<TCacheShape>  {
     })
   }
 
-  getStoreOffline() {
+  public getStoreOffline() {
     return this._storeOffline;
   }
 
-  isRehydrated() {
+  public isRehydrated() {
     return this._isRehydrated;
   }
 
-  isOnline() {
+  public isOnline() {
     return this._storeOffline.isOnline();
   }
 
-  watchQuery<T = any, TVariables = OperationVariables>(options): ObservableQuery<T, TVariables> {
+  public watchQuery<T = any, TVariables = OperationVariables>(options): ObservableQuery<T, TVariables> {
     const oldFetchPolicy = options.fetchPolicy;
     if (!this.isOnline()) {
       options.fetchPolicy = 'cache-only'
@@ -69,7 +78,7 @@ class OfflineApolloClient<TCacheShape> extends ApolloClient<TCacheShape>  {
     return result;
   }
 
-  mutate(
+  public mutate(
     options,
   ) {
     if (!this.isOnline()) {

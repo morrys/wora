@@ -36,6 +36,7 @@ function complete(offlineRecord) {
     
 const options: OfflineFirstOptions<Payload> = {
         execute: (offlineRecord: any) => execute(offlineRecord),
+        finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>> ) => void,
         onComplete: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => complete(options),
         onDiscard: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => discard(options),
             };
@@ -64,6 +65,7 @@ offlineFirst.publish({
 export type OfflineFirstOptions<T> = {
     manualExecution?: boolean;
     execute: (offlineRecord: OfflineRecordCache<T>) => Promise<any>,
+    finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>> ) => void,
     onComplete?: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => boolean;
     onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => boolean;
     compare?: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => number;
@@ -72,7 +74,9 @@ export type OfflineFirstOptions<T> = {
 ```
 * execute: this is the only mandatory parameter. In this function, communications with the server must be implemented.
 
-* manualExecution: if set to true, requests in the queue are no longer performed automatically as soon as you go back online. invoke manually: `offlineFirst.execute();`
+* finish: function that is called once the request queue has been processed.
+
+* manualExecution: if set to true, requests in the queue are no longer performed automatically as soon as you go back online. invoke manually: `offlineFirst.process();`
 
 * onComplete: function that is called once the request has been successfully completed. Only if the function returns the value true, the request is deleted from the queue.
 

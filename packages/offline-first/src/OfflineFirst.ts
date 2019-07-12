@@ -20,6 +20,7 @@ export type OfflineRecordCache<T> = {
 export type OfflineFirstOptions<T> = {
     manualExecution?: boolean;
     execute: (offlineRecord: OfflineRecordCache<T>) => Promise<any>,
+    finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>> ) => void,
     onComplete?: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => boolean;
     onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => boolean;
     compare?: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => number;
@@ -45,6 +46,7 @@ class OfflineFirst<T> {
         this._offlineStore = new Cache(persistOptionsStoreOffline);
         this._offlineOptions = {
             manualExecution: false,
+            finish: (success, mutations) => {  },
             onComplete: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => { return true },
             onDiscard: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => { return true },
             compare: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => v1.fetchTime - v2.fetchTime,
@@ -74,7 +76,7 @@ class OfflineFirst<T> {
         NetInfo.isConnected.addEventListener('connectionChange', isConnected => {
             this._isOnline = isConnected;
             if (isConnected && !this.isManualExecution()) {
-                this.execute();
+                this.process();
             }
         });
         ;
@@ -82,7 +84,7 @@ class OfflineFirst<T> {
             const isConnected = result[0];
             this._isOnline = isConnected;
             if (isConnected && !this.isManualExecution()) {
-                this.execute();
+                this.process();
             }
             this.notify();
             this._isRehydrated = true;
@@ -126,23 +128,31 @@ class OfflineFirst<T> {
     }
 
 
-    public async execute() {
+    public async process() {
 
         if (!this._busy) {
             this._busy = true;
+            const { finish } = this._offlineOptions
             const listMutation: ReadonlyArray<OfflineRecordCache<T>> = this.getListMutation();
+            let parallelPromises = [];
+            let isSuccess: boolean = true;
             for (const mutation of listMutation) {
                 if (!mutation.state) {
                     if (!mutation.serial) {
-                        this.executeMutation(mutation)
+                        parallelPromises.push(this.executeMutation(mutation))
                     } else {
-                        const isSuccess:boolean = await this.executeMutation(mutation).then(result => result).catch(error => false);
+                        isSuccess = await Promise.all(parallelPromises).then(() =>  this.executeMutation(mutation).then(result => result).catch(error => false)).catch (() => false);
+                        parallelPromises = [];
                         if (!isSuccess)
                             break;
                     }
                 }
 
             }
+            if(isSuccess && parallelPromises.length>0) {
+                isSuccess = await Promise.all(parallelPromises).then(() => true).catch(() => false)
+            }
+            await finish(isSuccess, this.getListMutation());
             // TODO verify the execution of all mutations to natively implement retry logics
             this._busy = false;
 

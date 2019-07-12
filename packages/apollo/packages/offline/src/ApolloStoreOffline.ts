@@ -2,11 +2,8 @@ import OfflineFirst from "@wora/offline-first";
 import { CacheOptions } from "@wora/cache-persist";
 import { v4 as uuid } from "uuid";
 import { execute, ApolloLink } from 'apollo-link';
-
 import { multiplex } from 'apollo-client/util/observables';
-
 import observableToPromise, { Options } from 'apollo-client/util/observableToPromise';
-
 import { getOperationName,} from 'apollo-utilities';
 import { MutationOptions } from "apollo-client/core/watchQueryOptions";
 import { OperationVariables } from "apollo-client/core/types";
@@ -64,14 +61,23 @@ function discard(client, onDiscard = (options => true), options) {
 }
 
 async function executeMutation(client, link:ApolloLink = client.link, offlineRecord) {
-    const { request: { payload }, id } = offlineRecord;
+    const { request: { payload: { mutation, variables, context } }, id } = offlineRecord;
     console.log("execute", id, client)
-    const operation = payload.operation;
+    const query = client.queryManager.transform(mutation).document;
+    const operation = {
+        query,
+        variables,
+        operationName: getOperationName(query) || void 0,
+        context: client.queryManager.prepareContext({
+            ...context,
+            forceFetch: true
+        }),
+    };
     const options: Options = { observable: (multiplex(execute(link, operation)) as any) };
     return observableToPromise(options, result => result);
 }
 
-export function publish<T = any, TVariables = OperationVariables>(client, mutationOptions: MutationOptions<T, TVariables>) {
+export function publish<T = any, TVariables = OperationVariables>(client, mutationOptions: MutationOptions) {
 
     const {
         context,
@@ -84,17 +90,9 @@ export function publish<T = any, TVariables = OperationVariables>(client, mutati
         ...otherOptions
     } = mutationOptions;
 
-    const query = client.queryManager.transform(mutation).document;
+    
 
-    const operation = {
-        query,
-        variables,
-        operationName: getOperationName(query) || void 0,
-        context: client.queryManager.prepareContext({
-            ...context,
-            forceFetch: true
-        }),
-    };
+    
 
     const result = { data: optimisticResponse };
     const id = uuid();
@@ -114,15 +112,14 @@ export function publish<T = any, TVariables = OperationVariables>(client, mutati
 
     const payload = {
         mutation,
-        operation,
         variables,
         context,
         optimisticResponse,
     };
     const request = {
         payload,
-        backup: { ...client.store.cache.data.getState() },
-        sink: {...client.store.cache.optimisticData.data}
+        backup: { ...client.cache.data.getState() },
+        sink: {...client.cache.optimisticData.data}
     };
 
 
