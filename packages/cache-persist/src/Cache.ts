@@ -17,7 +17,7 @@ export interface CacheStorage {
     getCacheName: () => string;
     purge: () => Promise<boolean>;
     restore: (deserialize: boolean) => Promise<DataCache>;
-    replace: (data: any) => Promise<void>;
+    replace: (data: any, serialize: boolean) => Promise<void>;
     setItem: (key: string, item: string | object) => Promise<void>;
     removeItem: (key: string) => Promise<void>;
 }
@@ -56,8 +56,9 @@ class Cache {
         
     }
 
-    public replace(newData): void {
+    public replace(newData): Promise<void> {
         this.data = newData ? Object.assign({}, newData) : Object.create(null);
+        return this.storage.purge().then(() => this.storage.replace(newData, this.serialize));
     }
 
     public getStorageName(): string {

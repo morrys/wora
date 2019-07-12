@@ -27,10 +27,11 @@ function NativeStorage(prefix: string): CacheStorage {
                     return result;
                 }));
         },
-        replace: (data: any): Promise<void> => {
+        replace: (data: any, serialize: boolean): Promise<void> => {
             const item = [];
             Object.keys(data).forEach(function (key) {
-                item.push([prefixKey+key, data[key]])
+                const value = data[key];
+                item.push([prefixKey+key, serialize ? JSON.stringify(value) : value])
             });
             return AsyncStorage.multiSet(item);
                 

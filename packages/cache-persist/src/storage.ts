@@ -70,10 +70,11 @@ function webStorage(prefix: string): CacheStorage {
                 resolve(data)
             })
         },
-        replace: (data: any): Promise<void> => {
+        replace: (data: any, serialize: boolean): Promise<void> => {
             return new Promise((resolve, reject) => {
                 Object.keys(data).forEach(function(key) {
-                    storage.setItem(prefixKey+key, data[key]);
+                    const value = data[key];
+                    storage.setItem(prefixKey+key, serialize ? JSON.stringify(value) : value);
                 });
                 resolve();
             });

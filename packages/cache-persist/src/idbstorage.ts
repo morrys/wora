@@ -53,10 +53,11 @@ function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, name: string, s
                 })
             );
         },
-        replace: (data: any): Promise<void> => {
+        replace: (data: any, serialize: boolean): Promise<void> => {
             return dbPromise.then(db =>
                 Object.keys(data).forEach(function (key) {
-                    db.put(storeName, data[key], key);
+                    const value = data[key];
+                    db.put(storeName, serialize ? JSON.stringify(value) : value, key);
                 }));
         },
         setItem: (key: string, item: object): Promise<void> => {
