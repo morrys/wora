@@ -7,7 +7,7 @@ interface PersistImpl {
 
 class ApolloCache extends InMemoryCache implements PersistImpl {
 
-    cache: Cache;
+    public cache: Cache;
 
     constructor(options: InMemoryCacheConfig = {}, persistOptions:CacheOptions = {}) {
         super(options);
@@ -19,7 +19,7 @@ class ApolloCache extends InMemoryCache implements PersistImpl {
         this.cache = new Cache(persistOptionsApollo);
     }
 
-    hydrated(): Promise<Cache> {
+    public hydrated(): Promise<Cache> {
         return Promise.all([this.cache.restore()]).then(result => {
             (this as any).data = result[0];
             (this as any).optimisticData = result[0];
