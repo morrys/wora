@@ -26,9 +26,8 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject>  {
     super(options);
     (this.queryManager as any).isOnline = true;
     this._storeOffline = ApolloStoreOffline.create(this, persistOptions, offlineOptions);
-    NetInfo.isConnected.addEventListener('connectionChange', isConnected => {
+    this._storeOffline.addNetInfoListener(isConnected => {
       (this.queryManager as any).isOnline = isConnected;
-
     });
 
     const originalFetchQuery = this.queryManager.fetchQuery;
