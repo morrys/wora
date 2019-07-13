@@ -1,7 +1,7 @@
 import { CacheStorage, CacheOptions } from "@wora/cache-persist";
 import IDBStorage from '@wora/cache-persist/lib/idbstorage';
 import ApolloClientOffline, { OfflineApolloClientOptions } from "./ApolloClientOffline";
-import { OfflineOptions } from "./ApolloStoreOffline";
+import { OfflineOptions, Payload } from "./ApolloStoreOffline";
 import { InMemoryCacheConfig } from "apollo-cache-inmemory";
 import ApolloCache from '@wora/apollo-cache'
 
@@ -13,7 +13,7 @@ class ApolloClientIDB {
 
     public static create(config: ApolloClientIDBOptions, 
         cacheOptions: InMemoryCacheConfig = {},
-        offlineOptions:OfflineOptions = {},
+        offlineOptions:OfflineOptions<Payload> = {},
         persistOptions:CacheOptions = {},): ApolloClientOffline {
 
         let idbStore: CacheOptions;  

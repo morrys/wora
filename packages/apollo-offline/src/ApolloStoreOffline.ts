@@ -1,4 +1,4 @@
-import OfflineFirst from "@wora/offline-first";
+import OfflineFirst, { OfflineFirstOptions } from "@wora/offline-first";
 import { CacheOptions } from "@wora/cache-persist";
 import { v4 as uuid } from "uuid";
 import { execute, ApolloLink } from 'apollo-link';
@@ -8,12 +8,17 @@ import { getOperationName,} from 'apollo-utilities';
 import { MutationOptions } from "apollo-client/core/watchQueryOptions";
 import { OperationVariables } from "apollo-client/core/types";
 
-export type OfflineOptions = {
-    manualExecution?: boolean;
-    link?: ApolloLink;
-    onComplete?: (options: { id: string, offlinePayload: any, response: any }) => boolean;
-    onDiscard?: (options: { id: string, offlinePayload: any, error: any }) => boolean;
+export type Payload = {
+    mutation: any,
+    variables?: any,
+    context?: any,
+    optimisticResponse?: any,
 }
+
+type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+export type OfflineOptions<T> = Omit<OfflineFirstOptions<T>, "execute"> & {
+    link?: ApolloLink;
+};
 
 
 class ApolloStoreOffline {
@@ -21,21 +26,33 @@ class ApolloStoreOffline {
 
     static create(client,
         persistOptions:CacheOptions = {},
-        offlineOptions:OfflineOptions = {}, ) {
+        offlineOptions:OfflineOptions<Payload> = {}, ) {
         const persistOptionsStoreOffline = {
             prefix: 'apollo-offline',
             serialize: true,
             ...persistOptions,
         };
 
-        const { onComplete, onDiscard, link, manualExecution } = offlineOptions;
+        const { 
+            onComplete, 
+            onDiscard, 
+            link, 
+            manualExecution, 
+            finish,
+            onPublish
+         } = offlineOptions;
 
-        const options = {
+        const options:OfflineFirstOptions<Payload> = {
             manualExecution,
             execute: (offlineRecord) => executeMutation(client, link, offlineRecord),
             onComplete: (options) => complete(client, onComplete, options),
             onDiscard: (options) => discard(client, onDiscard, options),
-            //onDispatch: (request: any) => undefined,
+        }
+        if(onPublish) {
+            options.onPublish = onPublish;
+        }
+        if(finish) {
+            options.finish = finish;
         }
         return new OfflineFirst(options, persistOptionsStoreOffline);
     }
@@ -62,7 +79,6 @@ function discard(client, onDiscard = (options => true), options) {
 
 async function executeMutation(client, link:ApolloLink = client.link, offlineRecord) {
     const { request: { payload: { mutation, variables, context } }, id } = offlineRecord;
-    console.log("execute", id, client)
     const query = client.queryManager.transform(mutation).document;
     const operation = {
         query,
@@ -90,9 +106,6 @@ export function publish<T = any, TVariables = OperationVariables>(client, mutati
         ...otherOptions
     } = mutationOptions;
 
-    
-
-    
 
     const result = { data: optimisticResponse };
     const id = uuid();
@@ -110,7 +123,7 @@ export function publish<T = any, TVariables = OperationVariables>(client, mutati
         client.queryManager.broadcastQueries();
     }
 
-    const payload = {
+    const payload: Payload = {
         mutation,
         variables,
         context,
@@ -123,12 +136,8 @@ export function publish<T = any, TVariables = OperationVariables>(client, mutati
     };
 
 
-
-
-
     return client.getStoreOffline().publish({ id, request, serial: true }).then(offlineRecord => {
         if (fetchPolicy !== 'no-cache') {
-            console.log('Running update function for mutation', { mutation, variables });
 
             client.store.markMutationResult({
                 mutationId: offlineRecord.id,

@@ -1,6 +1,6 @@
 {
   "name": "@wora/apollo-offline",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "wora",
     "cache-persist",
@@ -10,7 +10,6 @@
     "offline",
     "offline-first",
     "offline-capabilities"
-
   ],
   "main": "lib/index.js",
   "license": "MIT",
@@ -27,20 +26,18 @@
     "prepare": "tsc"
   },
   "dependencies": {
-    "uuid": "3.3.2"
+    "uuid": "3.3.2",
+    "@wora/offline-first": "^0.0.4",
+    "@wora/apollo-cache": "^0.0.2",
+    "apollo-cache-inmemory": "^1.6.2",
+    "@wora/cache-persist": "^1.0.1"
   },
   "peerDependencies": {
-    "@wora/cache-persist": ">=1.0.0",
-    "@wora/offline-first": ">=0.0.1",
-    "apollo-client": ">=2.6.0",
-    "@wora/apollo-cache": ">=0.0.1"
+    "apollo-client": ">=2.6.0"
   },
   "devDependencies": {
-    "@wora/apollo-cache": "^0.0.1",
-    "@wora/offline-first": "0.0.2",
-    "@wora/cache-persist": "^1.0.0",
-    "apollo-cache-inmemory": "^1.6.2",
     "apollo-client": "^2.6.0",
-    "typescript": "3.5.2"
+    "typescript": "3.5.2",
+    "graphql": "14.4.2"
   }
 }

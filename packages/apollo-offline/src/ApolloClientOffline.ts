@@ -1,6 +1,6 @@
 import { ApolloClient, ObservableQuery, OperationVariables, ApolloClientOptions } from "apollo-client";
 import { NetInfo } from '@wora/detect-network';
-import ApolloStoreOffline, { publish, OfflineOptions } from './ApolloStoreOffline';
+import ApolloStoreOffline, { publish, OfflineOptions, Payload } from './ApolloStoreOffline';
 import { CacheOptions } from "@wora/cache-persist";
 import OfflineFirst from "@wora/offline-first";
 import ApolloStore from "@wora/apollo-cache";
@@ -20,7 +20,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject>  {
   _isRehydrated:boolean = false;
 
   constructor(options: OfflineApolloClientOptions, 
-    offlineOptions:OfflineOptions = {},
+    offlineOptions:OfflineOptions<Payload> = {},
     persistOptions:CacheOptions = {},
     ) {
     super(options);

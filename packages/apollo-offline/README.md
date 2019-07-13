@@ -6,7 +6,7 @@
 Install @wora/apollo-offline using yarn or npm:
 
 ```
-yarn add @wora/apollo-offline
+yarn add apollo-client @wora/apollo-offline
 ```
 
 ## Installation React Web
@@ -14,7 +14,7 @@ yarn add @wora/apollo-offline
 Install @wora/apollo-offline using yarn or npm:
 
 ```
-yarn add @wora/apollo-offline
+yarn add apollo-client @wora/apollo-offline
 ```
 
 ## Installation React Native
@@ -60,6 +60,30 @@ You then need to link the native parts of the library for the platforms you are 
 
   * onDiscard callback of the failed mutation
 
+## Apollo Client
+
+```ts
+import { ApolloClient } from "@wora/apollo-offline";
+import { HttpLink } from "apollo-link-http";
+import ApolloCache from '@wora/apollo-cache';
+
+const httpLink = new HttpLink({
+  uri: "http://localhost:4000/graphql"
+});
+
+const client = new ApolloClient({
+  link: httpLink,
+  cache: new ApolloCache({
+    dataIdFromObject: o => o.id
+  })
+});
+
+
+// await before instantiating Query, else queries might run before the cache is persisted, TODO ApolloProviderOffline
+await client.hydrated(): Promise<boolean>
+
+```
+
 
 ## Apollo Client with Offline Options
 
@@ -76,20 +100,27 @@ const httpLinkOffline = new HttpLink({
   uri: "http://localhost:4000/graphql"
 });
 
-const networkOffline = Network.create(fetchQueryOffline);
 
-const offlineOptions = { 
+const offlineOptions = {
   manualExecution: false, //optional
   link: httpLinkOffline, //optional
+  finish: (isSuccess, mutations) => { //optional
+    console.log("finish offline", isSuccess, mutations)
+  },
   onComplete: (options ) => { //optional
-    const { id, offlinePayload, request } = options;
-    console.log("onComplete", options);
+    const { id, offlinePayload, response } = options;
     return true;
   },
   onDiscard: ( options ) => { //optional
     const { id, offlinePayload , error } = options;
-    console.log("onDiscard", options);
     return true;
+  },
+  onPublish: (offlinePayload) => { //optional
+    const rand = Math.floor(Math.random() * 4) + 1  
+    offlinePayload.serial = rand===1;
+    console.log("offlinePayload", offlinePayload.serial)
+    console.log("offlinePayload", offlinePayload)
+    return offlinePayload
   }
 };
 
@@ -105,15 +136,17 @@ const client = new ApolloClient({
 await client.hydrated(): Promise<boolean>
 
 ```
-* manualExecution: if set to true, mutations in the queue are no longer performed automatically as soon as you go back online. invoke manually: `environment.getStoreOffline().execute();`
+* manualExecution: if set to true, mutations in the queue are no longer performed automatically as soon as you go back online. invoke manually: `client.getStoreOffline().process();`
 
 * link: it is possible to configure a different link for the execution of mutations in the queue
 
-* onComplete: function that is called once the mutation has been successfully completed. Only if the function returns the value true, the mutation is deleted from the queue.
+* finish: function that is called once the request queue has been processed.
 
-* onDiscard: function that is called when the mutation returns an error. Only if the function returns the value true, the mutation is deleted from the queue and the store is rollback
+* onPublish: function that is called before saving the mutation in the store
 
+* onComplete: function that is called once the request has been successfully completed. Only if the function returns the value true, the request is deleted from the queue.
 
+* onDiscard: function that is called when the request returns an error. Only if the function returns the value true, the mutation is deleted from the queue
 
 
 ## IndexedDB
