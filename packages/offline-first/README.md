@@ -68,6 +68,7 @@ export type OfflineFirstOptions<T> = {
     finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>> ) => void,
     onComplete?: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => boolean;
     onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => boolean;
+    onPublish?: ( offlineRecord: OfflineRecordCache<T>) => OfflineRecordCache<T>,
     compare?: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => number;
 }
 
@@ -77,6 +78,8 @@ export type OfflineFirstOptions<T> = {
 * finish: function that is called once the request queue has been processed.
 
 * manualExecution: if set to true, requests in the queue are no longer performed automatically as soon as you go back online. invoke manually: `offlineFirst.process();`
+
+* onPublish: function that is called before saving the mutation in the store
 
 * onComplete: function that is called once the request has been successfully completed. Only if the function returns the value true, the request is deleted from the queue.
 

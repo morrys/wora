@@ -23,6 +23,7 @@ export type OfflineFirstOptions<T> = {
     finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>> ) => void,
     onComplete?: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => boolean;
     onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => boolean;
+    onPublish?: ( offlineRecord: OfflineRecordCache<T>) => OfflineRecordCache<T>,
     compare?: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => number;
     //onDispatch?: (request: any) => any;
 }
@@ -50,6 +51,7 @@ class OfflineFirst<T> {
             onComplete: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => { return true },
             onDiscard: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => { return true },
             compare: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => v1.fetchTime - v2.fetchTime,
+            onPublish: (offlineRecord) => offlineRecord,
             ...offlineOptions
             //onDispatch: (request: any) => undefined,
         }
@@ -205,11 +207,11 @@ class OfflineFirst<T> {
         request: Request<T>,
         serial?,
     }): Promise<OfflineRecordCache<T>> {
-
+        const { onPublish } = this._offlineOptions;
         const id = options.id ? options.id : "" + this._offlineStore.getAllKeys().length;
         const { request, serial } = options;
         const fetchTime = Date.now();
-        const offlineRecord: OfflineRecordCache<T> = { id, request, fetchTime, serial };
+        const offlineRecord: OfflineRecordCache<T> = onPublish({ id, request, fetchTime, serial });
         return this._offlineStore.set(id, offlineRecord).then(() => {
             return offlineRecord;
         }).catch(error => {
