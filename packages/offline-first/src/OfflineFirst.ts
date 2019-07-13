@@ -69,11 +69,18 @@ class OfflineFirst<T> {
         return manualExecution;
     }
 
+    public addNetInfoListener(callback: Function, onlyIsConnected: boolean = true, ) {
+        if(onlyIsConnected) {
+            return NetInfo.isConnected.addEventListener('connectionChange', isConnected => callback(isConnected))
+        }
+        return NetInfo.addEventListener(netinfo => callback(netinfo))
+    }
+
     public restore(): Promise<boolean> {
         if (this._isRehydrated) {
             return Promise.resolve(true);
         }
-        NetInfo.isConnected.addEventListener('connectionChange', isConnected => {
+        this.addNetInfoListener(isConnected => {
             this._isOnline = isConnected;
             if (isConnected && !this.isManualExecution()) {
                 this.process();

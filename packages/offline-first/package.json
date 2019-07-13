@@ -1,6 +1,6 @@
 {
   "name": "@wora/offline-first",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "keywords": [
     "cache",
     "wora",
@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@wora/detect-network": "1.0.0",
-    "@wora/cache-persist": "1.0.0"
+    "@wora/cache-persist": "1.0.1"
   },
   "devDependencies": {
     "typescript": "3.5.2"
