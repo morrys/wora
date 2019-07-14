@@ -42,7 +42,7 @@ You then need to link the native parts of the library for the platforms you are 
 
   * serialization: JSON or none
 
-* management and utilities for network detection with @wora/detect-network
+* management and utilities for network detection with @wora/netinfo
 
 * automatic use of the polity cache_first when the application is offline
 

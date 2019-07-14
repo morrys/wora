@@ -1,6 +1,6 @@
 {
   "name": "@wora/offline-first",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "keywords": [
     "cache",
     "wora",
@@ -32,9 +32,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@wora/detect-network": "file:../detect-network",
+    "@wora/netinfo": "file:../netinfo",
     "@wora/cache-persist": "file:../cache-persist"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

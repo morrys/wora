@@ -78,7 +78,7 @@ function discard(client: any, onDiscard = ((options: any) => true), options: any
 }
 
 async function executeMutation(client: any, link:ApolloLink = client.link, offlineRecord: OfflineRecordCache<Payload>) {
-    const { request: { payload: { mutation, variables, context } }, id } = offlineRecord;
+    const { request: { payload: { mutation, variables, context } } } = offlineRecord;
     const query = client.queryManager.transform(mutation).document;
     const operation = {
         query,
@@ -102,8 +102,7 @@ export function publish<T = any, TVariables = OperationVariables>(client: any, m
         fetchPolicy,
         variables,
         mutation,
-        updateQueries,
-        ...otherOptions
+        updateQueries
     } = mutationOptions;
 
 

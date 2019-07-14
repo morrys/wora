@@ -1549,25 +1549,25 @@
   integrity sha512-te5lMAWii1uEJ4FwLjzdlbw3+n0FZNOvFXHxQDKeT0dilh7HOzdMzV2TrJVUzq8ep7J4Na8OUYPRLSQkJHAlrg==
 
 "@wora/apollo-cache@file:packages/apollo-cache":
-  version "0.0.2"
+  version "0.0.3"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-apollo-cache-0.0.2-4cfdebd3-f220-4a6d-b3c3-c7151dc33be9-1563105505511/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-apollo-cache-0.0.3-96871a2a-2f39-41df-a6cf-62ec49684f00-1563126720505/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
-  version "1.0.1"
+  version "1.0.2"
   dependencies:
     idb "^4.0.0"
 
-"@wora/detect-network@file:packages/detect-network":
+"@wora/netinfo@file:packages/netinfo":
   version "1.0.0"
   dependencies:
     array-find-index "1.0.2"
 
 "@wora/offline-first@file:packages/offline-first":
-  version "0.0.4"
+  version "0.0.5"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.4-0a96f39d-644d-4be0-b611-62e74a15f992-1563105505512/node_modules/@wora/cache-persist"
-    "@wora/detect-network" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.4-0a96f39d-644d-4be0-b611-62e74a15f992-1563105505512/node_modules/@wora/detect-network"
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-acc59697-574f-4a66-abad-890fbb596ba8-1563126720489/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-acc59697-574f-4a66-abad-890fbb596ba8-1563126720489/node_modules/@wora/netinfo"
 
 "@wry/context@^0.4.0":
   version "0.4.4"

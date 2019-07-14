@@ -4,7 +4,8 @@
         "bootstrap": "lerna bootstrap",
         "postinstall": "lerna exec -- npm install --package-lock=false && lerna run prepare",
         "build": "lerna run build",
-        "clean-dep": "lerna run clean-dep"
+        "clean-dep": "lerna run clean-dep",
+        "deploy": "lerna publish from-package"
     },
     "workspaces": [
         "packages/*"

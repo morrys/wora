@@ -5,6 +5,7 @@
         { "path": "packages/apollo-cache" },
         { "path": "packages/cache-persist" },
         { "path": "packages/detect-network" },
-        { "path": "packages/offline-first" }
+        { "path": "packages/offline-first" },
+        { "path": "packages/netinfo" }
       ]
 }

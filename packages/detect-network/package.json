@@ -1,6 +1,6 @@
 {
   "name": "@wora/detect-network",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "keywords": [
     "wora",
     "react-native",
@@ -31,7 +31,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "array-find-index": "1.0.2"
+    "@wora/netinfo": "file:../netinfo"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

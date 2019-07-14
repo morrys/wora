@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
       "noEmitOnError": true,
-      "noImplicitAny": true,
+      "noImplicitAny": false,
       "noUnusedParameters": false,
       "noUnusedLocals": true,
       "skipLibCheck": true,

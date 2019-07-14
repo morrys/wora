@@ -1,4 +1,4 @@
-import NetInfo from "./NetInfo";
+import { NetInfo } from "@wora/netinfo";
 import useIsConnectedInternal from "./internal/useIsConnected"
 
 export function useIsConnected(): boolean {
