@@ -1,5 +1,4 @@
 import { ApolloClient, ObservableQuery, OperationVariables, ApolloClientOptions } from "apollo-client";
-import { NetInfo } from '@wora/detect-network';
 import ApolloStoreOffline, { publish, OfflineOptions, Payload } from './ApolloStoreOffline';
 import { CacheOptions } from "@wora/cache-persist";
 import OfflineFirst from "@wora/offline-first";
@@ -26,7 +25,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject>  {
     super(options);
     (this.queryManager as any).isOnline = true;
     this._storeOffline = ApolloStoreOffline.create(this, persistOptions, offlineOptions);
-    this._storeOffline.addNetInfoListener(isConnected => {
+    this._storeOffline.addNetInfoListener((isConnected: boolean) => {
       (this.queryManager as any).isOnline = isConnected;
     });
 
@@ -67,7 +66,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject>  {
     return this._storeOffline.isOnline();
   }
 
-  public watchQuery<T = any, TVariables = OperationVariables>(options): ObservableQuery<T, TVariables> {
+  public watchQuery<T = any, TVariables = OperationVariables>(options:any): ObservableQuery<T, TVariables> {
     const oldFetchPolicy = options.fetchPolicy;
     if (!this.isOnline()) {
       options.fetchPolicy = 'cache-only'
@@ -78,7 +77,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject>  {
   }
 
   public mutate(
-    options,
+    options: any,
   ) {
     if (!this.isOnline()) {
       return publish(this, options);

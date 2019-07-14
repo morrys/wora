@@ -17,27 +17,35 @@
   "author": {
     "name": "morrys"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/morrys/wora",
   "repository": {
     "type": "git",
     "url": "https://github.com/morrys/wora"
   },
   "scripts": {
-    "prepare": "tsc"
+    "clean": "rimraf lib/*",
+    "clean-dep": "rimraf node_modules/*",
+    "prepare": "npm run build",
+    "prebuild": "npm run clean",
+    "build": "tsc"
   },
   "dependencies": {
     "uuid": "3.3.2",
-    "@wora/offline-first": "^0.0.4",
-    "@wora/apollo-cache": "^0.0.2",
+    "@wora/offline-first": "file:../offline-first",
+    "@wora/apollo-cache": "file:../apollo-cache",
     "apollo-cache-inmemory": "^1.6.2",
-    "@wora/cache-persist": "^1.0.1"
+    "@wora/cache-persist": "file:../cache-persist"
   },
   "peerDependencies": {
-    "apollo-client": ">=2.6.0"
+    "apollo-client": ">=2.6.0",
+    "apollo-link": ">=1.0.0",
+    "graphql": "^0.11.3 || ^0.12.3 || ^0.13.0 || ^14.0.0"
   },
   "devDependencies": {
     "apollo-client": "^2.6.0",
-    "typescript": "3.5.2",
     "graphql": "14.4.2"
   }
 }

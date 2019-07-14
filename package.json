@@ -1,0 +1,21 @@
+{
+    "private": true,
+    "scripts": {
+        "bootstrap": "lerna bootstrap",
+        "postinstall": "lerna exec -- npm install --package-lock=false && lerna run prepare",
+        "build": "lerna run build",
+        "clean-dep": "lerna run clean-dep"
+    },
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {
+        "lerna": "^3.15.0",
+        "typescript": "3.5.2",
+        "@types/react": "16.8.14",
+        "@types/react-dom": "16.8.4",
+        "react-native": "0.59.8",
+        "react": "16.8.3",
+        "rimraf": "2.6.3"
+    }
+}
