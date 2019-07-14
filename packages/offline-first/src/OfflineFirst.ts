@@ -1,5 +1,5 @@
 import Cache, { CacheOptions } from "@wora/cache-persist";
-import { NetInfo } from "@wora/detect-network";
+import { NetInfo } from "@wora/netinfo";
 
 export type Request<T> = {
     payload: T,
@@ -73,16 +73,16 @@ class OfflineFirst<T> {
 
     public addNetInfoListener(callback: Function, onlyIsConnected: boolean = true, ) {
         if(onlyIsConnected) {
-            return NetInfo.isConnected.addEventListener('connectionChange', isConnected => callback(isConnected))
+            return NetInfo.isConnected.addEventListener('connectionChange', (isConnected: boolean) => callback(isConnected))
         }
-        return NetInfo.addEventListener(netinfo => callback(netinfo))
+        return NetInfo.addEventListener((netinfo:any) => callback(netinfo))
     }
 
     public restore(): Promise<boolean> {
         if (this._isRehydrated) {
             return Promise.resolve(true);
         }
-        this.addNetInfoListener(isConnected => {
+        this.addNetInfoListener((isConnected: boolean) => {
             this._isOnline = isConnected;
             if (isConnected && !this.isManualExecution()) {
                 this.process();
@@ -109,10 +109,10 @@ class OfflineFirst<T> {
     }
 
     public subscribe(
-        callback: (message, state) => void,
+        callback: (message:any, state:any) => void,
     ): () => void {
         const { compare } = this._offlineOptions;
-        const offlineCallback = (message, state) => {
+        const offlineCallback = (message:any, state:any) => {
             callback(message, Object.values<OfflineRecordCache<T>>(state).sort(compare));
         }
         return this._offlineStore.subscribe(offlineCallback);
@@ -205,7 +205,7 @@ class OfflineFirst<T> {
     async publish(options: {
         id?: string,
         request: Request<T>,
-        serial?,
+        serial?:boolean,
     }): Promise<OfflineRecordCache<T>> {
         const { onPublish } = this._offlineOptions;
         const id = options.id ? options.id : "" + this._offlineStore.getAllKeys().length;

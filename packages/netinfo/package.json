@@ -1,17 +1,17 @@
 {
-  "name": "@wora/cache-persist",
-  "version": "1.0.2",
+  "name": "@wora/netinfo",
+  "version": "1.0.0",
   "keywords": [
-    "cache",
+    "wora",
     "react-native",
-    "persist",
-    "AsyncStorage",
-    "inmemory",
-    "indexeddb"
+    "detect",
+    "network",
+    "react",
+    "hooks"
   ],
   "main": "lib/index.js",
   "license": "MIT",
-  "description": "@wora Cache Persist",
+  "description": "@wora NetInfo",
   "author": {
     "name": "morrys"
   },
@@ -31,7 +31,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "idb": "^4.0.0"
+    "array-find-index": "1.0.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@react-native-community/netinfo": "3.2.1"
+  }
 }

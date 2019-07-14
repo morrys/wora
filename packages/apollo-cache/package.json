@@ -1,6 +1,6 @@
 {
   "name": "@wora/apollo-cache",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "keywords": [
     "cache",
     "wora",
@@ -14,23 +14,30 @@
   "author": {
     "name": "morrys"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/morrys/wora",
   "repository": {
     "type": "git",
     "url": "https://github.com/morrys/wora"
   },
   "scripts": {
-    "prepare": "tsc"
+    "clean": "rimraf lib/*",
+    "clean-dep": "rimraf node_modules/*",
+    "prepare": "npm run build",
+    "prebuild": "npm run clean",
+    "build": "tsc"
   },
   "dependencies": {
+    "@wora/cache-persist": "file:../cache-persist"
   },
   "peerDependencies": {
-    "@wora/cache-persist": ">=1.0.0",
-    "apollo-cache-inmemory": ">=1.6.2"
+    "apollo-cache-inmemory": ">=1.6.2",
+    "graphql": "^0.11.3 || ^0.12.3 || ^0.13.0 || ^14.0.0"
   },
   "devDependencies": {
-    "@wora/cache-persist": "^1.0.0",
     "apollo-cache-inmemory": "^1.6.2",
-    "typescript": "3.5.2"
+    "graphql": "14.4.2"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@wora/offline-first",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "keywords": [
     "cache",
     "wora",
@@ -16,19 +16,24 @@
   "author": {
     "name": "morrys"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "homepage": "https://github.com/morrys/wora",
   "repository": {
     "type": "git",
     "url": "https://github.com/morrys/wora"
   },
   "scripts": {
-    "prepare": "tsc"
+    "clean": "rimraf lib/*",
+    "clean-dep": "rimraf node_modules/*",
+    "prepare": "npm run build",
+    "prebuild": "npm run clean",
+    "build": "tsc"
   },
   "dependencies": {
-    "@wora/detect-network": "1.0.0",
-    "@wora/cache-persist": "1.0.1"
+    "@wora/netinfo": "file:../netinfo",
+    "@wora/cache-persist": "file:../cache-persist"
   },
-  "devDependencies": {
-    "typescript": "3.5.2"
-  }
+  "devDependencies": {}
 }
