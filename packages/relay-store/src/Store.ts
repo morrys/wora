@@ -75,7 +75,7 @@ export default class Store extends RelayModernStore {
             retainTime: execute || !root ? Date.now() : root.retainTime,
             dispose: false,
             execute: execute,
-            ttl: execute && !root ? 0 : execute ? root.ttl : ttl, //execute && !root network_only, store_then_network execute, others
+            ttl: execute && root ? root.ttl : ttl,
         }
         this._cache.set(name, newRoot);
         return { dispose };
@@ -88,7 +88,7 @@ export default class Store extends RelayModernStore {
         const references = new Set();
         this._cache.getAllKeys().forEach(index => {
             const selRoot = this._cache.get(index);
-            const expired: boolean = !this.isCurrent(selRoot.retainTime, selRoot._ttl);
+            const expired: boolean = !this.isCurrent(selRoot.retainTime, selRoot.ttl);
             if (!selRoot.dispose || !expired) {
                 RelayReferenceMarker.mark(
                     (this as any)._recordSource,
