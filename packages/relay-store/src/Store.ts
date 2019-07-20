@@ -7,7 +7,6 @@ import {
 } from 'relay-runtime/lib/RelayStoreTypes';
 
 import * as RelayReferenceMarker from 'relay-runtime/lib/RelayReferenceMarker';
-import * as resolveImmediate from 'fbjs/lib/resolveImmediate';
 
 import Cache, { CacheOptions } from "@wora/cache-persist";
 import RecordSource from './RecordSource';
@@ -20,8 +19,8 @@ export default class Store extends RelayModernStore {
     constructor(
         persistOptions: CacheOptions = {},
         persistOptionsRecords: CacheOptions = {},
-        gcScheduler: Scheduler = resolveImmediate,
-        operationLoader: OperationLoader = null,
+        gcScheduler?: Scheduler,
+        operationLoader?: OperationLoader,
     ) {
         const persistOptionsStore = {
             prefix: 'relay-store',
