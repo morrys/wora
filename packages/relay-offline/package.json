@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "keywords": [
     "wora",
     "cache-persist",
