@@ -1,0 +1,18 @@
+{
+    "extends": "../../config/tsconfig.base.json",
+    "compilerOptions": {
+        "outDir": "lib",
+        "rootDir": "src",
+        "lib": [
+            "dom",
+            "es6",
+            "esnext.asynciterable",
+            "es2017.object"
+        ]
+    },
+    "exclude": [
+        "lib",
+        "__tests__",
+        "examples"
+    ]
+}
