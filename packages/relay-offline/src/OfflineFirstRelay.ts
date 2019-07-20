@@ -3,15 +3,15 @@ import { v4 as uuid } from "uuid";
 import {  Network, } from 'relay-runtime/lib/RelayStoreTypes';
 import RelayModernEnvironment from './RelayModernEnvironment';
 import { ROOT_TYPE } from 'relay-runtime/lib/RelayStoreUtils';
-import * as RelayInMemoryRecordSource from 'relay-runtime/lib/RelayInMemoryRecordSource';
-import * as RelayModernRecord from 'relay-runtime/lib/RelayModernRecord';
-import * as RelayResponseNormalizer from 'relay-runtime/lib/RelayResponseNormalizer';
+import RelayInMemoryRecordSource from 'relay-runtime/lib/RelayInMemoryRecordSource';
+import RelayModernRecord from 'relay-runtime/lib/RelayModernRecord';
+import RelayResponseNormalizer from 'relay-runtime/lib/RelayResponseNormalizer';
 import { GetDataID } from 'relay-runtime/lib/RelayResponseNormalizer';
-import * as ErrorUtils from 'fbjs/lib/ErrorUtils';
-import * as RelayRecordSourceMutator from 'relay-runtime/lib/RelayRecordSourceMutator';
-import * as RelayRecordSourceProxy from 'relay-runtime/lib/RelayRecordSourceProxy';
-import * as RelayReader from 'relay-runtime/lib/RelayReader';
-import * as normalizeRelayPayload from 'relay-runtime/lib/normalizeRelayPayload';
+import ErrorUtils from 'fbjs/lib/ErrorUtils';
+import RelayRecordSourceMutator from 'relay-runtime/lib/RelayRecordSourceMutator';
+import RelayRecordSourceProxy from 'relay-runtime/lib/RelayRecordSourceProxy';
+import RelayReader from 'relay-runtime/lib/RelayReader';
+import normalizeRelayPayload from 'relay-runtime/lib/normalizeRelayPayload';
 import { GraphQLResponseWithData } from 'relay-runtime/lib/RelayNetworkTypes';
 import {
     NormalizationSelector,
