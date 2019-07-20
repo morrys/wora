@@ -15,8 +15,10 @@ export default class Store extends RelayModernStore {
 
     _cache: Cache;
     checkGC: () => boolean;
+    _defaultTTL: number;
 
     constructor(
+        defaultTTL: number = 10 * 60 * 1000,
         persistOptions: CacheOptions = {},
         persistOptionsRecords: CacheOptions = {},
         gcScheduler?: Scheduler,
@@ -40,6 +42,8 @@ export default class Store extends RelayModernStore {
 
         this.checkGC = () => true;
 
+        this._defaultTTL = defaultTTL;
+
         this._cache = new Cache(persistOptionsStore);
     }
 
@@ -56,7 +60,7 @@ export default class Store extends RelayModernStore {
     }
 
     public retain(selector: NormalizationSelector, retainConfig: any = {}): Disposable {
-        const { ttl = 10 * 60 * 1000, execute = true } = retainConfig;
+        const { ttl = this._defaultTTL, execute = true } = retainConfig;
         const name = selector.node.name + "." + JSON.stringify(selector.variables);
         const dispose = () => {
             const root = this._cache.get(name);
@@ -75,7 +79,7 @@ export default class Store extends RelayModernStore {
             retainTime: execute || !root ? Date.now() : root.retainTime,
             dispose: false,
             execute: execute,
-            ttl: execute && root ? root.ttl : ttl,
+            ttl: !execute || !root  ? ttl : root.ttl
         }
         this._cache.set(name, newRoot);
         return { dispose };

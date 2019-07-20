@@ -17,9 +17,10 @@ yarn add @wora/relay-store
 import { Store } from '@wora/relay-store';
 import { CacheOptions } from "@wora/cache-persist";
 
+const defaultTTL: number = 10 * 60 * 1000, // optional, default
 const persistOptions: CacheOptions = {}; // optional, default
 const persistOptionsRecords: CacheOptions = {}; // optional, default
-const store = new Store(persistOptions, persistOptionsRecords);
+const store = new Store(defaultTTL, persistOptions, persistOptionsRecords);
 
 
 // ...
