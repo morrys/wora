@@ -76,7 +76,7 @@ export default class Store extends RelayModernStore {
             retainTime: execute || !root ? Date.now() : root.retainTime,
             dispose: false,
             execute: execute,
-            ttl
+            ttl: execute && !root ? 0 : execute ? root.ttl : ttl, //execute && !root network_only, store_then_network execute, others
         }
         this._cache.set(name, newRoot);
         return { dispose };
