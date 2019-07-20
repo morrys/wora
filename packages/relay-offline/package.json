@@ -1,0 +1,48 @@
+{
+  "name": "@wora/relay-offline",
+  "version": "0.0.8",
+  "keywords": [
+    "wora",
+    "cache-persist",
+    "inmemory",
+    "relay",
+    "detect-network",
+    "offline",
+    "offline-first",
+    "offline-capabilities"
+  ],
+  "main": "lib/index.js",
+  "license": "MIT",
+  "description": "@wora Relay Offline Capabilities",
+  "author": {
+    "name": "morrys"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/morrys/wora",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morrys/wora"
+  },
+  "scripts": {
+    "clean": "rimraf lib/*",
+    "clean-dep": "rimraf node_modules/*",
+    "prepare": "npm run build",
+    "prebuild": "npm run clean",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@wora/cache-persist": "^1.0.2",
+    "@wora/offline-first": "^0.0.5",
+    "@wora/relay-store": "^0.0.6",
+    "uuid": "3.3.2"
+  },
+  "peerDependencies": {
+    "relay-runtime": ">=3.0.0"
+  },
+  "devDependencies": {
+    "relay-runtime": "^4.0.0"
+  },
+  "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"
+}

@@ -6,6 +6,8 @@
         { "path": "packages/cache-persist" },
         { "path": "packages/detect-network" },
         { "path": "packages/offline-first" },
-        { "path": "packages/netinfo" }
+        { "path": "packages/netinfo" },
+        { "path": "packages/relay-store" },
+        { "path": "packages/relay-offline" },
       ]
 }
