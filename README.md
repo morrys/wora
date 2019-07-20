@@ -25,6 +25,14 @@
 
 * integration of the offline engine within the client logic and not at the network level. with much possibility of configuration and extension (@wora/offline-first)
 
+## [@wora/relay-store](https://github.com/morrys/wora/tree/master/packages/relay-store)
+
+* persist relay store and relay record source, ttl.
+
+## [@wora/relay-offline](https://github.com/morrys/wora/tree/master/packages/relay-offline)
+
+* integration of the offline engine within the client logic and not at the network level. with much possibility of configuration and extension (@wora/offline-first)
+
 ## Community challenge
 
 The idea that led me to create this repository is to collect all the great work done by the community on github for react and react-native in order to create components and utilities that can be rendered anywhere.
