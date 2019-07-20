@@ -69,8 +69,8 @@ class RelayModernEnvironment extends Environment {
     return this._storeOffline;
   }
 
-  public retain(selector: NormalizationSelector, execute: boolean = true): Disposable {
-    return (this as any)._store.retain(selector, execute);
+  public retain(selector: NormalizationSelector, configRetain): Disposable {
+    return (this as any)._store.retain(selector, configRetain);
   }
 
   public executeMutationOffline({
