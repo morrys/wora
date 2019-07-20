@@ -1,4 +1,4 @@
-import { RelayModernStore } from 'relay-runtime';
+import { Store as RelayModernStore } from 'relay-runtime';
 import {
     Scheduler,
     NormalizationSelector,
