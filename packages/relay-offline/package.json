@@ -33,15 +33,16 @@
     "build": "tsc"
   },
   "dependencies": {
-    "uuid": "3.3.2",
-    "@wora/offline-first": "file:../offline-first",
-    "@wora/relay-store": "file:../relay-store",
-    "@wora/cache-persist": "file:../cache-persist"
+    "@wora/cache-persist": "^1.0.2",
+    "@wora/offline-first": "^0.0.5",
+    "@wora/relay-store": "^0.0.6",
+    "uuid": "3.3.2"
   },
   "peerDependencies": {
     "relay-runtime": ">=3.0.0"
   },
   "devDependencies": {
     "relay-runtime": "^4.0.0"
-  }
+  },
+  "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"
 }
