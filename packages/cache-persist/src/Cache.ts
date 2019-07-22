@@ -1,11 +1,11 @@
 import createStorage from "./storage";
+import { Layer, StorageHelperOptions } from './StorageHelper';
 
-export interface CacheOptions {
-        storage?: CacheStorage, 
-        prefix?: string, 
-        version?: number,
-        serialize?: boolean,
-        encryption?: boolean //TODO
+export type CacheOptions = {
+    serialize?: boolean,
+    prefix?: string,
+    layers?: Array<Layer<any>>
+    storage?: CacheStorage, 
 }
 
 export type DataCache = {
@@ -14,10 +14,11 @@ export type DataCache = {
 
 export interface CacheStorage {
     getStorage: () => any;
-    getCacheName: () => string;
+    getName: () => string;
+    getOptions: () => StorageHelperOptions;
     purge: () => Promise<boolean>;
-    restore: (deserialize: boolean) => Promise<DataCache>;
-    replace: (data: any, serialize: boolean) => Promise<void>;
+    restore: () => Promise<DataCache>;
+    replace: (data: any) => Promise<void>;
     setItem: (key: string, item: string | object) => Promise<void>;
     removeItem: (key: string) => Promise<void>;
 }
@@ -29,25 +30,19 @@ export type Subscription = {
 class Cache {
     private data: DataCache = {};
     private rehydrated: boolean = false;
-    private serialize: boolean = true;
     private storage: CacheStorage;
     private _subscriptions: Set<Subscription> = new Set();
 
-    constructor(options : CacheOptions = {}) { //TODO custom storage
-        options = {
-            prefix: 'cache',
-            serialize: true,
-            ...options,
-        }
-        this.serialize = options.serialize;
-        this.storage = options.storage || createStorage(options.prefix);
+    constructor(options: CacheOptions = {}) { //TODO custom storage
+        const { storage, ...storageOptions} = options;
+        this.storage = storage || createStorage(storageOptions);
     }
 
     public isRehydrated(): boolean { return this.rehydrated}
 
     public restore(): Promise<Cache> {
         return new Promise((resolve, reject) => {
-            this.storage.restore(this.serialize).then(result => {
+            this.storage.restore().then(result => {
                 this.data = result;
                 this.rehydrated = true;
                 resolve(this)
@@ -58,11 +53,11 @@ class Cache {
 
     public replace(newData): Promise<void> {
         this.data = newData ? Object.assign({}, newData) : Object.create(null);
-        return this.storage.purge().then(() => this.storage.replace(newData, this.serialize));
+        return this.storage.purge().then(() => this.storage.replace(newData));
     }
 
     public getStorageName(): string {
-        return this.storage.getCacheName()
+        return this.storage.getName()
     }
 
     public purge(): Promise<boolean> {
@@ -87,10 +82,8 @@ class Cache {
     }
 
     public set(key: string, value: any): Promise<any> {
-        //if (!key) return handleError('set', 'a key');
-
         this.data[key] = value;
-        return this.storage.setItem(key, this.serialize ? JSON.stringify(value) : value);
+        return this.storage.setItem(key, value);
     }
 
     public delete(key: string): Promise<any> {

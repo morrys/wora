@@ -1,4 +1,4 @@
-import { Layer } from './LayerHandler';
+import { Layer } from '../StorageHelper';
 
 const jsonSerialize: Layer<any> = {
     set: (key: string, value: any) => { return { key, value: JSON.stringify(value)} },

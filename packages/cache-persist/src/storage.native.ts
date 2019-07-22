@@ -1,46 +1,52 @@
 import { AsyncStorage } from 'react-native';
 import { DataCache, CacheStorage } from './Cache';
+import StorageHelper, { StorageHelperOptions } from './StorageHelper';
 
 
-function NativeStorage(prefix: string): CacheStorage {
-    const prefixKey = prefix + ".";
+function NativeStorage(options: StorageHelperOptions): CacheStorage {
+    const storageHelper = new StorageHelper(options);
     return {
         getStorage: ():any => AsyncStorage,
-        getCacheName: ():string => "AS-" + prefix,
+        getName: ():string => "AS-" + storageHelper.getPrefix(),
+        getOptions: (): StorageHelperOptions => options,
         purge: () => {
             return AsyncStorage.getAllKeys().then((keys: Array<string>) => 
-                AsyncStorage.multiRemove(keys.filter((key => key.startsWith(prefixKey))))
+                AsyncStorage.multiRemove(keys.filter((key => storageHelper.filter(key))))
                 .then(() => true)
                 .catch(() => false)
             );
         },
-        restore: (deserialize: boolean): Promise<DataCache> => {
+        restore: (): Promise<DataCache> => {
             return AsyncStorage.getAllKeys().then((keys: Array<string>) =>
-                AsyncStorage.multiGet(keys.filter((key => key.startsWith(prefixKey)))).then((data: Array<Array<string>>): DataCache => {
+                AsyncStorage.multiGet(keys.filter((key => storageHelper.filter(key)))).then((data: Array<Array<string>>): DataCache => {
                     const result: DataCache = {};
                     for (var i = 0; i < data.length; i++) {
-                        const item = data[i];
-                        const key = item[0];
-                        const value = deserialize ? JSON.parse(item[1]) : item[1];
-                        result[key.slice(prefixKey.length)] = value;
+                        const itemStorage = data[i];
+                        const key = itemStorage[0];
+                        const value = itemStorage[1];
+                        const item = storageHelper.get(key, value)
+                        result[item.key] = item.value;
                     }
                     return result;
                 }));
         },
-        replace: (data: any, serialize: boolean): Promise<void> => {
-            const item = [];
+        replace: (data: any): Promise<void> => {
+            const items = [];
             Object.keys(data).forEach(function (key) {
                 const value = data[key];
-                item.push([prefixKey+key, serialize ? JSON.stringify(value) : value])
+                const item = storageHelper.set(key, value)
+                items.push([item.key, item.value])
             });
-            return AsyncStorage.multiSet(item);
+            return AsyncStorage.multiSet(items);
                 
         },
-        setItem: (key: string, item: string): Promise<void> => {
-            return AsyncStorage.setItem(prefixKey+key, item);
+        setItem: (key: string, value: string): Promise<void> => {
+            const item = storageHelper.set(key, value)
+            return AsyncStorage.setItem(item.key, item.value);
         },
         removeItem: (key: string): Promise<void> => {
-            return AsyncStorage.removeItem(prefixKey+key);
+            const keyToRemove = storageHelper.remove(key)
+            return AsyncStorage.removeItem(keyToRemove);
         },
     }
 }

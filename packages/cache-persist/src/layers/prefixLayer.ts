@@ -1,4 +1,4 @@
-import { Layer } from './LayerHandler';
+import { Layer } from '../StorageHelper';
 
 function prefixLayer(prefix: string): Layer<any> {
     return {

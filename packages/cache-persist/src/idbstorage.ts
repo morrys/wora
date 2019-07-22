@@ -1,20 +1,19 @@
 import { openDB, IDBPDatabase } from 'idb';
 import { DataCache, CacheStorage } from './Cache';
+import StorageHelper, { StorageHelperOptions } from './StorageHelper';
 
 class IDBStorage {
 
-    static create(name?: string, storeNames?: string[]): CacheStorage[] {
+    static create(options: { name?: string, storeNames?: string[], version?: number, storageOptions: StorageHelperOptions}): CacheStorage[] {
 
-        const options = {
-            /** Database name */
-            name: name || 'cache',
-            /** Store name */
-            storeNames: ['persist'],
-            /** Database version */
-            version: 1,
-        }
+        const {
+            name = 'cache',
+            storeNames = ['persist'],
+            version = 1,
+            storageOptions = {},
+        } = options;
 
-        const dbPromise = openDB<any>(options.name, options.version, {
+        const dbPromise = openDB<any>(name, version, {
             upgrade(dbPromise) {
                 storeNames.forEach(storeName => {
                     dbPromise.createObjectStore(storeName);
@@ -24,7 +23,7 @@ class IDBStorage {
         })
 
         const listItems = storeNames.map((value) => (
-            createIdbStorage(dbPromise, options.name, value)
+            createIdbStorage(dbPromise, name, value, storageOptions)
         ));
 
         return listItems;
@@ -32,41 +31,50 @@ class IDBStorage {
 
 }
 
-function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, name: string, storeName: string): CacheStorage {
+function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, name: string, storeName: string, storageOptions: StorageHelperOptions): CacheStorage {
+    const storageHelper = new StorageHelper(storageOptions);
     return {
         getStorage: (): any => dbPromise,
-        getCacheName: (): string => "IDB-" + name + "-" + storeName,
+        getName: (): string => "IDB-" + name + "-" + storeName,
+        getOptions: (): StorageHelperOptions => storageOptions,
         purge: () => {
             return dbPromise.then(db => {
                 return db.clear(storeName).then(() => true).catch(() => false);
             });
         },
-        restore: (deserialize: boolean): Promise<DataCache> => {
+        restore: (): Promise<DataCache> => {
             return dbPromise.then(db =>
                 db.getAllKeys(storeName).then(async keys => {
                     const result: DataCache = new Map();
                     for (var i = 0; i < keys.length; i++) {
-                        const value = await db.get(storeName, keys[i]);
-                        result["" + keys[i]] = deserialize ? JSON.parse(value) : value;
+                        const key = keys[i];
+                        const value = await db.get(storeName, key);
+                        const item = storageHelper.get(key, value)
+                        result["" + item.key] = item.value;
                     }
                     return result;
                 })
             );
         },
-        replace: (data: any, serialize: boolean): Promise<void> => {
+        replace: (data: any): Promise<void> => {
             return dbPromise.then(db =>
                 Object.keys(data).forEach(function (key) {
                     const value = data[key];
-                    db.put(storeName, serialize ? JSON.stringify(value) : value, key);
+                    const item = storageHelper.set(key, value)
+                    db.put(storeName, item.value, item.key);
                 }));
         },
-        setItem: (key: string, item: object): Promise<void> => {
-            return dbPromise.then(db =>
-                db.put(storeName, item, key))
+        setItem: (key: string, value: object): Promise<void> => {
+            return dbPromise.then(db => {
+                const item = storageHelper.set(key, value)
+                return db.put(storeName, item.value, item.key)
+            })
         },
         removeItem: (key: string): Promise<void> => {
-            return dbPromise.then(db =>
-                db.delete(storeName, key))
+            return dbPromise.then(db => {
+                const keyToRemove = storageHelper.remove(key)
+                db.delete(storeName, keyToRemove)
+            })
         },
     }
 }

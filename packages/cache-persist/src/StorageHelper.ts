@@ -1,10 +1,9 @@
-import { CacheStorage } from "../Cache";
-import jsonSerialize from './jsonSerialize';
-import prefixLayer from './prefixLayer';
+import jsonSerialize from './layers/jsonSerialize';
+import prefixLayer from './layers/prefixLayer';
 
 
 
-type AbsStorageOptions = {
+export type StorageHelperOptions = {
     serialize?: boolean,
     prefix?: string,
     layers?: Array<Layer<any>>
@@ -19,27 +18,44 @@ export interface Layer<T> {
 
 
 
-class LayerHandler {
+class StorageHelper {
+    
 
     serialize: boolean;
     prefix: string;
     layers: Array<Layer<any>> = [];
 
 
-    constructor(options: AbsStorageOptions = {}) {
+    constructor(options: StorageHelperOptions = {}) {
         const { prefix = 'cache', serialize = true, layers = [] } = options;
         this.serialize = serialize;
         this.prefix = prefix;
         this.layers = prefix ? this.layers.concat(prefixLayer(prefix)) : this.layers
         this.layers = this.layers.concat(layers);
         this.layers = serialize ? this.layers.concat(jsonSerialize) : this.layers;
-
     }
 
+    public getPrefix():string {
+        return this.prefix;
+    }
+
+    public filter(key: string) {
+        return true;
+    }
+
+    set(key: string, value: any) {
+        return { key, value }
+    }
+    get(key: string, value: any) {
+        return { key, value }
+    }
+    remove(key: string): any {
+        return key;
+    }
 
 
 
 }
 
 
-export default LayerHandler;
+export default StorageHelper;
