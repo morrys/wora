@@ -1,4 +1,4 @@
-import { Layer } from '../StorageProxy';
+import { Layer } from '../CacheTypes';
 
 function filterKeys(filter: (key: string) => boolean ): Layer<any> {
     return {

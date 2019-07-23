@@ -1,6 +1,5 @@
 import { AsyncStorage } from 'react-native';
-import { DataCache, Storage } from './Cache';
-import { ItemCache } from './StorageProxy';
+import { Storage, ItemCache, DataCache } from './CacheTypes';
 
 
 function NativeStorage(): Storage {

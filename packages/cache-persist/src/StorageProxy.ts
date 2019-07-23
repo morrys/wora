@@ -1,26 +1,7 @@
 import jsonSerialize from './layers/jsonSerialize';
 import prefixLayer from './layers/prefixLayer';
-import { CacheStorage, DataCache, Storage } from './Cache';
+import { CacheStorage, DataCache, Storage, Layer, StorageHelperOptions, ItemCache } from './CacheTypes';
 
-
-
-export type StorageHelperOptions = {
-    serialize?: boolean,
-    prefix?: string,
-    layers?: Array<Layer<any>>
-}
-
-export type ItemCache<T> = {
-    key: string,
-    value: T
-}
-
-export interface Layer<T> {
-    set: (key: string, value: T) => ItemCache<T>
-    get: (key: string, value: T) => ItemCache<T>
-    remove?: (key: string) => string
-    check?: (key: string) => boolean
-}
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
     return new Promise((resolve, reject) => {

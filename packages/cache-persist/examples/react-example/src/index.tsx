@@ -6,7 +6,7 @@ import IDBStorage from '@wora/cache-persist/lib/idbstorage';
 import Cache, { CacheStorage }  from '@wora/cache-persist';
 import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
 import { createGlobalStyle } from 'styled-components';
-import { Layer } from '@wora/cache-persist/lib/StorageProxy';
+import { Layer } from '@wora/cache-persist';
 
 const GlobalStyle = createGlobalStyle`
 body {
@@ -54,12 +54,14 @@ console.log(idbStorages[0]);
 console.log(idbStorages);
 
 const CacheLocalIDB = new Cache({
+    layers: [filterNoPersistReplace],
     serialize: false,
     storage: idbStorages[0],
 });
 
 
 const CacheLocalIDB2 = new Cache({
+    layers: [filterPersistReplace],
     serialize: false,
     storage: idbStorages[1],
 });

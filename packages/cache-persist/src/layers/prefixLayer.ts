@@ -1,4 +1,4 @@
-import { Layer } from '../StorageProxy';
+import { Layer } from '../CacheTypes';
 import { PREFIX_DELIMITER } from '../Cache';
 
 function prefixLayer(prefix: string): Layer<any> {

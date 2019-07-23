@@ -1,5 +1,5 @@
-import { DataCache, Storage } from "./Cache";
-import { ItemCache, promiseVoid, promiseResult } from './StorageProxy';
+import { Storage, ItemCache, DataCache } from './CacheTypes';
+import { promiseVoid, promiseResult } from './StorageProxy';
 import noStorage from './nostorage';
 
 function hasStorage(storageType) {

@@ -1,5 +1,5 @@
-import { Storage } from './Cache';
-import { promiseVoid, promiseResult, ItemCache } from './StorageProxy';
+import { Storage, ItemCache } from './CacheTypes';
+import { promiseVoid, promiseResult } from './StorageProxy';
 function noStorage(): Storage {
     return {
         multiRemove: (keys: Array<string>) => promiseVoid(() => {} ),

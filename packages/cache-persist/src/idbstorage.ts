@@ -1,6 +1,5 @@
 import { openDB, IDBPDatabase } from 'idb';
-import { DataCache, Storage } from './Cache';
-import { ItemCache } from './StorageProxy';
+import { DataCache, Storage, ItemCache } from './CacheTypes';
 
 class IDBStorage {
 
