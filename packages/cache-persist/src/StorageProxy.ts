@@ -1,6 +1,6 @@
 import jsonSerialize from './layers/jsonSerialize';
 import prefixLayer from './layers/prefixLayer';
-import { CacheStorage, DataCache } from './Cache';
+import { CacheStorage, DataCache, Storage } from './Cache';
 
 
 
@@ -10,25 +10,42 @@ export type StorageHelperOptions = {
     layers?: Array<Layer<any>>
 }
 
+export type ItemCache<T> = {
+    key: string, 
+    value: T
+}
+
 export interface Layer<T> {
-    set: (key: string, value: T) => { key: string, value: T }
-    get: (key: string, value: T) => { key: string, value: T }
+    set: (key: string, value: T) => ItemCache<T>
+    get: (key: string, value: T) => ItemCache<T>
     remove?: (key: string) => string
     filter?: (key: string) => boolean
 }
 
+export function promiseResult<T>(execute: () => T): Promise<T> {
+    return new Promise((resolve, reject) => {
+        resolve(execute())
+    });
+}
+
+export function promiseVoid(execute: () => void): Promise<void> {
+    return new Promise((resolve, reject) => {
+        execute()
+        resolve()
+    });
+}
 
 
 class StorageHelper implements CacheStorage {
 
-    storage: any;
+    storage: Storage;
     serialize: boolean;
     prefix: string;
     layers: Array<Layer<any>> = [];
-    filters: Array<any>;
-    gets: Array<any>;
-    sets: Array<any>;
-    removes: Array<any>;
+    filters: Array<Layer<any>>;
+    gets: Array<Layer<any>>;
+    sets: Array<Layer<any>>;
+    removes: Array<Layer<any>>;
 
 
     constructor(storage: any, options: StorageHelperOptions = {}) {
@@ -42,7 +59,7 @@ class StorageHelper implements CacheStorage {
         this.init();
     }
 
-    purge() {
+    purge(): Promise<boolean> {
         return this.storage.getAllKeys().then((keys: Array<string>) =>
             this.storage.multiRemove(this.filter(keys))
                 .then(() => true)
@@ -51,42 +68,37 @@ class StorageHelper implements CacheStorage {
     }
     restore(): Promise<DataCache> {
         return this.storage.getAllKeys().then((keys: Array<string>) =>
-            this.storage.multiGet(this.filter(keys)).then((data: Array<Array<string>>): DataCache => {
+            this.storage.multiGet(this.filter(keys))).then(data => {
                 const result: DataCache = {};
-                for (var i = 0; i < data.length; i++) {
-                    const itemStorage = data[i];
-                    const key = itemStorage[0];
-                    const value = itemStorage[1];
+                Object.entries(data).forEach(([key, value]) => {
                     const item = this.get(key, value)
-                    result[item.key] = item.value;
-                }
+                    result[item.key] = item.value;    
+                });
                 return result;
-            }));
+            });
     }
     replace(data: any): Promise<void> {
-        const items = [];
-        return this.purge().then(() => {
-            Object.keys(data).forEach(function (key) {
-                const value = data[key];
-                const item = this.set(key, value)
-                items.push([item.key, item.value])
-            });
-            this.storage.multiSet(items);
+        const items: Array<ItemCache<any>> = [];
+        return this.purge().then(async () => {
+            Object.entries(data).forEach(([key, value]) => items.push(this.set(key, value)));
+            await this.storage.multiSet(items);
         })
 
     }
 
     removeItem(key: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            const keyToRemove = this.remove(key)
-            resolve(await this.storage.removeItem(keyToRemove))
+            const keyToRemove = this.remove(key);
+            await this.storage.removeItem(keyToRemove);
+            resolve()
         })
     }
 
     setItem(key: string, value: any): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const item = this.set(key, value)
-            resolve(await this.storage.setItem(item.key, item.value))
+            await this.storage.setItem(item.key, item.value)
+            resolve()
         })
     }
 
@@ -97,26 +109,26 @@ class StorageHelper implements CacheStorage {
         this.gets = this.layers.slice().reverse().filter((layer => !!layer.get));
     }
 
-    filter(keys: string[]) {
+    filter(keys: Array<string>): Array<string> {
         return keys.filter((key => this.filters.reduce(
             (currentValue, layer) => layer.filter(key) && currentValue,
             true
         )));
     }
 
-    set(key: string, value: any) {
+    set(key: string, value: any): ItemCache<any> {
         return this.sets.reduce(
             (currentValue, layer) => layer.set(currentValue.key, currentValue.value),
             { key, value }
         );
     }
-    get(key: string, value: any) {
+    get(key: string, value: any): ItemCache<any> {
         return this.gets.reduce(
             (currentValue, layer) => layer.get(currentValue.key, currentValue.value),
             { key, value }
         );
     }
-    remove(key: string): any {
+    remove(key: string): string {
         return this.removes.reduce(
             (currentValue, layer) => layer.remove(currentValue),
             key

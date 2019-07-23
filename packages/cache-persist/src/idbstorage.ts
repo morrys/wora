@@ -1,6 +1,6 @@
 import { openDB, IDBPDatabase } from 'idb';
-import { DataCache, CacheStorage } from './Cache';
-import StorageHelper, { StorageHelperOptions } from './StorageHelper';
+import { DataCache, Storage } from './Cache';
+import { ItemCache } from './StorageProxy';
 
 class IDBStorage {
 
@@ -30,7 +30,7 @@ class IDBStorage {
 
 }
 
-function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: string) {
+function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: string): Storage {
     return {
         multiRemove: (keys) => {
             return dbPromise.then(db => {
@@ -52,10 +52,10 @@ function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: stri
         getAllKeys: () => {
             return dbPromise.then(db => db.getAllKeys(storeName));
         },
-        multiSet: async (items) => {
+        multiSet: async (items: Array<ItemCache<any>>) => {
             return dbPromise.then(db =>
-                Object.keys(items).forEach(function (key) {
-                    db.put(storeName, items[key], key);
+                items.forEach(function (item) {
+                    db.put(storeName, item.value, item.key);
                 }))
         },
         setItem: (key: string, value: string): Promise<void> => {

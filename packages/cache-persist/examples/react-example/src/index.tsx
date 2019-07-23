@@ -31,7 +31,12 @@ const CacheLocalNew = new Cache({
     prefix: 'cachenew',
 });
 
-const idbStorages: CacheStorage[] = IDBStorage.create( {name: "cache", storeNames: ["persist", "persist2"], storageOptions: {}});
+const CacheSessionNew = new Cache({
+    prefix: 'cachenew',
+    webStorage: 'session'
+});
+
+const idbStorages: CacheStorage[] = IDBStorage.create( {name: "cache", storeNames: ["persist", "persist2"]});
 
 console.log(idbStorages[0]);
 
@@ -53,10 +58,11 @@ const CacheLocal = new Cache();
 const App = () => {
 
     return <StyledApp>
-            <TodoList cache={CacheLocalIDB}/>
-            <TodoList cache={CacheLocalIDB2} />
-            <TodoList cache={CacheLocal}/>
-            <TodoList cache={CacheLocalNew}/>
+            <TodoList cache={CacheLocalIDB} name = "CacheLocalIDB" />
+            <TodoList cache={CacheLocalIDB2} name = "CacheLocalIDB2" />
+            <TodoList cache={CacheLocal} name = "CacheLocal"/>
+            <TodoList cache={CacheLocalNew} name = "CacheLocalNew"/>
+            <TodoList cache={CacheSessionNew} name = "CacheSessionNew" />
          </StyledApp>
 }
 

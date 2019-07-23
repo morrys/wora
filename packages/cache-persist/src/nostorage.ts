@@ -1,21 +1,17 @@
-import { CacheStorage } from './Cache';
-import { StorageHelperOptions } from './StorageHelper';
-const promiseVoid = new Promise<void>((resolve, reject) => {
-    resolve()
-});
-function noStorage(options: StorageHelperOptions): CacheStorage {
+import { Storage } from './Cache';
+import { promiseVoid, promiseResult, ItemCache } from './StorageProxy';
+function noStorage(): Storage {
     return {
-        purge: () => {
-            return new Promise((resolve, reject) => {
-                resolve(true)
-            });
-        },
-        restore: () => new Promise((resolve, reject) => {
-            resolve({})
+        multiRemove: (keys: Array<string>) => promiseVoid(() => {} ),
+        multiGet: (keys: Array<string>) => promiseResult(() => {
+            return {};
         }),
-        replace: (data: any) => promiseVoid,
-        setItem: (key: string, item: string | object) => promiseVoid,
-        removeItem: (key: string) =>  promiseVoid,
+        getAllKeys: (): Promise<Array<string>> => promiseResult<Array<string>>(() => {
+            return []
+        }),
+        multiSet: (items: Array<ItemCache<any>>) => promiseVoid(() => {} ),
+        setItem: (key: string, value: string): Promise<void> => promiseVoid(() => {} ),
+        removeItem: (key: string): Promise<void> => promiseVoid(() => {} ),
     }
 }
 
