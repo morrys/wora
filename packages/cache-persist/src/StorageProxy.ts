@@ -11,7 +11,7 @@ export type StorageHelperOptions = {
 }
 
 export type ItemCache<T> = {
-    key: string, 
+    key: string,
     value: T
 }
 
@@ -19,7 +19,7 @@ export interface Layer<T> {
     set: (key: string, value: T) => ItemCache<T>
     get: (key: string, value: T) => ItemCache<T>
     remove?: (key: string) => string
-    filter?: (key: string) => boolean
+    check?: (key: string) => boolean
 }
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
@@ -42,7 +42,7 @@ class StorageHelper implements CacheStorage {
     serialize: boolean;
     prefix: string;
     layers: Array<Layer<any>> = [];
-    filters: Array<Layer<any>>;
+    checks: Array<Layer<any>>;
     gets: Array<Layer<any>>;
     sets: Array<Layer<any>>;
     removes: Array<Layer<any>>;
@@ -72,7 +72,7 @@ class StorageHelper implements CacheStorage {
                 const result: DataCache = {};
                 Object.entries(data).forEach(([key, value]) => {
                     const item = this.get(key, value)
-                    result[item.key] = item.value;    
+                    result[item.key] = item.value;
                 });
                 return result;
             });
@@ -80,7 +80,13 @@ class StorageHelper implements CacheStorage {
     replace(data: any): Promise<void> {
         const items: Array<ItemCache<any>> = [];
         return this.purge().then(async () => {
-            Object.entries(data).forEach(([key, value]) => items.push(this.set(key, value)));
+            Object.entries(data).forEach(([key, value]) => {
+                const item = this.set(key, value);
+                if(item) {
+                    items.push(item);
+                }
+                
+            });
             await this.storage.multiSet(items);
         })
 
@@ -89,48 +95,52 @@ class StorageHelper implements CacheStorage {
     removeItem(key: string): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const keyToRemove = this.remove(key);
-            await this.storage.removeItem(keyToRemove);
+            if (keyToRemove) {
+                await this.storage.removeItem(keyToRemove);
+            }
             resolve()
         })
     }
 
     setItem(key: string, value: any): Promise<void> {
         return new Promise(async (resolve, reject) => {
-            const item = this.set(key, value)
-            await this.storage.setItem(item.key, item.value)
+            const item = this.set(key, value);
+            if (item) {
+                await this.storage.setItem(item.key, item.value)
+            }
             resolve()
         })
     }
 
     init() {
-        this.filters = this.layers.filter((layer => !!layer.filter));
+        this.checks = this.layers.filter((layer => !!layer.check));
         this.sets = this.layers.filter((layer => !!layer.set));
         this.removes = this.layers.filter((layer => !!layer.remove));
         this.gets = this.layers.slice().reverse().filter((layer => !!layer.get));
     }
 
     filter(keys: Array<string>): Array<string> {
-        return keys.filter((key => this.filters.reduce(
-            (currentValue, layer) => layer.filter(key) && currentValue,
+        return keys.filter((key => this.checks.reduce(
+            (currentValue, layer) => layer.check(key) && currentValue,
             true
         )));
     }
 
     set(key: string, value: any): ItemCache<any> {
         return this.sets.reduce(
-            (currentValue, layer) => layer.set(currentValue.key, currentValue.value),
+            (currentValue, layer) => !currentValue ? currentValue : layer.set(currentValue.key, currentValue.value),
             { key, value }
         );
     }
     get(key: string, value: any): ItemCache<any> {
         return this.gets.reduce(
-            (currentValue, layer) => layer.get(currentValue.key, currentValue.value),
+            (currentValue, layer) => !currentValue ? currentValue : layer.get(currentValue.key, currentValue.value),
             { key, value }
         );
     }
     remove(key: string): string {
         return this.removes.reduce(
-            (currentValue, layer) => layer.remove(currentValue),
+            (currentValue, layer) => !currentValue ? currentValue : layer.remove(currentValue),
             key
         );
     }

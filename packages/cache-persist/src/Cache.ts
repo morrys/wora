@@ -36,6 +36,8 @@ export type Subscription = {
     callback: (message: string, state: any) => void,
 };
 
+export const PREFIX_DELIMITER: string = ".";
+
 class Cache {
     private data: DataCache = {};
     private rehydrated: boolean = false;
