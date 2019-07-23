@@ -1,5 +1,5 @@
 import createStorage from "./storage";
-import { Layer, StorageHelperOptions } from './StorageHelper';
+import StorageHelper, { Layer, StorageHelperOptions } from './StorageHelper';
 
 export type CacheOptions = {
     serialize?: boolean,
@@ -13,9 +13,6 @@ export type DataCache = {
 }
 
 export interface CacheStorage {
-    getStorage: () => any;
-    getName: () => string;
-    getOptions: () => StorageHelperOptions;
     purge: () => Promise<boolean>;
     restore: () => Promise<DataCache>;
     replace: (data: any) => Promise<void>;
@@ -30,19 +27,22 @@ export type Subscription = {
 class Cache {
     private data: DataCache = {};
     private rehydrated: boolean = false;
-    private storage: CacheStorage;
     private _subscriptions: Set<Subscription> = new Set();
+    public storageOptions;
+    private storageHelper;
 
     constructor(options: CacheOptions = {}) { //TODO custom storage
-        const { storage, ...storageOptions} = options;
-        this.storage = storage || createStorage(storageOptions);
+        const { storage, prefix = 'cache', serialize = true, layers = []} = options;
+        const storageOptions = { prefix, serialize, layers };
+        this.storageOptions = storageOptions;
+        this.storageHelper = new StorageHelper(storage || createStorage(), storageOptions);        
     }
 
     public isRehydrated(): boolean { return this.rehydrated}
 
     public restore(): Promise<Cache> {
         return new Promise((resolve, reject) => {
-            this.storage.restore().then(result => {
+            this.storageHelper.restore().then(result => {
                 this.data = result;
                 this.rehydrated = true;
                 resolve(this)
@@ -53,16 +53,12 @@ class Cache {
 
     public replace(newData): Promise<void> {
         this.data = newData ? Object.assign({}, newData) : Object.create(null);
-        return this.storage.purge().then(() => this.storage.replace(newData));
-    }
-
-    public getStorageName(): string {
-        return this.storage.getName()
+        return this.storageHelper.replace(newData);
     }
 
     public purge(): Promise<boolean> {
         this.data = Object.create(null);
-        return this.storage.purge();
+        return this.storageHelper.purge();
     }
 
     public clear(): Promise<boolean> {
@@ -83,7 +79,7 @@ class Cache {
 
     public set(key: string, value: any): Promise<any> {
         this.data[key] = value;
-        return this.storage.setItem(key, value);
+        return this.storageHelper.setItem(key, value);
     }
 
     public delete(key: string): Promise<any> {
@@ -92,7 +88,7 @@ class Cache {
 
     public remove(key: string): Promise<any> {
         delete this.data[key];
-        return this.storage.removeItem(key);
+        return this.storageHelper.removeItem(key);
     }
 
     public getAllKeys(): Array<string> {

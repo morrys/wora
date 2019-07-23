@@ -1,6 +1,6 @@
 {
   "name": "@wora/cache-persist",
-  "version": "2.0.0-a",
+  "version": "2.0.0-a9",
   "keywords": [
     "cache",
     "react-native",
@@ -33,5 +33,8 @@
   "dependencies": {
     "idb": "^4.0.0"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "rimraf": "2.6.3",
+    "typescript": "3.5.2"
+  }
 }

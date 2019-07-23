@@ -31,7 +31,7 @@ const CacheLocalNew = new Cache({
     prefix: 'cachenew',
 });
 
-const idbStorages: CacheStorage[] = IDBStorage.create("cache", ["persist", "persist2"]);
+const idbStorages: CacheStorage[] = IDBStorage.create( {name: "cache", storeNames: ["persist", "persist2"], storageOptions: {}});
 
 console.log(idbStorages[0]);
 

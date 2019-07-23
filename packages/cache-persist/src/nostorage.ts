@@ -5,9 +5,6 @@ const promiseVoid = new Promise<void>((resolve, reject) => {
 });
 function noStorage(options: StorageHelperOptions): CacheStorage {
     return {
-        getStorage: () => {},
-        getName: () => "NO-" + options.prefix,
-        getOptions: () => options,
         purge: () => {
             return new Promise((resolve, reject) => {
                 resolve(true)
@@ -22,3 +19,4 @@ function noStorage(options: StorageHelperOptions): CacheStorage {
     }
 }
 
+export default noStorage;

@@ -17,7 +17,7 @@ function hasStorage(storageType) {
     }
 
     try {
-        let storage:any = self[storageType]
+        let storage: any = self[storageType]
         const testKey = `cache-persist ${storageType} test`
         storage.setItem(testKey, 'test')
         storage.getItem(testKey)
@@ -38,59 +38,40 @@ function getStorage(type: string): any {
 
 let storage = getStorage('local')
 
-function webStorage(options: StorageHelperOptions): CacheStorage {
-    const storageHelper = new StorageHelper(options);
+function webStorage() {
     return {
-        getStorage: ():any => storage,
-        getName: ():string => "LS-" + storageHelper.getPrefix(),
-        getOptions: (): StorageHelperOptions => options,
-
-        purge: () => {
-            return new Promise((resolve, reject) => {
-                
-                const keys = Object.keys(storage)
-                const size = keys.length;
-                for (var i = 0; i < size; i++) {
-                    const key: string = keys[i];
-                    if (storageHelper.filter(key)) {
-                        storage.removeItem(key);
-                    }
-                }
-                resolve(true)
-            });
+        multiRemove: (keys) => {
+            for (var i = 0; i < keys.length; i++) {
+                storage.removeItem(keys[i]);
+            }
         },
-        restore: (): Promise<DataCache> => {
-            return new Promise((resolve, reject) => {
-                const data: DataCache = {};
-                for (var i = 0; i < storage.length; i++) {
-                    const key: string = storage.key(i);
-                    if (storageHelper.filter(key)) {
-                        const item = storageHelper.get(key, data[key])
-                        data[item.key] = item.value;
-                    }
-                }
-                resolve(data)
-            })
+        multiGet: (keys) => {
+            const data: DataCache = {};
+            for (var i = 0; i < keys.length; i++) {
+                const key: string = keys[i];
+                data[key] = storage.getItem(key);
+            }
+            return data;
         },
-        replace: (data: any): Promise<void> => {
+        getAllKeys: () => {
+            return Object.keys(storage);
+        },
+        multiSet: (items) => {
             return new Promise((resolve, reject) => {
-                Object.keys(data).forEach(function(key) {
-                    const item = storageHelper.set(key, data[key])
-                    storage.setItem(item.key, item.value);
+                Object.keys(items).forEach(function (key) {
+                    storage.setItem(key, items[key]);
                 });
                 resolve();
             });
         },
         setItem: (key: string, value: string): Promise<void> => {
             return new Promise((resolve, reject) => {
-                const item = storageHelper.set(key, value)
-                resolve(storage.setItem(item.key, item.value))
+                resolve(storage.setItem(key, value))
             })
         },
         removeItem: (key: string): Promise<void> => {
             return new Promise((resolve, reject) => {
-                const keyToRemove = storageHelper.remove(key)
-                resolve(storage.removeItem(storageHelper.remove(keyToRemove)))
+                resolve(storage.removeItem(key))
             })
         },
     }
