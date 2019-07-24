@@ -7,6 +7,7 @@ import Cache, { CacheStorage }  from '@wora/cache-persist';
 import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
 import { createGlobalStyle } from 'styled-components';
 import { Layer } from '@wora/cache-persist';
+// import { unwrap } from 'idb';
 
 const GlobalStyle = createGlobalStyle`
 body {
@@ -47,11 +48,35 @@ const CacheSessionNew = new Cache({
     webStorage: 'session'
 });
 
-const idbStorages: CacheStorage[] = IDBStorage.create( {name: "cache", storeNames: ["persist", "persist2"]});
+const idbStorages: CacheStorage[] = IDBStorage.create( {
+    name: "cache",
+    onUpgrade: (db, oldv, newv, transaction) => { 
+        console.log("onUpgrade", db, oldv, newv, transaction);
+    }, 
+    storeNames: ["persist", "persist2"],
+    version: 1,
+    
+});
+
+const idbStorageNo: CacheStorage[] = IDBStorage.create( {
+    name: "nocache",
+    onUpgrade: (db, oldv, newv, transaction) => { 
+        console.log("onUpgrade", db, oldv, newv, transaction);
+    }, 
+    storeNames: ["persist"],
+    version: 1,
+    
+});
 
 console.log(idbStorages[0]);
 
 console.log(idbStorages);
+
+const CacheLocalIDBNO = new Cache({
+    prefix: null,
+    serialize: false,
+    storage: idbStorageNo[0],
+});
 
 const CacheLocalIDB = new Cache({
     layers: [filterNoPersistReplace],
@@ -68,8 +93,8 @@ const CacheLocalIDB2 = new Cache({
 
 
 const App = () => {
-
     return <StyledApp>
+            <TodoList cache={CacheLocalIDBNO} name = "CacheLocalIDBNO" />
             <TodoList cache={CacheLocalIDB} name = "CacheLocalIDB" />
             <TodoList cache={CacheLocalIDB2} name = "CacheLocalIDB2" />
             <TodoList cache={CacheLocal} name = "CacheLocal"/>

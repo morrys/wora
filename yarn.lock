@@ -1551,10 +1551,10 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "0.0.3"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-apollo-cache-0.0.3-96871a2a-2f39-41df-a6cf-62ec49684f00-1563126720505/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-apollo-cache-0.0.3-3b166a32-1eb4-4814-9744-40622085e82c-1563987245307/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
-  version "1.0.2"
+  version "2.0.0-a16"
   dependencies:
     idb "^4.0.0"
 
@@ -1566,8 +1566,13 @@
 "@wora/offline-first@file:packages/offline-first":
   version "0.0.5"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-acc59697-574f-4a66-abad-890fbb596ba8-1563126720489/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-acc59697-574f-4a66-abad-890fbb596ba8-1563126720489/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-d87cbd91-6821-4186-a976-bdce95b06a12-1563987245307/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-d87cbd91-6821-4186-a976-bdce95b06a12-1563987245307/node_modules/@wora/netinfo"
+
+"@wora/relay-store@file:packages/relay-store":
+  version "0.0.6"
+  dependencies:
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-relay-store-0.0.6-634e094a-06fd-486d-90c0-d666e25b0744-1563987245307/node_modules/@wora/cache-persist"
 
 "@wry/context@^0.4.0":
   version "0.4.4"
@@ -6387,6 +6392,14 @@ regjsparser@^0.6.0:
   integrity sha512-RQ7YyokLiQBomUJuUG8iGVvkgOLxwyZM8k6d3q5SAXpg4r5TZJZigKFvC6PpD+qQ98bCDC5YelPeA3EucDoNeQ==
   dependencies:
     jsesc "~0.5.0"
+
+relay-runtime@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-4.0.0.tgz#5cf50f52e3ea56ec81f0b5fed05b03e99a9e3906"
+  integrity sha512-Fd5nAMNfySINAYPf1zgtcYbCk33pO5ANiYfaMhKYzukfc2GCmn6RP7NEpG69GxVezu/E1aOxo72t+Y1NspDV8A==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    fbjs "^1.0.0"
 
 remove-trailing-separator@^1.0.1:
   version "1.1.0"

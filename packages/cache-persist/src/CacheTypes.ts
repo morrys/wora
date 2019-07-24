@@ -18,7 +18,7 @@ export interface Layer<T> {
 
 export type CacheOptions = {
     serialize?: boolean,
-    prefix?: string,
+    prefix?: string | undefined | null,
     layers?: Array<Layer<any>>,
     storage?: CacheStorage, 
     webStorage?: "local" | "session",

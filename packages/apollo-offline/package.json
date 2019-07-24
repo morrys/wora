@@ -1,6 +1,6 @@
 {
   "name": "@wora/apollo-offline",
-  "version": "0.0.4",
+  "version": "0.0.5-a",
   "keywords": [
     "wora",
     "cache-persist",

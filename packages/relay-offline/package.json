@@ -33,9 +33,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@wora/cache-persist": "^1.0.2",
-    "@wora/offline-first": "^0.0.5",
-    "@wora/relay-store": "^0.0.6",
+    "@wora/offline-first": "file:../offline-first",
+    "@wora/cache-persist": "file:../cache-persist",
+    "@wora/relay-store": "file:../relay-store",
     "uuid": "3.3.2"
   },
   "peerDependencies": {

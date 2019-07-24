@@ -1,21 +1,34 @@
 import { openDB, IDBPDatabase } from 'idb';
 import { DataCache, Storage, ItemCache } from './CacheTypes';
 
+export type OnUpgrade = {
+    (db: any, oldVersion: number, newVersion: number, transaction: any): void
+}
+
 class IDBStorage {
 
-    static create(options: { name?: string, storeNames?: string[], version?: number}): any[] {
+    static create(options: {
+        name?: string,
+        storeNames?: string[],
+        version?: number,
+        onUpgrade?: OnUpgrade
+    }): any[] {
 
         const {
             name = 'cache',
             storeNames = ['persist'],
             version = 1,
+            onUpgrade = (db, oldVersion, newVersion, transaction) => { }
         } = options;
 
         const dbPromise = openDB<any>(name, version, {
-            upgrade(dbPromise) {
-                storeNames.forEach(storeName => {
-                    dbPromise.createObjectStore(storeName);
-                });
+            upgrade(dbPromise, oldVersion, newVersion, transaction) {
+                if (newVersion === 1) {
+                    storeNames.forEach(storeName => {
+                        dbPromise.createObjectStore(storeName);
+                    });
+                }
+                onUpgrade(dbPromise, oldVersion, newVersion, transaction);
 
             }
         })
@@ -29,7 +42,7 @@ class IDBStorage {
 
 }
 
-function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: string): Storage {
+export function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: string): Storage {
     return {
         multiRemove: (keys) => {
             return dbPromise.then(db => {

@@ -14,8 +14,7 @@ function NativeStorage(): Storage {
                     const itemStorage = data[i];
                     const key = itemStorage[0];
                     const value = itemStorage[1];
-                    const item = this.get(key, value)
-                    result[item.key] = item.value;
+                    result[key] = value;
                 }
                 return result;
             });

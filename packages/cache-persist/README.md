@@ -11,17 +11,25 @@ yarn add @wora/cache-persist
 
 ## Options
 CacheOptions {
-    storage?: Cache, 
-    prefix?: string, 
-    serialize?: boolean
+    serialize?: boolean,
+    prefix?: string | undefined | null,
+    layers?: Array<Layer<any>>,
+    storage?: CacheStorage, 
+    webStorage?: "local" | "session",
+    disablePersist?: boolean
 }
-
 
 storage: custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.
 
-prefix: prefix keys
+prefix: prefix keys, default cache
 
 serialize: if it is true, the data will be serialized and deserialized JSON 
+
+webStorage: local for localStorage, session for sessionStorage. default local
+
+disablePersist: if it is true, nostorage is used
+
+layers: todo documentation (data encryption ecc..)
 
 
 ## Cache
@@ -72,7 +80,10 @@ cache.restore().then(() => {
 import Cache, { CacheStorage, CacheOptions } from "@wora/cache-persist";
 import IDBStorage from '@wora/cache-persist/lib/idbstorage';
 
-const idbStorages: CacheStorage[] = IDBStorage.create("cache", ["persist", "persist2"]);
+const idbStorages: CacheStorage[] = IDBStorage.create( {
+    name: "cache", 
+    storeNames: ["persist", "persist2"]
+});
 
 const idb: CacheOptions = {
         storage: idbStorages[0],
@@ -94,6 +105,70 @@ cacheidb1.restore().then(() => {
     const state = cacheidb1.getState();
 });
 ```
+
+## Layer
+
+
+```ts
+export type ItemCache<T> = {
+    key: string,
+    value: T
+}
+
+export interface Layer<T> {
+    set: (key: string, value: T) => ItemCache<T>
+    get: (key: string, value: T) => ItemCache<T>
+    remove?: (key: string) => string
+    check?: (key: string) => boolean
+}
+```
+
+set: called before persisting an item in the storage
+get: called before restoring item in the cache 
+remove: called before removing an item from the storage
+check: called to check if the item in the storage belongs to the cache
+
+### layers provided within the library
+
+* prefixLayer: layer that handles the key prefix, is inserted as the first layer when the prefix option is different from null
+
+* jsonSerialize: layer that handles JSON serialization and deserialization of values, is inserted as the last layer when the serialize option is true
+
+* filterKeys: this layer allows you to define a function to determine which keys persist.
+
+```ts
+import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
+
+const filterPersistAuth: Layer<any> = filterKeys(key => key.includes("auth"));
+
+const filterNoPersistAuth: Layer<any> = filterKeys(key => !key.includes("auth"));
+
+const CacheLocal1 = new Cache({
+    layers: [filterNoPersistAuth],
+    prefix: 'cache1',
+});
+
+const CacheLocal2 = new Cache({
+    layers: [filterPersistAuth],
+    prefix: 'cache2',
+});
+```
+
+## Storage
+
+### do you want to create your own storage? It is sufficient to implement this interface
+
+```ts
+export interface Storage {
+    multiRemove: (keys: Array<string>) => Promise<void>,
+    multiGet: (keys: Array<string>) => Promise<DataCache>,
+    getAllKeys: () => Promise<Array<string>>,
+    multiSet: (items: Array<ItemCache<any>>) => Promise<void>,
+    setItem: (key: string, value: string) => Promise<void>,
+    removeItem: (key: string) => Promise<void> 
+}
+```
+
 ## Hooks example
 
 ```ts
