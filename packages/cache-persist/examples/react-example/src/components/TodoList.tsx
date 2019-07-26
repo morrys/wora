@@ -32,6 +32,7 @@ const StyledButton = styled.button`
 
 interface Props {
   cache: Cache
+  name: string
 }
 
 
@@ -97,7 +98,7 @@ const TodoList = (props: Props) => {
     <StyledButton onClick={purge} className="refetch" > Purge </StyledButton>
     <StyledButton onClick={replaceItem} className="refetch" > Replace </StyledButton>
       <TodoTextInput
-        placeholder={"Add Todo to "+cache.getStorageName()}
+        placeholder={"Add Todo to "+props.name}
         onSave={handleTextInputSave}
       />
       <StyledList>{listItems}</StyledList>

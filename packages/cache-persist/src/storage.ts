@@ -1,14 +1,6 @@
-import { DataCache, CacheStorage } from "./Cache";
-
-function noop() { }
-let noopStorage = {
-    clear: noop,
-    key: noop,
-    getItem: noop,
-    setItem: noop,
-    removeItem: noop,
-    length: 0
-}
+import { Storage, ItemCache, DataCache } from './CacheTypes';
+import { promiseVoid, promiseResult } from './StorageProxy';
+import noStorage from './nostorage';
 
 function hasStorage(storageType) {
     if (typeof self !== 'object' || !(storageType in self)) {
@@ -16,7 +8,7 @@ function hasStorage(storageType) {
     }
 
     try {
-        let storage:any = self[storageType]
+        let storage: any = self[storageType]
         const testKey = `cache-persist ${storageType} test`
         storage.setItem(testKey, 'test')
         storage.getItem(testKey)
@@ -31,64 +23,38 @@ function getStorage(type: string): any {
     const storageType = `${type}Storage`
     if (hasStorage(storageType)) return self[storageType]
     else {
-        return noopStorage;
+        return noStorage();
     }
 }
 
-let storage = getStorage('local')
 
-function webStorage(prefix: string): CacheStorage {
-    const prefixKey = prefix+".";
+
+
+function webStorage(type: string): Storage {
+    const storage = getStorage(type)
     return {
-        getStorage: ():any => storage,
-        getCacheName: ():string => "LS-" + prefix,
-
-        purge: () => {
-            return new Promise((resolve, reject) => {
-                
-                const keys = Object.keys(storage)
-                const size = keys.length;
-                for (var i = 0; i < size; i++) {
-                    const key: string = keys[i];
-                    if (key.startsWith(prefixKey)) {
-                        storage.removeItem(key);
-                    }
-                }
-                resolve(true)
-            });
-        },
-        restore: (deserialize: boolean): Promise<DataCache> => {
-            return new Promise((resolve, reject) => {
-                const data: DataCache = {};
-                for (var i = 0; i < storage.length; i++) {
-                    const key: string = storage.key(i);
-                    if (key.startsWith(prefixKey)) {
-                        const value = deserialize ? JSON.parse(storage.getItem(key)) : storage.getItem(key);
-                        data[key.slice(prefixKey.length)] = value;
-                    }
-                }
-                resolve(data)
+        multiRemove: (keys: Array<string>) => promiseVoid((): void => {
+            keys.forEach(function (key) {
+                storage.removeItem(key);
             })
-        },
-        replace: (data: any, serialize: boolean): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                Object.keys(data).forEach(function(key) {
-                    const value = data[key];
-                    storage.setItem(prefixKey+key, serialize ? JSON.stringify(value) : value);
-                });
-                resolve();
-            });
-        },
-        setItem: (key: string, item: string): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                resolve(storage.setItem(prefixKey+key, item))
-            })
-        },
-        removeItem: (key: string): Promise<void> => {
-            return new Promise((resolve, reject) => {
-                resolve(storage.removeItem(prefixKey+key))
-            })
-        },
+        }),
+        multiGet: (keys: Array<string>) => promiseResult(() => {
+            const data: DataCache = {};
+            keys.forEach((key) => data[key] = storage.getItem(key));
+            return data;
+        }),
+        getAllKeys: (): Promise<Array<string>> => promiseResult<Array<string>>(() => {
+            return Object.keys(storage)
+        }),
+        multiSet: (items: Array<ItemCache<any>>) => promiseVoid((): void => {
+            items.forEach((item) => storage.setItem(item.key, item.value));
+        }),
+        setItem: (key: string, value: string): Promise<void> => promiseVoid((): void => {
+            storage.setItem(key, value)
+        }),
+        removeItem: (key: string): Promise<void> => promiseVoid((): void => {
+            storage.removeItem(key)
+        }),
     }
 }
 

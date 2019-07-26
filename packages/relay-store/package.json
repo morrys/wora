@@ -30,7 +30,7 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@wora/cache-persist": "^1.0.2"
+    "@wora/cache-persist": "file:../cache-persist"
   },
   "peerDependencies": {
     "relay-runtime": ">=3.0.0"

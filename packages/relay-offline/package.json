@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "keywords": [
     "wora",
     "cache-persist",
@@ -33,10 +33,11 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@wora/cache-persist": "^1.0.2",
-    "@wora/offline-first": "^0.0.5",
-    "@wora/relay-store": "^0.0.6",
-    "uuid": "3.3.2"
+    "@wora/offline-first": "file:../offline-first",
+    "@wora/cache-persist": "file:../cache-persist",
+    "@wora/relay-store": "file:../relay-store",
+    "uuid": "3.3.2",
+    "fbjs": "^1.0.0"
   },
   "peerDependencies": {
     "relay-runtime": ">=3.0.0"

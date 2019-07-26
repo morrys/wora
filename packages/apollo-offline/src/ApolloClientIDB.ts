@@ -1,5 +1,5 @@
 import { CacheStorage, CacheOptions } from "@wora/cache-persist";
-import IDBStorage from '@wora/cache-persist/lib/idbstorage';
+import IDBStorage, { OnUpgrade } from '@wora/cache-persist/lib/idbstorage';
 import ApolloClientOffline, { OfflineApolloClientOptions } from "./ApolloClientOffline";
 import { OfflineOptions, Payload } from "./ApolloStoreOffline";
 import { InMemoryCacheConfig } from "apollo-cache-inmemory";
@@ -11,31 +11,39 @@ type ApolloClientIDBOptions = Omit<OfflineApolloClientOptions, "cache">; // Equi
 
 class ApolloClientIDB {
 
-    public static create(config: ApolloClientIDBOptions, 
+    public static create(config: ApolloClientIDBOptions,
         cacheOptions: InMemoryCacheConfig = {},
-        offlineOptions:OfflineOptions<Payload> = {},
-        persistOptions:CacheOptions = {},): ApolloClientOffline {
+        offlineOptions: OfflineOptions<Payload> = {},
+        persistOptions: CacheOptions = {}, 
+        idbOptions: { onUpgrade?: OnUpgrade, version?: number}): ApolloClientOffline {
 
-        let idbStore: CacheOptions;  
-        let idbOffline: CacheOptions;   
-        const serialize: boolean = persistOptions.serialize; 
-        const prefix: string = persistOptions.prefix; 
+        let idbStore: CacheOptions;
+        let idbOffline: CacheOptions;
+        const serialize: boolean = persistOptions.serialize;
+        const prefix: string = persistOptions.prefix;
         if (typeof window !== 'undefined') {
-            const idbStorages: CacheStorage[] = IDBStorage.create(prefix || "apollo", ["store", "offline" ]);
+            const idbStorages: CacheStorage[] = IDBStorage.create({ 
+                name: prefix || "apollo", 
+                storeNames: ["store", "offline"],
+                onUpgrade: idbOptions.onUpgrade,
+                version: idbOptions.version
+            });
 
             idbStore = {
                 storage: idbStorages[0],
                 serialize: serialize || false,
+                prefix: null
             }
 
             idbOffline = {
                 storage: idbStorages[1],
                 serialize: serialize || false,
+                prefix: null
             }
         }
 
         const cache = new ApolloCache(cacheOptions, idbStore)
-        return new ApolloClientOffline({...config, cache}, offlineOptions, idbOffline);
+        return new ApolloClientOffline({ ...config, cache }, offlineOptions, idbOffline);
     }
 }
 

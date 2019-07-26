@@ -1,5 +1,5 @@
 import { CacheStorage, CacheOptions } from "@wora/cache-persist";
-import IDBStorage from '@wora/cache-persist/lib/idbstorage';
+import IDBStorage, { OnUpgrade } from '@wora/cache-persist/lib/idbstorage';
 import { EnvironmentConfig } from 'relay-runtime/lib/RelayModernEnvironment';
 import { Store } from "@wora/relay-store";
 import { Scheduler, OperationLoader, } from 'relay-runtime/lib/RelayStoreTypes';
@@ -19,12 +19,13 @@ class EnvironmentIDB {
             gcScheduler?: Scheduler,
             operationLoader?: OperationLoader,
             ttl?: number,
+            onUpgrade?: OnUpgrade,
+            version?: number
         } = {},
          ): RelayModernEnvironment {
 
         const persistOptions = {
             ...storeOptions.persistOptions,
-
         } 
         let idbStore: CacheOptions;  
         let idbRecords: CacheOptions; 
@@ -32,21 +33,29 @@ class EnvironmentIDB {
         const serialize: boolean = persistOptions.serialize; 
         const prefix: string = persistOptions.prefix; 
         if (typeof window !== 'undefined') {
-            const idbStorages: CacheStorage[] = IDBStorage.create(prefix || "relay", ["store", "records", "redux"]);
+            const idbStorages: CacheStorage[] = IDBStorage.create({ 
+                    name: prefix || "relay", 
+                    storeNames: ["store", "records", "offline"],
+                    onUpgrade: storeOptions.onUpgrade,
+                    version: storeOptions.version
+            });
 
             idbStore = {
                 storage: idbStorages[0],
                 serialize: serialize || false,
+                prefix: null
             }
 
             idbRecords = {
                 storage: idbStorages[1],
                 serialize: serialize || false,
+                prefix: null
             }
 
             idbOffline = {
                 storage: idbStorages[2],
                 serialize: serialize || false,
+                prefix: null
             }
         }
         const store = new Store(storeOptions.ttl,idbStore, idbRecords, storeOptions.gcScheduler, storeOptions.operationLoader);

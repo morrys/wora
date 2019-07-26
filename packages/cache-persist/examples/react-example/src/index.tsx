@@ -4,7 +4,10 @@ import styled from 'styled-components';
 import TodoList from './components/TodoList';
 import IDBStorage from '@wora/cache-persist/lib/idbstorage';
 import Cache, { CacheStorage }  from '@wora/cache-persist';
+import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
 import { createGlobalStyle } from 'styled-components';
+import { Layer } from '@wora/cache-persist';
+// import { unwrap } from 'idb';
 
 const GlobalStyle = createGlobalStyle`
 body {
@@ -27,36 +30,76 @@ const StyledApp = styled.div`
     flex-direction: column-reverse;
 `;
 
+const filterPersistReplace: Layer<any> = filterKeys(key => key.includes("replace"));
+
+const filterNoPersistReplace: Layer<any> = filterKeys(key => !key.includes("replace"));
+
+const CacheLocal = new Cache({
+    layers: [filterNoPersistReplace],
+});
+
 const CacheLocalNew = new Cache({
+    layers: [filterPersistReplace],
     prefix: 'cachenew',
 });
 
-const idbStorages: CacheStorage[] = IDBStorage.create("cache", ["persist", "persist2"]);
+const CacheSessionNew = new Cache({
+    prefix: 'cachenew',
+    webStorage: 'session'
+});
+
+const idbStorages: CacheStorage[] = IDBStorage.create( {
+    name: "cache",
+    onUpgrade: (db, oldv, newv, transaction) => { 
+        console.log("onUpgrade", db, oldv, newv, transaction);
+    }, 
+    storeNames: ["persist", "persist2"],
+    version: 1,
+    
+});
+
+const idbStorageNo: CacheStorage[] = IDBStorage.create( {
+    name: "nocache",
+    onUpgrade: (db, oldv, newv, transaction) => { 
+        console.log("onUpgrade", db, oldv, newv, transaction);
+    }, 
+    storeNames: ["persist"],
+    version: 1,
+    
+});
 
 console.log(idbStorages[0]);
 
 console.log(idbStorages);
 
+const CacheLocalIDBNO = new Cache({
+    prefix: null,
+    serialize: false,
+    storage: idbStorageNo[0],
+});
+
 const CacheLocalIDB = new Cache({
+    layers: [filterNoPersistReplace],
     serialize: false,
     storage: idbStorages[0],
 });
 
 
 const CacheLocalIDB2 = new Cache({
+    layers: [filterPersistReplace],
     serialize: false,
     storage: idbStorages[1],
 });
 
-const CacheLocal = new Cache();
 
 const App = () => {
-
     return <StyledApp>
-            <TodoList cache={CacheLocalIDB}/>
-            <TodoList cache={CacheLocalIDB2} />
-            <TodoList cache={CacheLocal}/>
-            <TodoList cache={CacheLocalNew}/>
+            <TodoList cache={CacheLocalIDBNO} name = "CacheLocalIDBNO" />
+            <TodoList cache={CacheLocalIDB} name = "CacheLocalIDB" />
+            <TodoList cache={CacheLocalIDB2} name = "CacheLocalIDB2" />
+            <TodoList cache={CacheLocal} name = "CacheLocal"/>
+            <TodoList cache={CacheLocalNew} name = "CacheLocalNew"/>
+            <TodoList cache={CacheSessionNew} name = "CacheSessionNew" />
          </StyledApp>
 }
 
