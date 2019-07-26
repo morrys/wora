@@ -15,7 +15,7 @@ class ApolloClientIDB {
         cacheOptions: InMemoryCacheConfig = {},
         offlineOptions: OfflineOptions<Payload> = {},
         persistOptions: CacheOptions = {}, 
-        idbOptions: { onUpgrade?: OnUpgrade, version?: number}): ApolloClientOffline {
+        idbOptions: { onUpgrade?: OnUpgrade, version?: number} = {}): ApolloClientOffline {
 
         let idbStore: CacheOptions;
         let idbOffline: CacheOptions;
