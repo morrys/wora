@@ -69,6 +69,7 @@ function complete(client: any, onComplete = ( (options: any) => true), options: 
 function discard(client: any, onDiscard = ((options: any) => true), options: any) {
     const { offlineRecord, error } = options;
     const { id } = offlineRecord;
+    // can i use here update query?
     if (onDiscard({ id, offlinePayload: offlineRecord, error })) {
         //const { request: { backup, sink } } = offlineRecord;
         return true;
@@ -108,6 +109,7 @@ export function publish<T = any, TVariables = OperationVariables>(client: any, m
 
     const result = { data: optimisticResponse };
     const id = uuid();
+    // optimistic response is required
     if (fetchPolicy !== 'no-cache') {
 
         client.store.markMutationInit({
@@ -143,7 +145,7 @@ export function publish<T = any, TVariables = OperationVariables>(client: any, m
                 result,
                 document: mutation,
                 variables,
-                updateQueries, // TODO: populate this?
+                updateQueries,
                 update
             });
 
