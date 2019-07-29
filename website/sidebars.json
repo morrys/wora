@@ -1,0 +1,23 @@
+{
+    "docs": {
+        "wora": [
+            "introduction"
+        ],
+        "caching": [
+            "cache-persist",
+            "relay-store",
+            "apollo-cache"
+        ],
+        "networking": [
+            "netinfo",
+            "detect-network"
+        ],
+        "offline": [
+            "architecture",
+            "thinking-offline",
+            "offline-first",
+            "relay-offline",
+            "apollo-offline"
+        ]
+    }
+}

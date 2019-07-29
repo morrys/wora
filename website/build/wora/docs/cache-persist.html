@@ -1,0 +1,198 @@
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Cache Persist · Wora</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="# [@wora/cache-persist](https://github.com/morrys/wora)"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Cache Persist · Wora"/><meta property="og:type" content="website"/><meta property="og:url" content="https://morrys.github.io/woraindex.html"/><meta property="og:description" content="# [@wora/cache-persist](https://github.com/morrys/wora)"/><meta name="twitter:card" content="summary"/><link rel="shortcut icon" href="/woraundefined"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script src="/worajs/scrollSpy.js"></script><link rel="stylesheet" href="/woracss/main.css"/><script src="/worajs/codetabs.js"></script></head><body class="sideNavVisible"><div class="fixedHeaderContainer"><div class="headerWrapper wrapper"><header><a href="/wora"><h2 class="headerTitle">Wora</h2></a><div class="navigationWrapper navigationSlider"><nav class="slidingNav"><ul class="nav-site nav-site-internal"><li class="siteNavGroupActive"><a href="/woradocs/introduction.html" target="_self">Docs</a></li><li class=""><a href="https://github.com/morrys/wora" target="_self">GitHub</a></li><li class=""><a target="_self"></a></li></ul></nav></div></header></div></div><div class="navPusher"><div class="docMainWrapper wrapper"><div class="docsNavContainer" id="docsNav"><nav class="toc"><div class="toggleNav"><section class="navWrapper wrapper"><div class="navBreadcrumb wrapper"><div class="navToggle" id="navToggler"><div class="hamburger-menu"><div class="line1"></div><div class="line2"></div><div class="line3"></div></div></div><h2><i>›</i><span>caching</span></h2></div><div class="navGroups"><div class="navGroup"><h3 class="navGroupCategoryTitle">wora</h3><ul class=""><li class="navListItem"><a class="navItem" href="/woradocs/introduction.html">wora</a></li></ul></div><div class="navGroup"><h3 class="navGroupCategoryTitle">caching</h3><ul class=""><li class="navListItem navListItemActive"><a class="navItem" href="/woradocs/cache-persist.html">Cache Persist</a></li></ul></div></div></section></div><script>
+            var coll = document.getElementsByClassName('collapsible');
+            var checkActiveCategory = true;
+            for (var i = 0; i < coll.length; i++) {
+              var links = coll[i].nextElementSibling.getElementsByTagName('*');
+              if (checkActiveCategory){
+                for (var j = 0; j < links.length; j++) {
+                  if (links[j].classList.contains('navListItemActive')){
+                    coll[i].nextElementSibling.classList.toggle('hide');
+                    coll[i].childNodes[1].classList.toggle('rotate');
+                    checkActiveCategory = false;
+                    break;
+                  }
+                }
+              }
+
+              coll[i].addEventListener('click', function() {
+                var arrow = this.childNodes[1];
+                arrow.classList.toggle('rotate');
+                var content = this.nextElementSibling;
+                content.classList.toggle('hide');
+              });
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+              createToggler('#navToggler', '#docsNav', 'docsSliderActive');
+              createToggler('#tocToggler', 'body', 'tocActive');
+
+              var headings = document.querySelector('.toc-headings');
+              headings && headings.addEventListener('click', function(event) {
+                var el = event.target;
+                while(el !== headings){
+                  if (el.tagName === 'A') {
+                    document.body.classList.remove('tocActive');
+                    break;
+                  } else{
+                    el = el.parentNode;
+                  }
+                }
+              }, false);
+
+              function createToggler(togglerSelector, targetSelector, className) {
+                var toggler = document.querySelector(togglerSelector);
+                var target = document.querySelector(targetSelector);
+
+                if (!toggler) {
+                  return;
+                }
+
+                toggler.onclick = function(event) {
+                  event.preventDefault();
+
+                  target.classList.toggle(className);
+                };
+              }
+            });
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Cache Persist</h1></header><article><div><span><h1><a class="anchor" aria-hidden="true" id="wora-cache-persist-https-githubcom-morrys-wora"></a><a href="#wora-cache-persist-https-githubcom-morrys-wora" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a><a href="https://github.com/morrys/wora">@wora/cache-persist</a></h1>
+<h2><a class="anchor" aria-hidden="true" id="installation"></a><a href="#installation" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Installation</h2>
+<p>Install @wora/cache-persist using yarn or npm:</p>
+<pre><code class="hljs"><span class="hljs-selector-tag">yarn</span> <span class="hljs-selector-tag">add</span> @<span class="hljs-keyword">wora</span>/<span class="hljs-keyword">cache</span>-<span class="hljs-keyword">persist</span>
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="options"></a><a href="#options" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Options</h2>
+<p>CacheOptions {
+serialize?: boolean,
+prefix?: string | undefined | null,
+layers?: Array&lt;Layer<any>&gt;,
+storage?: CacheStorage,
+webStorage?: &quot;local&quot; | &quot;session&quot;,
+disablePersist?: boolean
+}</p>
+<p>storage: custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.</p>
+<p>prefix: prefix keys, default cache</p>
+<p>serialize: if it is true, the data will be serialized and deserialized JSON</p>
+<p>webStorage: local for localStorage, session for sessionStorage. default local</p>
+<p>disablePersist: if it is true, nostorage is used</p>
+<p>layers: todo documentation (data encryption ecc..)</p>
+<h2><a class="anchor" aria-hidden="true" id="cache"></a><a href="#cache" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Cache</h2>
+<p>isRehydrated(): boolean; // true if restored</p>
+<p>replace(data: any):</p>
+<p>restore(): Promise<Cache>; // restore storage, set rehydratad</p>
+<p>getStorageName(): string;  // storage name</p>
+<p>purge(): Promise<boolean>; // purge state and storage</p>
+<p>clear(): Promise<boolean>; // purge state and storage</p>
+<p>getState(): Readonly&lt;{v[key: string]: any; }&gt;; // return in memory state</p>
+<p>toObject(): Readonly&lt;{v[key: string]: any; }&gt;; // return in memory state</p>
+<p>get(key: string): any; // get value from in memory state</p>
+<p>getAllKeys(): Array<string>; // getAllKeys value from in memory state</p>
+<p>set(key: string, value: any): Promise<any>; // set value in state (sync) and in storage (async)</p>
+<p>delete(key: string): Promise<any>; // delete value in state (sync) and in storage (async)</p>
+<p>remove(key: string): Promise<any>; // remove value in state (sync) and in storage (async)</p>
+<p>subscribe( callback: (message: string, state: any) =&gt; void, ): () =&gt; void // subscription management</p>
+<p>notify(message: string = &quot;notify data&quot;): void // notification of the message and status to all subscriptions</p>
+<h2><a class="anchor" aria-hidden="true" id="usage-default"></a><a href="#usage-default" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage default</h2>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache();
+cache.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">const</span> state = cache.getState();
+});
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="usage-indexeddb"></a><a href="#usage-indexeddb" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage indexedDB</h2>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> Cache, { CacheStorage, CacheOptions } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
+<span class="hljs-keyword">import</span> IDBStorage <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist/lib/idbstorage'</span>;
+
+<span class="hljs-keyword">const</span> idbStorages: CacheStorage[] = IDBStorage.create( {
+    name: <span class="hljs-string">"cache"</span>, 
+    storeNames: [<span class="hljs-string">"persist"</span>, <span class="hljs-string">"persist2"</span>]
+});
+
+<span class="hljs-keyword">const</span> idb: CacheOptions = {
+        storage: idbStorages[<span class="hljs-number">0</span>],
+        serialize: <span class="hljs-literal">false</span>,
+    }
+
+<span class="hljs-keyword">const</span> idb1: CacheOptions = {
+        storage: idbStorages[<span class="hljs-number">1</span>],
+        serialize: <span class="hljs-literal">false</span>,
+    }
+
+<span class="hljs-keyword">const</span> cacheidb = <span class="hljs-keyword">new</span> Cache(idb);
+cacheidb.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">const</span> state = cacheidb.getState();
+});
+
+<span class="hljs-keyword">const</span> cacheidb1 = <span class="hljs-keyword">new</span> Cache(idb1);
+cacheidb1.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">const</span> state = cacheidb1.getState();
+});
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="layer"></a><a href="#layer" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Layer</h2>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> ItemCache&lt;T&gt; = {
+    key: <span class="hljs-built_in">string</span>,
+    value: T
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> Layer&lt;T&gt; {
+    <span class="hljs-keyword">set</span>: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span>, value: T</span>) =&gt;</span> ItemCache&lt;T&gt;
+    <span class="hljs-keyword">get</span>: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span>, value: T</span>) =&gt;</span> ItemCache&lt;T&gt;
+    remove?: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">string</span>
+    check?: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">boolean</span>
+}
+</code></pre>
+<p>set: called before persisting an item in the storage
+get: called before restoring item in the cache
+remove: called before removing an item from the storage
+check: called to check if the item in the storage belongs to the cache</p>
+<h3><a class="anchor" aria-hidden="true" id="layers-provided-within-the-library"></a><a href="#layers-provided-within-the-library" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>layers provided within the library</h3>
+<ul>
+<li><p>prefixLayer: layer that handles the key prefix, is inserted as the first layer when the prefix option is different from null</p></li>
+<li><p>jsonSerialize: layer that handles JSON serialization and deserialization of values, is inserted as the last layer when the serialize option is true</p></li>
+<li><p>filterKeys: this layer allows you to define a function to determine which keys persist.</p></li>
+</ul>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> filterKeys  <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist/lib/layers/filterKeys'</span>;
+
+<span class="hljs-keyword">const</span> filterPersistAuth: Layer&lt;<span class="hljs-built_in">any</span>&gt; = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> key.includes(<span class="hljs-string">"auth"</span>));
+
+<span class="hljs-keyword">const</span> filterNoPersistAuth: Layer&lt;<span class="hljs-built_in">any</span>&gt; = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> !key.includes(<span class="hljs-string">"auth"</span>));
+
+<span class="hljs-keyword">const</span> CacheLocal1 = <span class="hljs-keyword">new</span> Cache({
+    layers: [filterNoPersistAuth],
+    prefix: <span class="hljs-string">'cache1'</span>,
+});
+
+<span class="hljs-keyword">const</span> CacheLocal2 = <span class="hljs-keyword">new</span> Cache({
+    layers: [filterPersistAuth],
+    prefix: <span class="hljs-string">'cache2'</span>,
+});
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="storage"></a><a href="#storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Storage</h2>
+<h3><a class="anchor" aria-hidden="true" id="do-you-want-to-create-your-own-storage-it-is-sufficient-to-implement-this-interface"></a><a href="#do-you-want-to-create-your-own-storage-it-is-sufficient-to-implement-this-interface" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>do you want to create your own storage? It is sufficient to implement this interface</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> Storage {
+    multiRemove: <span class="hljs-function">(<span class="hljs-params">keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;,
+    multiGet: <span class="hljs-function">(<span class="hljs-params">keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;DataCache&gt;,
+    getAllKeys: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;,
+    multiSet: <span class="hljs-function">(<span class="hljs-params">items: <span class="hljs-built_in">Array</span>&lt;ItemCache&lt;<span class="hljs-built_in">any</span>&gt;&gt;</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;,
+    setItem: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span>, value: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;,
+    removeItem: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt; 
+}
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="hooks-example"></a><a href="#hooks-example" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Hooks example</h2>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { useEffect, useState } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
+<span class="hljs-keyword">import</span> { DataCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist'</span>;
+
+<span class="hljs-keyword">const</span> [result, setResult] = useState&lt;{loading: <span class="hljs-built_in">boolean</span>, data: DataCache}&gt;({loading: <span class="hljs-literal">true</span>, data: {}});
+
+ useEffect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+    <span class="hljs-keyword">const</span> dispose = cache.subscribe(<span class="hljs-function">(<span class="hljs-params">message, state</span>) =&gt;</span> {
+      setResult({loading: <span class="hljs-literal">false</span>, data: state});
+    });
+    cache.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
+      cache.notify(<span class="hljs-string">"restored"</span>);
+    })
+    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> dispose();
+    
+  },
+    []);
+</code></pre>
+</span></div></article></div><div class="docs-prevnext"><a class="docs-prev button" href="/woradocs/introduction.html"><span class="arrow-prev">← </span><span>wora</span></a><a class="docs-next button" href="/woradocs/relay-store.html"><span>Next</span><span class="arrow-next"> →</span></a></div></div></div></div><footer id="footer"></footer></div></body></html>
