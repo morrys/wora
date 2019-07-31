@@ -14,7 +14,7 @@ const siteConfig = {
     title: 'Wora',
     tagline: 'Wora...',
     url: 'https://morrys.github.io',
-    baseUrl: '/wora',
+    baseUrl: '/wora/',
     projectName: 'wora',
     organizationName: 'morrys',
     headerLinks: [
