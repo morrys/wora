@@ -3,6 +3,11 @@ id: cache-persist
 title: Cache Persist
 ---
 
+
+## Architecture
+
+![alt-text](assets/cache-persist-architecture.png).
+
 # [@wora/cache-persist](https://github.com/morrys/wora)
 
 
