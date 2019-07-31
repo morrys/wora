@@ -6,7 +6,87 @@ title: Cache Persist
 
 ## Architecture
 
-![alt-text](assets/cache-persist-architecture.png).
+![alt-text](assets/cache-persist-architecture.png)
+
+### Cache
+
+explain the use of the DataCache object, synchronous methods, asynchronous methods and management of subscriptions and notifications
+
+* interface
+
+* sync method
+
+isRehydrated(): boolean; // true if restored
+
+getState(): Readonly<{v[key: string]: any; }>; // return in memory state
+
+toObject(): Readonly<{v[key: string]: any; }>; // return in memory state
+
+get(key: string): any; // get value from in memory state
+
+getAllKeys(): Array<string>; // getAllKeys value from in memory state
+
+* async method
+
+replace(data: any): Promise<void> 
+restore(): Promise<Cache>; // restore storage, set rehydratad
+
+purge(): Promise<boolean>; // purge state and storage
+
+clear(): Promise<boolean>; // purge state and storage
+
+set(key: string, value: any): Promise<any>; // set value in state (sync) and in storage (async)
+
+delete(key: string): Promise<any>; // delete value in state (sync) and in storage (async)
+    
+remove(key: string): Promise<any>; // remove value in state (sync) and in storage (async)
+
+* subscriptions and notifications
+
+subscribe( callback: (message: string, state: any) => void, ): () => void // subscription management
+
+notify(message: string = "notify data"): void // notification of the message and status to all subscriptions
+
+
+### Proxy Storage
+
+explain why proxy storage
+
+### Middleware Layer
+
+explain the role of the middleware layer
+
+export interface Layer<T> {
+    set: (key: string, value: T) => ItemCache<T>
+    get: (key: string, value: T) => ItemCache<T>
+    remove?: (key: string) => string
+    check?: (key: string) => boolean
+}
+
+* setting flow
+
+![alt-text](assets/cache-persist-set-flow.png)
+
+* removal flow
+
+![alt-text](assets/cache-persist-remove-flow.png)
+
+* restoring flow
+
+![alt-text](assets/cache-persist-restore-flow.png)
+
+### Storage
+
+explain storage and its implementations and logical separation through the prefix key
+
+export interface Storage {
+    multiRemove: (keys: Array<string>) => Promise<void>,
+    multiGet: (keys: Array<string>) => Promise<DataCache>,
+    getAllKeys: () => Promise<Array<string>>,
+    multiSet: (items: Array<ItemCache<any>>) => Promise<void>,
+    setItem: (key: string, value: string) => Promise<void>,
+    removeItem: (key: string) => Promise<void> 
+}
 
 # [@wora/cache-persist](https://github.com/morrys/wora)
 
@@ -40,39 +120,6 @@ webStorage: local for localStorage, session for sessionStorage. default local
 disablePersist: if it is true, nostorage is used
 
 layers: todo documentation (data encryption ecc..)
-
-
-## Cache
-isRehydrated(): boolean; // true if restored
-
-replace(data: any): 
-
-restore(): Promise<Cache>; // restore storage, set rehydratad
-    
-getStorageName(): string;  // storage name
-
-purge(): Promise<boolean>; // purge state and storage
-
-clear(): Promise<boolean>; // purge state and storage
-
-getState(): Readonly<{v[key: string]: any; }>; // return in memory state
-
-toObject(): Readonly<{v[key: string]: any; }>; // return in memory state
-
-get(key: string): any; // get value from in memory state
-
-getAllKeys(): Array<string>; // getAllKeys value from in memory state
-    
-set(key: string, value: any): Promise<any>; // set value in state (sync) and in storage (async)
-    
-delete(key: string): Promise<any>; // delete value in state (sync) and in storage (async)
-    
-remove(key: string): Promise<any>; // remove value in state (sync) and in storage (async)
-
-subscribe( callback: (message: string, state: any) => void, ): () => void // subscription management
-
-notify(message: string = "notify data"): void // notification of the message and status to all subscriptions
-    
 
 
 ## Usage default
