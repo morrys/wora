@@ -66,7 +66,7 @@ This allows you to **avoid** having **multiple references of the same query**.
 
 #### __gc Method
 
-**Added** at the beginning of the method:
+Added at the beginning of the method:
 
 ```ts
 if (! this.checkGC ()) {
@@ -77,19 +77,30 @@ if (! this.checkGC ()) {
 This is to **avoid executing the garbage collector**, we will see a **use case** in the **wora/relay-offline** library.
 
 
-**Changed the check to determine** which **query** had to be **cleaned** from the **store**. **Before it was sufficient** that the query was in the **dispose state**, **now** to be eliminated from the store **it is required** that **also its TTL has expired**.
+**Changed the check to determine** which **query** had to be **cleaned** from the **store**.
+
+```ts
+//...
+const expired: boolean = !this.isCurrent(selRoot.retainTime, selRoot.ttl);
+            if (!selRoot.dispose || !expired) {
+                //...
+            }
+//...
+```
+
+ **Before it was sufficient** that the query was in the **dispose state**, **now** to be eliminated from the store **it is required** that **also its TTL has expired**.
 
 #### add setCheckGC Method
 
-**allows you to define a custom condition to execute the garbage collector**
+allows you to define a custom condition to execute the garbage collector
 
 #### add purge Method
 
-**allows you to purge the store**
+allows you to purge the store
 
 #### add restore Method
 
-**allows you to restore the store from storage**
+allows you to restore the store from storage
 
 
 ## Installation
