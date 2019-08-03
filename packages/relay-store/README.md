@@ -25,8 +25,9 @@ const store = new Store(defaultTTL, persistOptions, persistOptionsRecords);
 
 // ...
 
-// await before instantiating ApolloClient, else queries might run before the cache is persisted
-await cache.restore();
+// await before instantiating RelayModernEnvironment, else queries might run before the cache is persisted
+
+await store.restore();
 
 ```
 

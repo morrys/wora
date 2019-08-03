@@ -3,7 +3,7 @@
   "localized-strings": {
     "next": "Next",
     "previous": "Previous",
-    "tagline": "Wora...",
+    "tagline": "wora...",
     "docs": {
       "apollo-cache": {
         "title": "Apollo Cache"

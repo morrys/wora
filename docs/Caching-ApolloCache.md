@@ -3,8 +3,6 @@ id: apollo-cache
 title: Apollo Cache
 ---
 
-### apollo-cache
-
 This library plans to exploit the full potential of the `wora/cache-persist` cache using it as **ObjectCache** of the apollo inmemory cache.
 
 This allows it to be **totally integrated** with the apollo logics without having to change them.
