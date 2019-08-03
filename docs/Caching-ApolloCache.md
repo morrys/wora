@@ -47,4 +47,4 @@ const client = new ApolloClient({
 * constructor(options?: InMemoryCacheConfig, persistOptions?:CacheOptions);
 
 
-[CacheOptions](Caching-CachePersist.md)
+[CacheOptions](Caching-CachePersist.md#cache-options)

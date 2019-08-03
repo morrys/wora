@@ -1,41 +1,41 @@
 const users = [
-    {
-      caption: 'Morrys',
-      // You will need to prepend the image path with your baseUrl
-      // if it is not '/', like: '/test-site/img/image.jpg'.
-      image: '/img/undraw_open_source.svg',
-      infoLink: 'https://github/morrys',
-      pinned: true,
-    },
-  ];
+  {
+    caption: 'Memorang',
+    // You will need to prepend the image path with your baseUrl
+    // if it is not '/', like: '/test-site/img/image.jpg'.
+    image: '/wora/docs/assets/memorang-logo.png',
+    infoLink: 'https://memorangapp.com',
+    pinned: true,
+  },
+];
 
 
 const siteConfig = {
-    title: 'Wora',
-    tagline: 'Wora...',
-    url: 'https://morrys.github.io',
-    baseUrl: '/wora/',
-    projectName: 'wora',
-    organizationName: 'morrys',
-    headerLinks: [
-        {doc: 'introduction', label: 'Docs'},
-        {
-          href: 'https://github.com/morrys/wora',
-          label: 'GitHub',
-        },
-        {languages: false},
-      ],
-      // If you have users set above, you add it here:
+  title: 'wora',
+  tagline: 'wora...',
+  url: 'https://morrys.github.io',
+  baseUrl: '/wora/',
+  projectName: 'wora',
+  organizationName: 'morrys',
+  headerLinks: [
+    { doc: 'introduction', label: 'Docs' },
+    {
+      href: 'https://github.com/morrys/wora',
+      label: 'GitHub',
+    },
+    { languages: false },
+  ],
+  // If you have users set above, you add it here:
   users,
 
   /* path to images for header/footer */
   headerIcon: 'img/favicon.ico',
   footerIcon: 'img/favicon.ico',
   favicon: 'img/favicon.ico',
-    colors: {
-        primaryColor: '#000',
-        secondaryColor: '#fff',
-      },
+  colors: {
+    primaryColor: '#008ed8',
+    secondaryColor: '#17afff',
+  },
 
   /* Custom fonts for website */
   /*
@@ -84,6 +84,6 @@ const siteConfig = {
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
   //   repoUrl: 'https://github.com/facebook/test-site',
-  };
-  
-  module.exports = siteConfig;
+};
+
+module.exports = siteConfig;

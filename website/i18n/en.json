@@ -5,8 +5,8 @@
     "previous": "Previous",
     "tagline": "Wora...",
     "docs": {
-      "Caching-ApolloCache": {
-        "title": "Caching-ApolloCache"
+      "apollo-cache": {
+        "title": "Apollo Cache"
       },
       "cache-persist": {
         "title": "Cache Persist"
