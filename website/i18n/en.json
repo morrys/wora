@@ -3,7 +3,7 @@
   "localized-strings": {
     "next": "Next",
     "previous": "Previous",
-    "tagline": "wora...",
+    "tagline": "Collection of libraries usable for the web, react and react-native.",
     "docs": {
       "apollo-cache": {
         "title": "Apollo Cache"

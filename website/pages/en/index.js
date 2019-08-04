@@ -61,9 +61,9 @@ class HomeSplash extends React.Component {
       </div>
     );
 
+    // <Logo img_src={`${baseUrl}img/undraw_monitor.svg`} />
     return (
       <SplashContainer>
-        <Logo img_src={`${baseUrl}img/undraw_monitor.svg`} />
         <div className="inner">
           <ProjectTitle siteConfig={siteConfig} />
           <PromoSection title="Caching">
@@ -74,6 +74,11 @@ class HomeSplash extends React.Component {
           <PromoSection title="Networking">
             <Button href={docUrl('netinfo.html')}>NetInfo</Button>
             <Button href={docUrl('detect-network.html')}>Detect Network</Button>
+          </PromoSection>
+          <PromoSection title="Offline">
+            <Button href={docUrl('offline-first.html')}>Offline First</Button>
+            <Button href={docUrl('apollo-offline.html')}>Apollo Offline</Button>
+            <Button href={docUrl('relay-offline.html')}>Relay Offline</Button>
           </PromoSection>
         </div>
       </SplashContainer>
