@@ -13,6 +13,35 @@ const MarkdownBlock = CompLibrary.MarkdownBlock; /* Used to read markdown */
 const Container = CompLibrary.Container;
 const GridBlock = CompLibrary.GridBlock;
 
+const SplashContainer = props => (
+  <div className="homeContainer">
+    <div className="homeSplashFade">
+      <div className="wrapper homeWrapper">{props.children}</div>
+    </div>
+  </div>
+);
+
+
+
+const PromoSection = props => (
+  <div className="section promoSection">
+    <div className="promoRow">
+      <h4 className="projectTitle">
+        <small>{props.title}</small>
+      </h4>
+      <div className="pluginRowBlock">{props.children}</div>
+    </div>
+  </div>
+);
+
+const Button = props => (
+  <div className="pluginWrapper buttonWrapper">
+    <a className="button" href={props.href} target={props.target}>
+      {props.children}
+    </a>
+  </div>
+);
+
 class HomeSplash extends React.Component {
   render() {
     const { siteConfig, language = '' } = this.props;
@@ -21,13 +50,7 @@ class HomeSplash extends React.Component {
     const langPart = `${language ? `${language}/` : ''}`;
     const docUrl = doc => `${baseUrl}${docsPart}${langPart}${doc}`;
 
-    const SplashContainer = props => (
-      <div className="homeContainer">
-        <div className="homeSplashFade">
-          <div className="wrapper homeWrapper">{props.children}</div>
-        </div>
-      </div>
-    );
+    
 
     const Logo = props => (
       <div className="projectLogo">
@@ -40,25 +63,6 @@ class HomeSplash extends React.Component {
         {siteConfig.title}
         <small>{siteConfig.tagline}</small>
       </h2>
-    );
-
-    const PromoSection = props => (
-      <div className="section promoSection">
-        <div className="promoRow">
-          <h4 className="projectTitle">
-            <small>{props.title}</small>
-          </h4>
-          <div className="pluginRowBlock">{props.children}</div>
-        </div>
-      </div>
-    );
-
-    const Button = props => (
-      <div className="pluginWrapper buttonWrapper">
-        <a className="button" href={props.href} target={props.target}>
-          {props.children}
-        </a>
-      </div>
     );
 
     // <Logo img_src={`${baseUrl}img/undraw_monitor.svg`} />
@@ -104,12 +108,21 @@ class Index extends React.Component {
       </Container>
     );
 
-    const FeatureCallout = () => (
+    const OtherRepositories = () => (
       <div
         className="productShowcaseSection paddingBottom"
         style={{ textAlign: 'center' }}>
-        <h2>Feature Callout</h2>
-        <MarkdownBlock>These are features of this project</MarkdownBlock>
+        <h2>Other Repositories</h2>
+        <SplashContainer>
+          <div className="inner">
+            <PromoSection>
+              <Button href="https://github.com/morrys/react-relay-offline">React Relay Offline</Button>
+              <Button href="https://github.com/morrys/react-relay-appsync">React Relay Appsync</Button>
+              <Button href="https://github.com/relay-tools/relay-hooks">Relay Hooks</Button>
+              <Button href="https://github.com/morrys/offline-examples">Offline Examples</Button>
+            </PromoSection>
+          </div>
+        </SplashContainer>
       </div>
     );
 
@@ -210,12 +223,13 @@ class Index extends React.Component {
           <LearnHow />
           <TryOut />
           <Description />
-    */      
+    */
 
     return (
       <div>
         <HomeSplash siteConfig={siteConfig} language={language} />
         <div className="mainContainer">
+          <OtherRepositories />
           <Showcase />
         </div>
       </div>
