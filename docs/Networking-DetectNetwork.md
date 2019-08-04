@@ -9,6 +9,9 @@ simple library that implements the **react-native useNetInfo hook** to use it al
 
 it is possible to use the **useIsConnected hook** with the only information if the network status is online or offline for both **react-native and web**
 
+I opened an [issue](https://github.com/react-native-community/react-native-netinfo/issues/160) to request to implement useIsConnected inside the react-native-community/react-native-netinfo library
+
+
 
 ## React
 

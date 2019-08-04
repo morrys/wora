@@ -5,6 +5,8 @@ title: NetInfo
 
 # [@wora/netinfo](https://github.com/morrys/wora)
 
+## Overview
+
 simple library that implements the **react-native netinfo interface** to use it also in the **web**, thanks to the work of `Nicolas Gallagher`
 
 ### NetInfo.addEventListener
