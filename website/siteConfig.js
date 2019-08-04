@@ -12,7 +12,7 @@ const users = [
 
 const siteConfig = {
   title: 'wora',
-  tagline: 'wora...',
+  tagline: 'Collection of libraries usable for the web, react and react-native.',
   url: 'https://morrys.github.io',
   baseUrl: '/wora/',
   projectName: 'wora',
