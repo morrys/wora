@@ -1,17 +1,5 @@
-const users = [
-  {
-    caption: 'Memorang',
-    // You will need to prepend the image path with your baseUrl
-    // if it is not '/', like: '/test-site/img/image.jpg'.
-    image: '/wora/docs/assets/memorang-logo.png',
-    infoLink: 'https://memorangapp.com',
-    pinned: true,
-  },
-];
-
-
 const siteConfig = {
-  title: 'wora',
+  title: 'Morrys Website',
   tagline: 'Collection of libraries usable for the web, react and react-native.',
   url: 'https://morrys.github.io',
   baseUrl: '/wora/',
@@ -25,8 +13,6 @@ const siteConfig = {
     },
     { languages: false },
   ],
-  // If you have users set above, you add it here:
-  users,
 
   /* path to images for header/footer */
   headerIcon: 'img/favicon.ico',
