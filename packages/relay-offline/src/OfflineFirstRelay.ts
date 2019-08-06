@@ -97,7 +97,7 @@ function discard(environment, onDiscard = (options => true), options: { offlineR
     }
 }
 
-async function executeMutation(environment, network, offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
+async function executeMutation(environment, network = environment.getNetwork(), offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
     const { request: { payload } } = offlineRecord;
     const operation = payload.operation;
     const uploadables = payload.uploadables;
