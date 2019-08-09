@@ -154,7 +154,7 @@ export function publish<T = any, TVariables = OperationVariables>(client: any, m
             client.queryManager.broadcastQueries();
 
         }
-        return optimisticResponse;
+        return result;
     }).catch((error: Error) => {
         client.store.markMutationComplete({ mutationId: id, optimisticResponse: true });
         throw error;
