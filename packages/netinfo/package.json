@@ -1,13 +1,14 @@
 {
   "name": "@wora/netinfo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "keywords": [
     "wora",
     "react-native",
     "detect",
     "network",
     "react",
-    "hooks"
+    "hooks",
+    "netinfo"
   ],
   "main": "lib/index.js",
   "license": "MIT",

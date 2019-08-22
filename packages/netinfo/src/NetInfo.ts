@@ -7,13 +7,13 @@
  *
  * @flow
  */
-
+import ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
 import * as findIndex from 'array-find-index';
 
-const connection =
+const connection = ExecutionEnvironment.canUseDOM && (
   (window.navigator as any).connection ||
   (window.navigator as any).mozConnection ||
-  (window.navigator as any).webkitConnection;
+  (window.navigator as any).webkitConnection);
 
 // Prevent the underlying event handlers from leaking and include additional
 // properties available in browsers
@@ -21,7 +21,7 @@ const getConnectionInfoObject = () => {
   const result = {
     effectiveType: 'unknown',
     type: 'unknown',
-    isConnected: window.navigator.onLine
+    isConnected: !ExecutionEnvironment.canUseDOM || window.navigator.onLine
   };
   if (!connection) {
     return result;
