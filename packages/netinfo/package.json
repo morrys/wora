@@ -32,7 +32,8 @@
     "build": "tsc"
   },
   "dependencies": {
-    "array-find-index": "1.0.2"
+    "array-find-index": "1.0.2",
+    "fbjs": "^1.0.0"
   },
   "devDependencies": {
     "@react-native-community/netinfo": "3.2.1"
