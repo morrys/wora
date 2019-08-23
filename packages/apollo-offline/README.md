@@ -59,6 +59,10 @@ You then need to link the native parts of the library for the platforms you are 
   * onComplete callback of the mutation performed successfully
 
   * onDiscard callback of the failed mutation
+  
+## React Web Example
+
+The [offline-examples](https://github.com/morrys/offline-examples) repository contains an integration of @wora/apollo-offline. To try it out
 
 ## Apollo Client
 
