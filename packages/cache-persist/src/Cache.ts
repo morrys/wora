@@ -1,4 +1,4 @@
-import { getStorage } from "./storage";
+import createWebStorage from "./storage";
 import StorageProxy from './StorageProxy';
 import { DataCache, Subscription, CacheOptions } from "./CacheTypes";
 import NoStorageProxy from './NoStorageProxy';
@@ -14,17 +14,17 @@ class Cache {
 
     constructor(options: CacheOptions = {}) {
         const { 
-            storage, 
             prefix = 'cache', 
             serialize = true, 
             layers = [],
             webStorage = 'local',
-            disablePersist = false
+            disablePersist = false,
+            storage = createWebStorage(webStorage), 
+            errorHandling,
         } = options;
-        const storageOptions = { prefix, serialize, layers };
-        this.storageOptions = storageOptions;
-        const confStorage = storage || getStorage(webStorage)
-        this.storageProxy = disablePersist || !confStorage ? new NoStorageProxy() : new StorageProxy(confStorage, storageOptions);        
+        const storageOptions = { prefix, serialize, layers, errorHandling };
+        this.storageOptions = storageOptions;      
+        this.storageProxy = disablePersist || !storage ? new NoStorageProxy() : new StorageProxy(this, storage, storageOptions);        
     }
 
     public isRehydrated(): boolean { return this.rehydrated}

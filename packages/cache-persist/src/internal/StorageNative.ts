@@ -1,7 +1,7 @@
-import { Storage, ItemCache, DataCache } from '../CacheTypes';
+import { CacheStorage, DataCache } from '../CacheTypes';
 
 
-function NativeStorage(AsyncStorage): Storage {
+function NativeStorage(AsyncStorage): CacheStorage {
     return {
         multiRemove: (keys) => {
             return AsyncStorage.multiRemove(keys);
@@ -21,12 +21,8 @@ function NativeStorage(AsyncStorage): Storage {
         getAllKeys: (): Promise<Array<string>> => {
             return AsyncStorage.getAllKeys();
         },
-        multiSet: (items: Array<ItemCache<any>>) => {
-            const asyncItems = [];
-            items.forEach(function (item) {
-                asyncItems.push([item.key, item.value])
-            });
-            return AsyncStorage.multiSet(asyncItems);
+        multiSet: (items: string[][]) => {
+            return AsyncStorage.multiSet(items);
         },
         setItem: (key: string, value: string): Promise<void> => {
             return AsyncStorage.setItem(key, value)

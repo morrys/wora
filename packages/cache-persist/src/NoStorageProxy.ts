@@ -1,7 +1,7 @@
-import { CacheStorage, DataCache } from './CacheTypes';
+import { StorageHelper, DataCache } from './CacheTypes';
 import { promiseVoid, promiseResult } from './StorageProxy';
 
-class NoStorageProxy implements CacheStorage {
+class NoStorageProxy implements StorageHelper {
     purge():  Promise<boolean> { return promiseResult(() => { return true } )}   
     restore(): Promise<DataCache> { return promiseResult(() => { return {} } )}   
     replace(data: any): Promise<void> { return promiseVoid(() => { } ) }   

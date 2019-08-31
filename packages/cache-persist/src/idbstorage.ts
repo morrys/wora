@@ -1,5 +1,5 @@
 import { openDB, IDBPDatabase } from 'idb';
-import { DataCache, Storage, ItemCache } from './CacheTypes';
+import { DataCache, CacheStorage } from './CacheTypes';
 
 export type OnUpgrade = {
     (db: any, oldVersion: number, newVersion: number, transaction: any): void
@@ -42,7 +42,7 @@ class IDBStorage {
 
 }
 
-export function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: string): Storage {
+export function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: string): CacheStorage {
     return {
         multiRemove: (keys) => {
             return dbPromise.then(db => {
@@ -64,10 +64,10 @@ export function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeNam
         getAllKeys: () => {
             return dbPromise.then(db => db.getAllKeys(storeName));
         },
-        multiSet: async (items: Array<ItemCache<any>>) => {
+        multiSet: async (items: string[][]) => {
             return dbPromise.then(db =>
                 items.forEach(function (item) {
-                    db.put(storeName, item.value, item.key);
+                    db.put(storeName, item[1], item[0]);
                 }))
         },
         setItem: (key: string, value: string): Promise<void> => {

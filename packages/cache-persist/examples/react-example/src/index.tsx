@@ -30,15 +30,19 @@ const StyledApp = styled.div`
     flex-direction: column-reverse;
 `;
 
-const filterPersistReplace: Layer<any> = filterKeys(key => key.includes("replace"));
+const filterPersistReplace: Layer = filterKeys(key => key.includes("replace"));
 
-const filterNoPersistReplace: Layer<any> = filterKeys(key => !key.includes("replace"));
+const filterNoPersistReplace: Layer = filterKeys(key => !key.includes("replace"));
 
 const CacheLocal = new Cache({
     layers: [filterNoPersistReplace],
 });
 
 const CacheLocalNew = new Cache({
+    errorHandling: (error) => { 
+        console.log("error", error);
+        return true;
+    },
     layers: [filterPersistReplace],
     prefix: 'cachenew',
 });
@@ -91,9 +95,14 @@ const CacheLocalIDB2 = new Cache({
     storage: idbStorages[1],
 });
 
+const CacheLocalDisable = new Cache({
+    disablePersist: true
+});
+
 
 const App = () => {
     return <StyledApp>
+            <TodoList cache={CacheLocalDisable} name = "CacheLocal Disable" />
             <TodoList cache={CacheLocalIDBNO} name = "CacheLocalIDBNO" />
             <TodoList cache={CacheLocalIDB} name = "CacheLocalIDB" />
             <TodoList cache={CacheLocalIDB2} name = "CacheLocalIDB2" />

@@ -59,6 +59,8 @@ const TodoList = (props: Props) => {
   const handleTextInputSave = (text: string) => {
     const key = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     cache.set(key, text);
+    cache.remove(key);
+    cache.set(key, text);
     cache.notify("set");
     return;
   };

@@ -1,8 +1,8 @@
 import { AsyncStorage } from 'react-native';
-import { Storage } from '../CacheTypes';
+import { CacheStorage } from '../CacheTypes';
 import InternalNativeStorage from '../internal/StorageNative'
 
-function NativeStorage(): Storage {
+function NativeStorage(): CacheStorage {
     return InternalNativeStorage(AsyncStorage)
 }
 
