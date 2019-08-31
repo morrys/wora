@@ -1,7 +1,7 @@
-import createStorage from "./storage";
+import { getStorage } from "./storage";
 import StorageProxy from './StorageProxy';
 import { DataCache, Subscription, CacheOptions } from "./CacheTypes";
-import noStorage from './nostorage';
+import NoStorageProxy from './NoStorageProxy';
 
 export const PREFIX_DELIMITER: string = ".";
 
@@ -23,7 +23,8 @@ class Cache {
         } = options;
         const storageOptions = { prefix, serialize, layers };
         this.storageOptions = storageOptions;
-        this.storageProxy = new StorageProxy(disablePersist ? noStorage() : storage || createStorage(webStorage), storageOptions);        
+        const confStorage = storage || getStorage(webStorage)
+        this.storageProxy = disablePersist || !confStorage ? new NoStorageProxy() : new StorageProxy(confStorage, storageOptions);        
     }
 
     public isRehydrated(): boolean { return this.rehydrated}

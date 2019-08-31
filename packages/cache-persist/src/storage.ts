@@ -1,6 +1,5 @@
 import { Storage, ItemCache, DataCache } from './CacheTypes';
 import { promiseVoid, promiseResult } from './StorageProxy';
-import noStorage from './nostorage';
 
 function hasStorage(storageType) {
     if (typeof self !== 'object' || !(storageType in self)) {
@@ -19,19 +18,16 @@ function hasStorage(storageType) {
     return true
 }
 
-function getStorage(type: string): any {
+export function getStorage(type: string): any {
     const storageType = `${type}Storage`
     if (hasStorage(storageType)) return self[storageType]
     else {
-        return noStorage();
+        return null;
     }
 }
 
 
-
-
-function webStorage(type: string): Storage {
-    const storage = getStorage(type)
+function webStorage(storage): Storage {
     return {
         multiRemove: (keys: Array<string>) => promiseVoid((): void => {
             keys.forEach(function (key) {
