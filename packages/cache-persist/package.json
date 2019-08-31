@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "rimraf": "2.6.3",
-    "typescript": "3.5.2"
+    "typescript": "3.5.2",
+    "@react-native-community/async-storage": "^1.6.1"
   }
 }

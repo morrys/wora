@@ -1465,6 +1465,11 @@
     universal-user-agent "^3.0.0"
     url-template "^2.0.8"
 
+"@react-native-community/async-storage@^1.6.1":
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/async-storage/-/async-storage-1.6.1.tgz#19be07fc1d65c77bdeb20f46108ba12076aad1c5"
+  integrity sha512-1WA28xfdhG+unkTEk/lXnqI2izv6belo0CYw7UdvaeHm8TIYT6eTmIIdGR7oiCa2xSKEnaPQqRMH6h7gyLNbww==
+
 "@react-native-community/cli@^1.2.1":
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli/-/cli-1.10.0.tgz#66e3c9f407763281f7060c034145650bf0d6786c"
@@ -1551,28 +1556,29 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "0.0.3"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-apollo-cache-0.0.3-3b166a32-1eb4-4814-9744-40622085e82c-1563987245307/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-apollo-cache-0.0.3-82592ce7-41c9-4a51-b868-690cbb6c6d3e-1567241289192/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
-  version "2.0.0-a16"
+  version "2.0.0-a1"
   dependencies:
     idb "^4.0.0"
 
 "@wora/netinfo@file:packages/netinfo":
-  version "1.0.0"
+  version "1.0.1"
   dependencies:
     array-find-index "1.0.2"
+    fbjs "^1.0.0"
 
 "@wora/offline-first@file:packages/offline-first":
-  version "0.0.5"
+  version "0.0.6"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-d87cbd91-6821-4186-a976-bdce95b06a12-1563987245307/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.5-d87cbd91-6821-4186-a976-bdce95b06a12-1563987245307/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.6-b199d118-71ff-4b72-83d1-07dfd6e69cf7-1567241289191/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.6-b199d118-71ff-4b72-83d1-07dfd6e69cf7-1567241289191/node_modules/@wora/netinfo"
 
 "@wora/relay-store@file:packages/relay-store":
   version "0.0.6"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-relay-store-0.0.6-634e094a-06fd-486d-90c0-d666e25b0744-1563987245307/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-relay-store-0.0.6-04e5565a-efac-4314-a0f4-043553fd1d18-1567241289194/node_modules/@wora/cache-persist"
 
 "@wry/context@^0.4.0":
   version "0.4.4"
