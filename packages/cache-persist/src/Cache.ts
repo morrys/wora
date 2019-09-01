@@ -1,11 +1,11 @@
 import createWebStorage from "./storage";
 import StorageProxy from './StorageProxy';
-import { CacheType, DataCache, Subscription, CacheOptions } from "./CacheTypes";
+import { ICache, DataCache, Subscription, CacheOptions } from "./CacheTypes";
 import NoStorageProxy from './NoStorageProxy';
 
 export const PREFIX_DELIMITER: string = ".";
 
-class Cache implements CacheType {
+class Cache implements ICache {
     private data: DataCache = {};
     private rehydrated: boolean = false;
     private _subscriptions: Set<Subscription> = new Set();

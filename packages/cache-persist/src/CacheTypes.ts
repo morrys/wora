@@ -24,10 +24,10 @@ export type CacheOptions = {
     storage?: CacheStorage, 
     webStorage?: "local" | "session",
     disablePersist?: boolean,
-    errorHandling?: (cache: CacheType, error: any) => boolean,
+    errorHandling?: (cache: ICache, error: any) => boolean,
 }
 
-export interface CacheType {
+export interface ICache {
     purge: () => Promise<boolean>;
     restore: () => Promise<DataCache>;
     replace: (data: any) => Promise<void>;
