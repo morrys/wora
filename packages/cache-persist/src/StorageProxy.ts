@@ -5,16 +5,11 @@ import Cache from './Cache';
 import Queue from './Queue';
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
-    return new Promise((resolve, reject) => {
-        resolve(execute())
-    });
+    return Promise.resolve(execute());
 }
 
-export function promiseVoid(execute: () => void): Promise<void> {
-    return new Promise((resolve, reject) => {
-        execute()
-        resolve()
-    });
+export function promiseVoid(execute: () => void = () => { }): Promise<void> {
+    return promiseResult(execute);
 }
 
 
@@ -40,7 +35,29 @@ class StorageProxy implements StorageHelper {
         this.layers = prefix ? this.layers.concat(prefixLayer(prefix)) : this.layers
         this.layers = this.layers.concat(layers);
         this.layers = serialize ? this.layers.concat(jsonSerialize) : this.layers;
-        this.storage = storage;
+        this.storage = {
+            multiRemove: async (keys) => {
+                for (var i = 0, l = keys.length; i < l; i++) {
+                    await storage.removeItem(keys[i]);
+                }
+            },
+            multiGet: async (keys) => {
+                    const data: string[][] = [];
+                    for (var i = 0, l = keys.length; i < l; i++) {
+                        const key: string = keys[i];
+                        const value = await storage.getItem(key);
+                        data.push([key, value]);
+                    }
+                    return data;
+            },
+            multiSet: async (items: string[][]) => {
+                for (var i = 0, l = items.length; i < l; i++) {
+                        const [key, value] = items[i];
+                        await storage.setItem(key, value);
+                    }
+            },
+            ...storage
+        };
         this.init();
     }
 
@@ -62,7 +79,7 @@ class StorageProxy implements StorageHelper {
         return this.storage.getAllKeys().then((keys: Array<string>) =>
             this.storage.multiGet(this.filter(keys))).then(data => {
                 const result: DataCache = {};
-                Object.entries(data).forEach(([key, value]) => {
+                data.forEach(([key, value]) => {
                     const item = this.get(key, value)
                     result[item[0]] = item[1];
                 });
@@ -71,7 +88,7 @@ class StorageProxy implements StorageHelper {
     }
     replace(data: any): Promise<void> {
         const items: string[][] = [];
-        return this.purge().then(async () => {
+        return this.purge().then(() => {
             Object.entries(data).forEach(([key, value]) => {
                 const item = this.set(key, value);
                 if (item) {
@@ -79,7 +96,7 @@ class StorageProxy implements StorageHelper {
                 }
 
             });
-            await this.storage.multiSet(items);
+            return this.storage.multiSet(items);
         })
 
     }

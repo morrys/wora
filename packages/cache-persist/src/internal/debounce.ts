@@ -1,14 +1,13 @@
-function debounce(asyncFunction: any, callback, options: { wait?: number, maxWait?: number } = {}) {
-  let timerId, lastCallTime;
+function debounce(asyncFunction: any, callback, options: { wait?: number } = {}) {
+  let timerId = null;
+  let lastCall = 0;
   let inExecution = false;
-  let lastInvokeTime = 0;
-  const { wait = 200, maxWait = 600} = options;
+  const { wait = 200 } = options;
 
-  function invokeFunc(time): void {
-    lastInvokeTime = time;
+  function invokeFunc(): void {
     inExecution = true;
     asyncFunction().then(() => {
-      inExecution = false;
+      clear();
       callback(null);
     }).catch((error) => {
       clear();
@@ -16,36 +15,31 @@ function debounce(asyncFunction: any, callback, options: { wait?: number, maxWai
     });
   }
 
-  function remainingWait(time): number {
-    const timeSinceLastCall = time - lastCallTime
-    const timeSinceLastInvoke = time - lastInvokeTime
-    const timeWaiting = wait - timeSinceLastCall;
-    const result = Math.min(timeWaiting, maxWait - timeSinceLastInvoke);
-
-    return result < 0 ? wait : result; // TODO verify
-  }
-
   function shouldInvoke(time): boolean {
-    const timeSinceLastCall = time - lastCallTime;
-    const timeSinceLastInvoke = time - lastInvokeTime;
-    return !inExecution && ((timeSinceLastCall >= wait) || (timeSinceLastInvoke >= maxWait));
+    const timeSinceLastCall = time - lastCall;
+    return !inExecution || (timeSinceLastCall >= wait);
   }
 
   function timerExpired(): void {
-    const time = Date.now()
-    if (shouldInvoke(time)) {
-      invokeFunc(time);
+    if (tryExecute(Date.now())) {
       return;
     }
-    
-    timerId = setTimeout(timerExpired, remainingWait(time))
+
+    setNextTimer();
+  }
+
+  function tryExecute(time) {
+    if (shouldInvoke(time)) {
+      invokeFunc();
+      return true;
+    }
+    return false;
+
   }
 
   function clear() {
     cancelTimer();
     inExecution = false;
-    lastInvokeTime = 0;
-    lastCallTime = undefined;
   }
 
   function cancelTimer() {
@@ -54,15 +48,18 @@ function debounce(asyncFunction: any, callback, options: { wait?: number, maxWai
     timerId = null;
   };
 
-  function setNextTimer(time) {
+  function setNextTimer() {
     cancelTimer();
-    timerId = setTimeout(timerExpired, remainingWait(time));
+    timerId = setTimeout(timerExpired, wait);
   }
 
   function debounced() {
-    const time = Date.now();
-    lastCallTime = time;
-    setNextTimer(time);
+    lastCall = Date.now();
+    if (!timerId) {
+      setNextTimer();
+      return;
+    }
+    tryExecute(lastCall);
   }
   return debounced;
 }

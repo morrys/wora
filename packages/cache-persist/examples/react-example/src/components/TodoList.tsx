@@ -48,6 +48,11 @@ const TodoList = (props: Props) => {
       setResult({loading: false, data: state});
     });
     cache.restore().then(() => {
+      
+      if(props.name === 'CacheLocalIDB') {
+        console.log("inizio multi", Date.now());
+        Array.from({length: 1000},(_,x) => cache.set(''+x, "x+1"));
+      }
       cache.notify("restored");
     })
     return () => dispose();

@@ -1,11 +1,11 @@
 import createWebStorage from "./storage";
 import StorageProxy from './StorageProxy';
-import { DataCache, Subscription, CacheOptions } from "./CacheTypes";
+import { CacheType, DataCache, Subscription, CacheOptions } from "./CacheTypes";
 import NoStorageProxy from './NoStorageProxy';
 
 export const PREFIX_DELIMITER: string = ".";
 
-class Cache {
+class Cache implements CacheType {
     private data: DataCache = {};
     private rehydrated: boolean = false;
     private _subscriptions: Set<Subscription> = new Set();
@@ -20,9 +20,9 @@ class Cache {
             webStorage = 'local',
             disablePersist = false,
             storage = createWebStorage(webStorage), 
-            errorHandling,
+            errorHandling = (cache, error) => true,
         } = options;
-        const storageOptions = { prefix, serialize, layers, errorHandling };
+        const storageOptions = { prefix, serialize, layers, errorHandling: (error) => errorHandling(this, error) };
         this.storageOptions = storageOptions;      
         this.storageProxy = disablePersist || !storage ? new NoStorageProxy() : new StorageProxy(this, storage, storageOptions);        
     }

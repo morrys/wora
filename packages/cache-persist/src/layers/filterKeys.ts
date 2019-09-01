@@ -5,7 +5,7 @@ function filterKeys(filter: (key: string) => boolean ): Layer {
         set: (key: string, value: any) => { 
             return filter(key) ? [ key, value ] : null;
         },
-        get: (key: string, value: any) => { return filter(key) ? [ key, value ] : null; },
+        get: (key: string, value: any) => { return [ key, value ] }, // filtered in check
         remove: (key: string) => { return filter(key) ? key : null; },
         check: (key: string) => { return  filter(key) }
     }

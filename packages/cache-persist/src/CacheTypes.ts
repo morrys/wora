@@ -24,7 +24,24 @@ export type CacheOptions = {
     storage?: CacheStorage, 
     webStorage?: "local" | "session",
     disablePersist?: boolean,
-    errorHandling?: (error: any) => boolean,
+    errorHandling?: (cache: CacheType, error: any) => boolean,
+}
+
+export interface CacheType {
+    purge: () => Promise<boolean>;
+    restore: () => Promise<DataCache>;
+    replace: (data: any) => Promise<void>;
+    isRehydrated: () => boolean;
+    clear: () => Promise<boolean>;
+    getState: () => Readonly<{ [key: string]: any }>;
+    toObject: () => Readonly<{ [key: string]: any }>;
+    get: (key: string) => any;
+    set: (key: string, value: any) => Promise<any>;
+    delete: (key: string) => Promise<any>;
+    remove: (key: string) => Promise<any>;
+    getAllKeys: () => Array<string>;
+    subscribe: ( callback: (message: string, state: any) => void, ) => () => void;
+    notify: (message: string) => void;
 }
 
 export type DataCache = {
@@ -40,10 +57,11 @@ export interface StorageHelper {
 }
 
 export interface CacheStorage {
-    multiRemove: (keys: Array<string>) => Promise<void>,
-    multiGet: (keys: Array<string>) => Promise<DataCache>,
+    multiRemove?: (keys: Array<string>) => Promise<void>,
+    multiGet?: (keys: Array<string>) => Promise<Array<Array<string>>>,
+    multiSet?: (items: string[][]) => Promise<void>,
     getAllKeys: () => Promise<Array<string>>,
-    multiSet: (items: string[][]) => Promise<void>,
+    getItem: (key: string) => Promise<string>, 
     setItem: (key: string, value: string) => Promise<void>,
     removeItem: (key: string) => Promise<void> 
 }

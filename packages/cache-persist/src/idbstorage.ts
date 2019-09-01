@@ -1,5 +1,5 @@
 import { openDB, IDBPDatabase } from 'idb';
-import { DataCache, CacheStorage } from './CacheTypes';
+import { CacheStorage } from './CacheTypes';
 
 export type OnUpgrade = {
     (db: any, oldVersion: number, newVersion: number, transaction: any): void
@@ -43,39 +43,23 @@ class IDBStorage {
 }
 
 export function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeName: string): CacheStorage {
+    let db = null; // getAllKey called when restored 
     return {
-        multiRemove: (keys) => {
-            return dbPromise.then(db => {
-                for (var i = 0; i < keys.length; i++) {
-                    db.delete(storeName, keys[i]);
-                }
-            })
-        },
-        multiGet: (keys) => {
-            return dbPromise.then(async db => {
-                const data: DataCache = {};
-                for (var i = 0; i < keys.length; i++) {
-                    const key: string = keys[i];
-                    data[key] = await db.get(storeName, key);
-                }
-                return data;
-            })
-        },
         getAllKeys: () => {
-            return dbPromise.then(db => db.getAllKeys(storeName));
-        },
-        multiSet: async (items: string[][]) => {
-            return dbPromise.then(db =>
-                items.forEach(function (item) {
-                    db.put(storeName, item[1], item[0]);
-                }))
+            return dbPromise.then(database =>  {
+                db = database;
+                return db.getAllKeys(storeName);
+            });
         },
         setItem: (key: string, value: string): Promise<void> => {
-            return dbPromise.then(db => db.put(storeName, value, key))
+            return db.put(storeName, value, key);
         },
         removeItem: (key: string): Promise<void> => {
-            return dbPromise.then(db => db.delete(storeName, key))
+            return db.delete(storeName, key);
         },
+        getItem: (key: string): Promise<string> => {
+            return db.get(storeName, key);
+        }
     }
 }
 

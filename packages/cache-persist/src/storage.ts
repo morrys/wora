@@ -1,4 +1,4 @@
-import { CacheStorage, DataCache } from './CacheTypes';
+import { CacheStorage } from './CacheTypes';
 import { promiseVoid, promiseResult } from './StorageProxy';
 
 function hasStorage(storageType) {
@@ -25,21 +25,8 @@ function webStorage(type: string): CacheStorage {
     }
     const storage = self[storageType];
     return {
-        multiRemove: (keys: Array<string>) => promiseVoid((): void => {
-            keys.forEach(function (key) {
-                storage.removeItem(key);
-            })
-        }),
-        multiGet: (keys: Array<string>) => promiseResult(() => {
-            const data: DataCache = {};
-            keys.forEach((key) => data[key] = storage.getItem(key));
-            return data;
-        }),
         getAllKeys: (): Promise<Array<string>> => promiseResult<Array<string>>(() => {
             return Object.keys(storage)
-        }),
-        multiSet: (items: string[][]) => promiseVoid((): void => {
-            items.forEach((item) => storage.setItem(item[0], item[1]));
         }),
         setItem: (key: string, value: string): Promise<void> => promiseVoid((): void => {
             storage.setItem(key, value)
@@ -47,6 +34,8 @@ function webStorage(type: string): CacheStorage {
         removeItem: (key: string): Promise<void> => promiseVoid((): void => {
             storage.removeItem(key)
         }),
+        getItem: (key: string): Promise<string> => promiseResult<string>(() => storage.getItem(key))
+        
     }
 }
 
