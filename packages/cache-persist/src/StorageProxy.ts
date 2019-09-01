@@ -79,10 +79,11 @@ class StorageProxy implements StorageHelper {
         return this.storage.getAllKeys().then((keys: Array<string>) =>
             this.storage.multiGet(this.filter(keys))).then(data => {
                 const result: DataCache = {};
-                data.forEach(([key, value]) => {
+                for (var i = 0, l = data.length; i < l; i++) {
+                    const [key, value] = data[i];
                     const item = this.get(key, value)
                     result[item[0]] = item[1];
-                });
+                };
                 return result;
             });
     }
@@ -112,6 +113,7 @@ class StorageProxy implements StorageHelper {
         })
     }
 
+    // TODO add parameter for promises => remove comments
     setItem(key: string, value: any): Promise<void> {
         return new Promise(async (resolve, reject) => {
             /*const item = this.set(key, value);
@@ -145,9 +147,11 @@ class StorageProxy implements StorageHelper {
         }
         const promises = [];
         if(removeKeys.length>0) {
+            // TODO length === 1 remove
             promises.push(this.storage.multiRemove(removeKeys))
         }
         if(setValues.length>0) {
+            // TODO length === 1 set
             promises.push(this.storage.multiSet(setValues))
         }
         return Promise.all(promises);

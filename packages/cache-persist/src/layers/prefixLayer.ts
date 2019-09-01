@@ -1,5 +1,4 @@
-import { Layer } from '../CacheTypes';
-import { PREFIX_DELIMITER } from '../Cache';
+import { Layer, PREFIX_DELIMITER } from '../CacheTypes';
 
 function prefixLayer(prefix: string): Layer {
     const prefixKey = prefix + PREFIX_DELIMITER;

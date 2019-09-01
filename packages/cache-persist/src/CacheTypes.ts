@@ -1,3 +1,5 @@
+export const PREFIX_DELIMITER: string = ".";
+
 export type StorageHelperOptions = {
     serialize?: boolean,
     prefix?: string,

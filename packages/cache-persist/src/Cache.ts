@@ -3,8 +3,6 @@ import StorageProxy from './StorageProxy';
 import { ICache, DataCache, Subscription, CacheOptions } from "./CacheTypes";
 import NoStorageProxy from './NoStorageProxy';
 
-export const PREFIX_DELIMITER: string = ".";
-
 class Cache implements ICache {
     private data: DataCache = {};
     private rehydrated: boolean = false;
@@ -66,6 +64,7 @@ class Cache implements ICache {
         return this.data[key];
     }
 
+    // TODO add parameter for promises
     public set(key: string, value: any): Promise<any> {
         this.data[key] = value;
         return this.storageProxy.setItem(key, value);
