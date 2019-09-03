@@ -1,5 +1,5 @@
 const siteConfig = {
-  title: 'Morrys Website',
+  title: 'Morrys Repositories',
   tagline: 'Collection of libraries usable for the web, react and react-native.',
   url: 'https://morrys.github.io',
   baseUrl: '/wora/',
@@ -68,6 +68,15 @@ const siteConfig = {
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
   repoUrl: 'https://github.com/morrys/wora',
+
+  algolia: {
+    apiKey: '87a72e28932891cac536490e275e834e',
+    indexName: 'morrys',
+    placeholder: 'Search',
+    algoliaOptions: {
+      facetFilters: [ ["tags: react-relay-offline", "tags: wora"] ]
+    }
+  },
 };
 
 module.exports = siteConfig;
