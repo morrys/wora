@@ -69,14 +69,20 @@ const siteConfig = {
   // template. For example, if you need your repo's URL...
   repoUrl: 'https://github.com/morrys/wora',
 
-  algolia: {
+  /*algolia: {
     apiKey: '87a72e28932891cac536490e275e834e',
     indexName: 'morrys',
     placeholder: 'Search',
     algoliaOptions: {
       facetFilters: [ ["tags: react-relay-offline", "tags: wora"] ]
     }
+  },*/
+  algolia: {
+    apiKey: '87a72e28932891cac536490e275e834e',
+    indexName: 'morrys',
+    placeholder: 'Search'
   },
+  gaTrackingId: "UA-146953551-1",
 };
 
 module.exports = siteConfig;
