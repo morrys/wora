@@ -27,9 +27,9 @@ class StorageProxy implements StorageHelper {
     queue: Queue;
 
     constructor(cache: Cache, storage: any, options: StorageHelperOptions = {}) {
-        const { prefix, serialize, layers, errorHandling } = options;
+        const { prefix, serialize, layers, errorHandling, throttle } = options;
         this.cache = cache;
-        this.queue = new Queue((flushKeys) => this.execute(flushKeys), errorHandling);
+        this.queue = new Queue({ throttle, execute: (flushKeys) => this.execute(flushKeys), errorHandling });
         this.serialize = serialize;
         this.prefix = prefix;
         this.layers = prefix ? this.layers.concat(prefixLayer(prefix)) : this.layers

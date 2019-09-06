@@ -5,6 +5,7 @@ export type StorageHelperOptions = {
     prefix?: string,
     layers?: Array<Layer>,
     errorHandling?: (error: any) => boolean,
+    throttle?: number,
 }
 
 export type ItemCache<T> = {
@@ -27,6 +28,7 @@ export type CacheOptions = {
     webStorage?: "local" | "session",
     disablePersist?: boolean,
     errorHandling?: (cache: ICache, error: any) => boolean,
+    throttle?: number,
 }
 
 export interface ICache {

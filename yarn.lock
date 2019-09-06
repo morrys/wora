@@ -616,6 +616,13 @@
   dependencies:
     regenerator-runtime "^0.13.2"
 
+"@babel/runtime@^7.5.5":
+  version "7.5.5"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.5.5.tgz#74fba56d35efbeca444091c7850ccd494fd2f132"
+  integrity sha512-28QvEGyQyNkB0/m2B4FU7IEZGK2NUrcMtT6BZEFALTguLk+AUT6ofsHtPk5QyjAdUkpMJ+/Em+quwz4HOt30AQ==
+  dependencies:
+    regenerator-runtime "^0.13.2"
+
 "@babel/template@^7.0.0", "@babel/template@^7.1.0", "@babel/template@^7.4.4":
   version "7.4.4"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.4.4.tgz#f4b88d1225689a08f5bc3a17483545be9e4ed237"
@@ -1556,10 +1563,10 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "0.0.3"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-apollo-cache-0.0.3-82592ce7-41c9-4a51-b868-690cbb6c6d3e-1567241289192/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v4/npm-@wora-apollo-cache-0.0.3-7f5bcc82-adf7-4ba1-957a-7595fdb3e78a-1567754905521/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
-  version "2.0.0-a1"
+  version "2.0.0-rc.1"
   dependencies:
     idb "^4.0.0"
 
@@ -1572,13 +1579,13 @@
 "@wora/offline-first@file:packages/offline-first":
   version "0.0.6"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.6-b199d118-71ff-4b72-83d1-07dfd6e69cf7-1567241289191/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-offline-first-0.0.6-b199d118-71ff-4b72-83d1-07dfd6e69cf7-1567241289191/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v4/npm-@wora-offline-first-0.0.6-a3102aba-c4d3-4509-84ea-aa7b37b5adb1-1567754905520/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v4/npm-@wora-offline-first-0.0.6-a3102aba-c4d3-4509-84ea-aa7b37b5adb1-1567754905520/node_modules/@wora/netinfo"
 
 "@wora/relay-store@file:packages/relay-store":
   version "0.0.6"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v3/npm-@wora-relay-store-0.0.6-04e5565a-efac-4314-a0f4-043553fd1d18-1567241289194/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v4/npm-@wora-relay-store-0.0.6-08cfa88e-cf95-46f0-9ef9-ce4125f37873-1567754905522/node_modules/@wora/cache-persist"
 
 "@wry/context@^0.4.0":
   version "0.4.4"
@@ -3718,6 +3725,13 @@ has@^1.0.1, has@^1.0.3:
   integrity sha512-f2dvO0VU6Oej7RkWJGrehjbzMAjFp5/VKPp5tTpWIV4JHHZK1/BxbFRtf/siA2SWTe09caDmVtYYzWEIbBS4zw==
   dependencies:
     function-bind "^1.1.1"
+
+hoist-non-react-statics@^3.3.0:
+  version "3.3.0"
+  resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.3.0.tgz#b09178f0122184fb95acf525daaecb4d8f45958b"
+  integrity sha512-0XsbTXxgiaCDYDIWFcwkmerZPSwywfUqYmwT4jzewKTQSWoE6FCMoUVOeBJWK3E/CrWbxRG3m5GzY4lnIwGRBA==
+  dependencies:
+    react-is "^16.7.0"
 
 hosted-git-info@^2.1.4, hosted-git-info@^2.6.0:
   version "2.7.1"
@@ -5982,7 +5996,7 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
-prop-types@^15.5.8, prop-types@^15.6.2:
+prop-types@^15.5.8, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.7.2"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.7.2.tgz#52c41e75b8c87e72b9d9360e0206b99dcbffa6c5"
   integrity sha512-8QQikdH7//R2vurIJSutZ1smHYTcLpRWEOlHnzcWHmBYrOGUysKwSsrC89BCiFj3CbrfJ/nXFdJepOVrY1GCHQ==
@@ -6110,6 +6124,11 @@ react-devtools-core@^3.6.0:
     shell-quote "^1.6.1"
     ws "^3.3.1"
 
+react-is@^16.7.0, react-is@^16.9.0:
+  version "16.9.0"
+  resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.9.0.tgz#21ca9561399aad0ff1a7701c01683e8ca981edcb"
+  integrity sha512-tJBzzzIgnnRfEm046qRcURvwQnZVXmuCbscxUO5RWrGTXpon2d4c8mI0D8WE6ydVIm29JiLB6+RslkIvym9Rjw==
+
 react-is@^16.8.1:
   version "16.8.6"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-16.8.6.tgz#5bbc1e2d29141c9fbdfed456343fe2bc430a6a16"
@@ -6178,6 +6197,18 @@ react-proxy@^1.1.7:
   dependencies:
     lodash "^4.6.1"
     react-deep-force-update "^1.0.0"
+
+react-redux@^7.1.0:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/react-redux/-/react-redux-7.1.1.tgz#ce6eee1b734a7a76e0788b3309bf78ff6b34fa0a"
+  integrity sha512-QsW0vcmVVdNQzEkrgzh2W3Ksvr8cqpAv5FhEk7tNEft+5pp7rXxAudTz3VOPawRkLIepItpkEIyLcN/VVXzjTg==
+  dependencies:
+    "@babel/runtime" "^7.5.5"
+    hoist-non-react-statics "^3.3.0"
+    invariant "^2.2.4"
+    loose-envify "^1.4.0"
+    prop-types "^15.7.2"
+    react-is "^16.9.0"
 
 react-transform-hmr@^1.0.4:
   version "1.0.4"

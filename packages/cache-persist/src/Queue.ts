@@ -6,9 +6,10 @@ class Queue {
     debounce: any;
     errorHandling: any;
 
-    constructor(execute: (keys: string[]) => Promise<any> , errorHandling: any = (error) => { true }) {
+    constructor(options : { throttle?: number, execute: (keys: string[]) => Promise<any> , errorHandling: any } ) {
+      const { execute, throttle, errorHandling = (error) => { true } } = options
         this.execute = execute;
-        this.debounce = debounce(() => this.flush(), (error) => this.endFlush(error));
+        this.debounce = debounce(() => this.flush(), (error) => this.endFlush(error), { throttle });
         this.queue = [];
         this.errorHandling = errorHandling;
     }

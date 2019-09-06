@@ -1,8 +1,8 @@
-function debounce(asyncFunction: any, callback, options: { wait?: number } = {}) {
+function debounce(asyncFunction: any, callback, options: { throttle?: number } = {}) {
   let timerId = null;
   let lastCall = 0;
   let inExecution = false;
-  const { wait = 500 } = options;
+  const { throttle = 500 } = options;
 
   function invokeFunc(): void {
     lastCall = Date.now();
@@ -18,7 +18,7 @@ function debounce(asyncFunction: any, callback, options: { wait?: number } = {})
 
   function shouldInvoke(time): boolean {
     const timeSinceLastCall = time - lastCall;
-    return !inExecution && (timeSinceLastCall >= wait);
+    return !inExecution && (timeSinceLastCall >= throttle);
   }
 
   function timerExpired(): void {
@@ -51,7 +51,7 @@ function debounce(asyncFunction: any, callback, options: { wait?: number } = {})
 
   function setNextTimer() {
     cancelTimer();
-    timerId = setTimeout(timerExpired, wait);
+    timerId = setTimeout(timerExpired, throttle);
   }
 
   function debounced() {

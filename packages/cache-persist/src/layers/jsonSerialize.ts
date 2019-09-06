@@ -1,8 +1,6 @@
 import { Layer } from '../CacheTypes';
+import mutateValues from './mutateValues';
 
-const jsonSerialize: Layer = {
-    set: (key: string, value: any) => { return [ key, JSON.stringify(value) ] },
-    get: (key: string, value: any) => { return [ key, JSON.parse(value) ] }
-}
+const jsonSerialize: Layer = mutateValues( (value) => JSON.stringify(value), (value) => JSON.parse(value) );
 
 export default jsonSerialize;

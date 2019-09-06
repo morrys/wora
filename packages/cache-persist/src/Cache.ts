@@ -9,6 +9,7 @@ class Cache implements ICache {
     private _subscriptions: Set<Subscription> = new Set();
     public storageOptions;
     private storageProxy;
+    private promisesRestore;
 
     constructor(options: CacheOptions = {}) {
         const { 
@@ -19,8 +20,9 @@ class Cache implements ICache {
             disablePersist = false,
             storage = createWebStorage(webStorage), 
             errorHandling = (cache, error) => true,
+            throttle,
         } = options;
-        const storageOptions = { prefix, serialize, layers, errorHandling: (error) => errorHandling(this, error) };
+        const storageOptions = { throttle, prefix, serialize, layers, errorHandling: (error) => errorHandling(this, error) };
         this.storageOptions = storageOptions;      
         this.storageProxy = disablePersist || !storage ? new NoStorageProxy() : new StorageProxy(this, storage, storageOptions);        
     }
@@ -28,13 +30,17 @@ class Cache implements ICache {
     public isRehydrated(): boolean { return this.rehydrated}
 
     public restore(): Promise<Cache> {
-        return new Promise((resolve, reject) => {
+        if(this.promisesRestore) {
+            return this.promisesRestore;
+        }
+        this.promisesRestore = new Promise((resolve, reject) => {
             this.storageProxy.restore().then(result => {
                 this.data = result;
                 this.rehydrated = true;
                 resolve(this)
             }).catch(e => reject(e));
         })
+        return this.promisesRestore;
         
     }
 
@@ -84,7 +90,7 @@ class Cache implements ICache {
     }
 
     public subscribe(
-        callback: (message: string, state: any) => void,
+        callback: (state: any, message: any) => void,
     ): () => void {
         const subscription = { callback };
         const dispose = () => {
@@ -94,10 +100,9 @@ class Cache implements ICache {
         return dispose;
     }
 
-    public notify(message: string = "notify data"): void {
-        const state = this.toObject();
+    public notify(state:any = this.toObject(), message: string = ""): void {
         this._subscriptions.forEach(subscription => {
-            subscription.callback(message, state);
+            subscription.callback(state, message);
         });
     }
 }

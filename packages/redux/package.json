@@ -1,17 +1,17 @@
 {
-  "name": "@wora/cache-persist",
-  "version": "2.0.0-rc.2",
+  "name": "@wora/redux",
+  "version": "0.0.1",
   "keywords": [
     "cache",
-    "react-native",
-    "persist",
-    "AsyncStorage",
+    "wora",
+    "cache-persist",
     "inmemory",
-    "indexeddb"
+    "redux",
+    "redux-persist"
   ],
   "main": "lib/index.js",
   "license": "MIT",
-  "description": "@wora Cache Persist",
+  "description": "@wora Redux",
   "author": {
     "name": "morrys"
   },
@@ -31,11 +31,10 @@
     "build": "tsc"
   },
   "dependencies": {
-    "idb": "^4.0.0"
+    "@wora/cache-persist": "file:../cache-persist",
+    "symbol-observable": "^1.2.0"
   },
   "devDependencies": {
-    "rimraf": "2.6.3",
-    "typescript": "3.5.2",
-    "@react-native-community/async-storage": "^1.6.1"
+    "react-redux": "^7.1.0"
   }
 }
