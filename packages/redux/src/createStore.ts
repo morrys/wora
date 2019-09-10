@@ -1,5 +1,5 @@
 import $$observable from 'symbol-observable'
-import Cache, { ICache, Layer, prefixLayer, mutateValuesLayer } from '@wora/cache-persist'
+import Cache, { ICache, ILayer, prefixLayer, mutateValuesLayer } from '@wora/cache-persist'
 import isPlainObject from './redux/utils/isPlainObject';
 import ActionTypes from './redux/utils/actionTypes';
 import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
@@ -90,8 +90,8 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
 
     const prefLayer = prefixLayer('persist', ':');
     const prefix = 'persist' + ':';
-    const whiteLayer: Layer = reduxPersistLayer(whitelist, (key) => whitelist.includes(key), multiple, prefix);
-    const blackLayer: Layer = reduxPersistLayer(blacklist, (key) => !blacklist.includes(key), multiple, prefix);
+    const whiteLayer: ILayer = reduxPersistLayer(whitelist, (key) => whitelist.includes(key), multiple, prefix);
+    const blackLayer: ILayer = reduxPersistLayer(blacklist, (key) => !blacklist.includes(key), multiple, prefix);
     const internalLayer = [prefLayer];
     if(whiteLayer) {
         internalLayer.push(whiteLayer);

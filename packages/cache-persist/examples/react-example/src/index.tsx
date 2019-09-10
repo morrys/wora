@@ -6,7 +6,7 @@ import IDBStorage from '@wora/cache-persist/lib/idbstorage';
 import Cache, { CacheStorage }  from '@wora/cache-persist';
 import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
 import { createGlobalStyle } from 'styled-components';
-import { Layer } from '@wora/cache-persist';
+import { ILayer } from '@wora/cache-persist';
 // import { unwrap } from 'idb';
 
 const GlobalStyle = createGlobalStyle`
@@ -30,9 +30,9 @@ const StyledApp = styled.div`
     flex-direction: column-reverse;
 `;
 
-const filterPersistReplace: Layer = filterKeys(key => key.includes("replace"));
+const filterPersistReplace: ILayer = filterKeys(key => key.includes("replace"));
 
-const filterNoPersistReplace: Layer = filterKeys(key => !key.includes("replace"));
+const filterNoPersistReplace: ILayer = filterKeys(key => !key.includes("replace"));
 
 const CacheLocal = new Cache({
     layers: [filterNoPersistReplace],

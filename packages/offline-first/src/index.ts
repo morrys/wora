@@ -1,4 +1,4 @@
-import OfflineFirst from "./OfflineFirst";
-export * from "./OfflineFirst";
+import OfflineFirst from './OfflineFirst';
+export * from './OfflineFirst';
 
 export default OfflineFirst;

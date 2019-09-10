@@ -1,12 +1,28 @@
-import { StorageHelper, DataCache } from './CacheTypes';
+import { IStorageHelper, DataCache } from './CacheTypes';
 import { promiseVoid, promiseResult } from './StorageProxy';
 
-class NoStorageProxy implements StorageHelper {
-    purge():  Promise<boolean> { return promiseResult(() => { return true } )}   
-    restore(): Promise<DataCache> { return promiseResult(() => { return {} } )}   
-    replace(data: any): Promise<void> { return promiseVoid() }   
-    setItem(key: string, item: string | object): Promise<void> { return promiseVoid() }   
-    removeItem(key: string): Promise<void> { return promiseVoid() }   
+class NoStorageProxy implements IStorageHelper {
+    public purge(): Promise<boolean> {
+        return promiseResult(() => true);
+    }
+
+    public restore(): Promise<DataCache> {
+        return promiseResult(() => {
+            return {};
+        });
+    }
+
+    public replace(_data: any): Promise<void> {
+        return promiseVoid();
+    }
+
+    public setItem(_key: string, _item: string | object): Promise<void> {
+        return promiseVoid();
+    }
+
+    public removeItem(_key: string): Promise<void> {
+        return promiseVoid();
+    }
 }
 
 export default NoStorageProxy;

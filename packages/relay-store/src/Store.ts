@@ -1,18 +1,12 @@
 import { Store as RelayModernStore } from 'relay-runtime';
-import {
-    Scheduler,
-    NormalizationSelector,
-    OperationLoader,
-    Disposable,
-} from 'relay-runtime/lib/RelayStoreTypes';
+import { Scheduler, NormalizationSelector, OperationLoader, Disposable } from 'relay-runtime/lib/RelayStoreTypes';
 
 import * as RelayReferenceMarker from 'relay-runtime/lib/RelayReferenceMarker';
 
-import Cache, { CacheOptions } from "@wora/cache-persist";
+import Cache, { CacheOptions } from '@wora/cache-persist';
 import RecordSource from './RecordSource';
 
 export default class Store extends RelayModernStore {
-
     _cache: Cache;
     checkGC: () => boolean;
     _defaultTTL: number;
@@ -34,20 +28,20 @@ export default class Store extends RelayModernStore {
             serialize: true,
             ...persistOptions,
             ...persistOptionsRecords,
-        }
+        };
         const cacheRecordSource = new Cache(persistOptionsRecordSource);
         const recordSource = new RecordSource(cacheRecordSource);
 
         super(recordSource, gcScheduler, operationLoader);
 
-        this.checkGC = () => true;
+        this.checkGC = (): boolean => true;
 
         this._defaultTTL = defaultTTL;
 
         this._cache = new Cache(persistOptionsStore);
     }
 
-    public setCheckGC(checkGC: () => boolean = () => true) {
+    public setCheckGC(checkGC = (): boolean => true): void {
         this.checkGC = checkGC;
     }
 
@@ -61,14 +55,14 @@ export default class Store extends RelayModernStore {
 
     public retain(selector: NormalizationSelector, retainConfig: any = {}): Disposable {
         const { ttl = this._defaultTTL, execute = true } = retainConfig;
-        const name = selector.node.name + "." + JSON.stringify(selector.variables);
-        const dispose = () => {
+        const name = selector.node.name + '.' + JSON.stringify(selector.variables);
+        const dispose = (): void => {
             const root = this._cache.get(name);
             if (root) {
                 const newRoot = {
                     ...root,
                     dispose: true,
-                }
+                };
                 this._cache.set(name, newRoot);
             }
             (this as any)._scheduleGC();
@@ -79,8 +73,8 @@ export default class Store extends RelayModernStore {
             retainTime: execute || !root ? Date.now() : root.retainTime,
             dispose: false,
             execute: execute,
-            ttl: !execute || !root  ? ttl : root.ttl
-        }
+            ttl: !execute || !root ? ttl : root.ttl,
+        };
         this._cache.set(name, newRoot);
         return { dispose };
     }
@@ -90,18 +84,13 @@ export default class Store extends RelayModernStore {
             return;
         }
         const references = new Set();
-        this._cache.getAllKeys().forEach(index => {
+        this._cache.getAllKeys().forEach((index) => {
             const selRoot = this._cache.get(index);
-            const expired: boolean = !this.isCurrent(selRoot.retainTime, selRoot.ttl);
+            const expired = !this.isCurrent(selRoot.retainTime, selRoot.ttl);
             if (!selRoot.dispose || !expired) {
-                RelayReferenceMarker.mark(
-                    (this as any)._recordSource,
-                    selRoot.selector,
-                    references,
-                    (this as any)._operationLoader,
-                );
+                RelayReferenceMarker.mark((this as any)._recordSource, selRoot.selector, references, (this as any)._operationLoader);
             } else {
-                this._cache.remove(index)
+                this._cache.remove(index);
             }
         });
         // Short-circuit if *nothing* is referenced

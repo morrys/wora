@@ -1,8 +1,8 @@
-import NetInfo from "./NetInfo";
+import NetInfo from './NetInfo';
 
-import useNetInfoInternal from "../internal/useNetInfo"
+import useNetInfoInternal from '../internal/useNetInfo';
 
 export function useNetInfo(): boolean {
-    return useNetInfoInternal(NetInfo)
-  }
+    return useNetInfoInternal(NetInfo);
+}
 export default useNetInfo;

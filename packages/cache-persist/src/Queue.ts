@@ -1,13 +1,13 @@
-import debounce from "./internal/debounce";
+import debounce from './internal/debounce';
 
 class Queue {
-    execute: any;
-    queue: string[];
-    debounce: any;
-    errorHandling: any;
+    private execute: any;
+    private queue: Array<string>;
+    private debounce: any;
+    private errorHandling: any;
 
-    constructor(options : { throttle?: number, execute: (keys: string[]) => Promise<any> , errorHandling: any } ) {
-      const { execute, throttle, errorHandling = (error) => { true } } = options
+    constructor(options: { throttle?: number; execute: (keys: Array<string>) => Promise<any>; errorHandling: (error: any) => boolean }) {
+        const { execute, throttle, errorHandling = (_error): boolean => true } = options;
         this.execute = execute;
         this.debounce = debounce(() => this.flush(), (error) => this.endFlush(error), { throttle });
         this.queue = [];
@@ -19,20 +19,20 @@ class Queue {
         this.debounce();
     }
 
-    public flush() {
-      const flushKeys = Array.from(new Set(this.queue.splice(0)));
-      return this.execute(flushKeys);
+    public flush(): Promise<any> {
+        const flushKeys = Array.from(new Set(this.queue.splice(0)));
+        return this.execute(flushKeys);
     }
 
-    public endFlush(error) {
-      if(error) {
-        if(!this.errorHandling(error)) {
-          return;
+    public endFlush(error): void {
+        if (error) {
+            if (!this.errorHandling(error)) {
+                return;
+            }
         }
-      }
-      if(this.queue.length>0) {
-        this.debounce();  
-      }
+        if (this.queue.length > 0) {
+            this.debounce();
+        }
     }
 }
 

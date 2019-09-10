@@ -1,67 +1,70 @@
-function debounce(asyncFunction: any, callback, options: { throttle?: number } = {}) {
-  let timerId = null;
-  let lastCall = 0;
-  let inExecution = false;
-  const { throttle = 500 } = options;
+/* eslint-disable */
 
-  function invokeFunc(): void {
-    lastCall = Date.now();
-    inExecution = true;
-    asyncFunction().then(() => {
-      clear();
-      callback(null);
-    }).catch((error) => {
-      clear();
-      callback(error);
-    });
-  }
+function debounce(asyncFunction: any, callback, options: { throttle?: number } = {}): () => void {
+    let timerId = null;
+    let lastCall = 0;
+    let inExecution = false;
+    const { throttle = 500 } = options;
 
-  function shouldInvoke(time): boolean {
-    const timeSinceLastCall = time - lastCall;
-    return !inExecution && (timeSinceLastCall >= throttle);
-  }
-
-  function timerExpired(): void {
-    if (tryExecute(Date.now())) {
-      return;
+    function invokeFunc(): void {
+        lastCall = Date.now();
+        inExecution = true;
+        asyncFunction()
+            .then(() => {
+                clear();
+                callback(null);
+            })
+            .catch((error) => {
+                clear();
+                callback(error);
+            });
     }
 
-    setNextTimer();
-  }
-
-  function tryExecute(time) {
-    if (shouldInvoke(time)) {
-      invokeFunc();
-      return true;
+    function shouldInvoke(time): boolean {
+        const timeSinceLastCall = time - lastCall;
+        return !inExecution && timeSinceLastCall >= throttle;
     }
-    return false;
 
-  }
+    function timerExpired(): void {
+        if (tryExecute(Date.now())) {
+            return;
+        }
 
-  function clear() {
-    cancelTimer();
-    inExecution = false;
-  }
-
-  function cancelTimer() {
-    if (!timerId) return;
-    clearTimeout(timerId);
-    timerId = null;
-  };
-
-  function setNextTimer() {
-    cancelTimer();
-    timerId = setTimeout(timerExpired, throttle);
-  }
-
-  function debounced() {
-    if (!timerId) {
-      setNextTimer();
-      return;
+        setNextTimer();
     }
-    tryExecute(Date.now());
-  }
-  return debounced;
+
+    function tryExecute(time) {
+        if (shouldInvoke(time)) {
+            invokeFunc();
+            return true;
+        }
+        return false;
+    }
+
+    function clear() {
+        cancelTimer();
+        inExecution = false;
+    }
+
+    function cancelTimer() {
+        if (!timerId) return;
+        clearTimeout(timerId);
+        timerId = null;
+    }
+
+    function setNextTimer() {
+        cancelTimer();
+        timerId = setTimeout(timerExpired, throttle);
+    }
+
+    function debounced() {
+        if (!timerId) {
+            setNextTimer();
+            return;
+        }
+        tryExecute(Date.now());
+    }
+    return debounced;
 }
 
 export default debounce;

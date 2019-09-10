@@ -30,7 +30,9 @@
     "clean-dep": "rimraf node_modules/*",
     "prepare": "npm run build",
     "prebuild": "npm run clean",
-    "build": "tsc"
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.{j,t}s*\"",
+    "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "@wora/offline-first": "file:../offline-first",

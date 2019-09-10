@@ -1,27 +1,26 @@
-import {Record} from 'relay-runtime/lib/RelayCombinedEnvironmentTypes';
+import { Record } from 'relay-runtime/lib/RelayCombinedEnvironmentTypes';
 import * as RelayRecordState from 'relay-runtime/lib/RelayRecordState';
-import {MutableRecordSource} from 'relay-runtime/lib/RelayStoreTypes';
+import { MutableRecordSource } from 'relay-runtime/lib/RelayStoreTypes';
+import { ICache, DataCache } from '@wora/cache-persist';
 
-const {EXISTENT, NONEXISTENT, UNKNOWN} = RelayRecordState;
+const { EXISTENT, NONEXISTENT, UNKNOWN } = RelayRecordState;
 
-import Cache from "@wora/cache-persist";
-export interface MutableRecordSourceOffline extends MutableRecordSource {
-    restore(): Promise<Cache>
-  }
+export interface IMutableRecordSourceOffline extends MutableRecordSource {
+    restore(): Promise<DataCache>;
+}
 
-export default class RecordSource implements MutableRecordSourceOffline {
+export default class RecordSource implements IMutableRecordSourceOffline {
+    private _cache: ICache;
 
-    private _cache: Cache;
-
-    constructor(cache: Cache ) {
+    constructor(cache: ICache) {
         this._cache = cache;
     }
 
     public purge(): Promise<boolean> {
         return this._cache.purge();
-      }
+    }
 
-    public restore(): Promise<Cache> {
+    public restore(): Promise<DataCache> {
         return this._cache.restore();
     }
 
@@ -53,10 +52,7 @@ export default class RecordSource implements MutableRecordSourceOffline {
         return this._cache.getState().hasOwnProperty(dataID);
     }
 
-    public load(
-        dataID: string,
-        callback: (error: Error, record: Record) => void,
-    ): void {
+    public load(dataID: string, callback: (error: Error, record: Record) => void): void {
         callback(null, this.get(dataID));
     }
 
@@ -66,15 +62,13 @@ export default class RecordSource implements MutableRecordSourceOffline {
 
     public set(dataID: string, record: Record): void {
         this._cache.set(dataID, record);
-    };
+    }
 
     public size(): number {
         return this._cache.getAllKeys().length;
     }
 
     public toJSON(): any {
-        return this._cache.getState(); 
+        return this._cache.getState();
     }
-
 }
-

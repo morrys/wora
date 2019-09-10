@@ -1,7 +1,7 @@
-import { NetInfo } from "@wora/netinfo";
-import useNetInfoInternal from "./internal/useNetInfo"
+import { NetInfo } from '@wora/netinfo';
+import useNetInfoInternal from './internal/useNetInfo';
 
 export function useNetInfo(): boolean {
-    return useNetInfoInternal(NetInfo)
-  }
+    return useNetInfoInternal(NetInfo);
+}
 export default useNetInfo;
