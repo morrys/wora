@@ -97,27 +97,35 @@ class StorageProxy implements IStorageHelper {
         );
     }
 
-    public removeItem(key: string): Promise<void> {
-        return new Promise((resolve, _reject): void => {
-            /*const keyToRemove = this.remove(key);
-            if (keyToRemove) {
-                await this.storage.removeItem(keyToRemove);
-            }*/
-            this.queue.push(key);
-            resolve();
-        });
+    
+    setItem(key: string, value: any, promise: true): Promise<void>;
+    setItem(key: string, value: any): void;
+    setItem(key: any, value: any, promise?: any) {
+        if(promise) {
+            return new Promise(async (resolve, _reject): Promise<void> => {
+                const item = this.set(key, value);
+                if (item) {
+                    await this.storage.setItem(item[0], item[1])
+                }
+                resolve();
+            });
+        }
+        return this.queue.push(key);
     }
 
-    // TODO add parameter for promises => remove comments
-    public setItem(key: string, _value: any): Promise<void> {
-        return new Promise((resolve, _reject): void => {
-            /*const item = this.set(key, value);
-            if (item) {
-                await this.storage.setItem(item.key, item.value)
-            }*/
-            this.queue.push(key);
-            resolve();
-        });
+    removeItem(key: string, promise: true): Promise<void>;
+    removeItem(key: string): void;
+    removeItem(key: any, promise?: any) {
+        if(promise) {
+            return new Promise(async (resolve, _reject): Promise<void> => {
+                const keyToRemove = this.remove(key);
+                if (keyToRemove) {
+                    await this.storage.removeItem(keyToRemove);
+                }
+                resolve();
+            });
+        }
+        return this.queue.push(key);
     }
 
     public execute(flushKeys: Array<string>): Promise<any> {

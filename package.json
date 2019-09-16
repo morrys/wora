@@ -7,12 +7,17 @@
         "clean-dep": "lerna run clean-dep",
         "deploy": "lerna publish from-package",
         "eslint": "lerna run eslint",
-        "format": "lerna run format"
+        "format": "lerna run format",
+        "test": "lerna run test"
     },
     "workspaces": [
         "packages/*"
     ],
     "devDependencies": {
+        "@types/jest": "24.0.18",
+        "ts-jest": "24.1.0",
+        "jest": "24.9.0",
+        "jest-junit": "8.0.0",
         "@typescript-eslint/eslint-plugin": "2.1.0",
         "@typescript-eslint/parser": "2.1.0",
         "eslint": "6.3.0",

@@ -109,24 +109,21 @@ class OfflineFirst<T> {
         return this.online;
     }
 
-    public subscribe(callback: (message: any, state: any) => void): () => void {
-        const { compare } = this.offlineOptions;
-        const offlineCallback = (message: any, state: any): void => {
-            callback(message, Object.values<OfflineRecordCache<T>>(state).sort(compare));
-        };
-        return this.offlineStore.subscribe(offlineCallback);
+    public subscribe(callback: (state: any, action: any) => void): () => void {
+        return this.offlineStore.subscribe(callback);
     }
 
     public notify(): void {
-        this.offlineStore.notify();
+        const { compare } = this.offlineOptions;
+        this.offlineStore.notify({state: Object.values<OfflineRecordCache<T>>(this.getState()).sort(compare)});
     }
 
     public getState(): { [key: string]: any } {
         return this.offlineStore.getState();
     }
 
-    public remove(id: string): Promise<any> {
-        return this.offlineStore.remove(id);
+    public remove(id: string): Promise<void> {
+        return this.offlineStore.remove(id, true);
     }
 
     public getListMutation(): ReadonlyArray<OfflineRecordCache<T>> {
@@ -210,7 +207,7 @@ class OfflineFirst<T> {
         const fetchTime = Date.now();
         const offlineRecord: OfflineRecordCache<T> = onPublish({ id, request, fetchTime, serial });
         return this.offlineStore
-            .set(id, offlineRecord)
+            .set(id, offlineRecord, true)
             .then(() => {
                 return offlineRecord;
             })

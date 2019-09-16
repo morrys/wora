@@ -16,12 +16,20 @@ class NoStorageProxy implements IStorageHelper {
         return promiseVoid();
     }
 
-    public setItem(_key: string, _item: string | object): Promise<void> {
-        return promiseVoid();
+    setItem(key: string, value: any, promise: true): Promise<void>;
+    setItem(key: string, value: any): void;
+    setItem(key: any, value: any, promise?: any) {
+        if (promise) {
+            return promiseVoid();
+        }
     }
 
-    public removeItem(_key: string): Promise<void> {
-        return promiseVoid();
+    removeItem(key: string, promise: true): Promise<void>;
+    removeItem(key: string): void;
+    removeItem(key: any, promise?: any) {
+        if (promise) {
+            return promiseVoid();
+        }
     }
 }
 

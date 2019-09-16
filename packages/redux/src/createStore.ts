@@ -210,7 +210,7 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
             isDispatching = false
         }
 
-        cache.notify(action); 
+        cache.notify({ state: getState(), action }); 
         return action
     }
 

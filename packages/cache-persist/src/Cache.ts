@@ -1,6 +1,6 @@
 import createStorage from './createStorage';
 import StorageProxy from './StorageProxy';
-import { DataCache, ICache, Subscription, CacheOptions } from './CacheTypes';
+import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper } from './CacheTypes';
 import NoStorageProxy from './NoStorageProxy';
 
 class Cache implements ICache {
@@ -8,7 +8,7 @@ class Cache implements ICache {
     private data: DataCache = {};
     private rehydrated = false;
     private subscriptions: Set<Subscription> = new Set();
-    private storageProxy;
+    private storageProxy: IStorageHelper;
     private promisesRestore;
 
     constructor(options: CacheOptions = {}) {
@@ -30,7 +30,8 @@ class Cache implements ICache {
             errorHandling: (error): boolean => errorHandling(this, error),
         };
         this.storageOptions = storageOptions;
-        this.storageProxy = disablePersist || !storage ? new NoStorageProxy() : new StorageProxy(this, storage, storageOptions);
+        this.rehydrated = disablePersist || !storage;
+        this.storageProxy = this.rehydrated ? new NoStorageProxy() : new StorageProxy(this, storage, storageOptions);
     }
 
     public isRehydrated(): boolean {
@@ -68,8 +69,9 @@ class Cache implements ICache {
         return this.purge();
     }
 
+    // Relay: For performance problems, it is advisable to return the state directly.
     public getState(): Readonly<{ [key: string]: any }> {
-        return Object.assign({}, this.data);
+        return this.data;
     }
 
     public toObject(): Readonly<{ [key: string]: any }> {
@@ -81,33 +83,42 @@ class Cache implements ICache {
     }
 
     // TODO add parameter for promises
-    public set(key: string, value: any): Promise<any> {
+    
+    public set(key: string, value: any, promise: true): Promise<void>
+    public set(key: string, value: any): void;
+    public set(key: any, value: any, promise: any = false): void | Promise<void>  {
         this.data[key] = value;
-        return this.storageProxy.setItem(key, value);
+        return this.storageProxy.setItem(key, value, promise);
     }
 
-    public delete(key: string): Promise<any> {
-        return this.set(key, null);
+    
+    public delete(key: string, promise: true): Promise<void>;
+    public delete(key: string): void;
+    public delete(key: string, promise: any = false): void | Promise<void> {
+        return this.set(key, null, promise);
     }
 
-    public remove(key: string): Promise<any> {
+    public remove(key: string): void;
+    public remove(key: string, promise: true): Promise<void>;
+    public remove(key: string, promise: any = false): void | Promise<void> {
         delete this.data[key];
-        return this.storageProxy.removeItem(key);
+        return this.storageProxy.removeItem(key, promise);
     }
 
     public getAllKeys(): Array<string> {
         return Object.keys(this.data);
     }
 
-    public subscribe(callback: (state: any, message: any) => void): () => boolean {
+    public subscribe(callback: (state: any, action: any) => void): () => boolean {
         const subscription = { callback };
         const dispose = (): boolean => this.subscriptions.delete(subscription);
         this.subscriptions.add(subscription);
         return dispose;
     }
 
-    public notify(state: any = this.toObject(), message = ''): void {
-        this.subscriptions.forEach((subscription) => subscription.callback(state, message));
+    public notify(payload: { state?: any, action?: any } = {}): void {
+        const { state = this.toObject(), action = '' } = payload;
+        this.subscriptions.forEach((subscription) => subscription.callback(state, action));
     }
 }
 

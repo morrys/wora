@@ -30,7 +30,8 @@
     "prebuild": "npm run clean",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
-    "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
+    "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
+    "test": "jest"
   },
   "dependencies": {
     "idb": "^4.0.0"
