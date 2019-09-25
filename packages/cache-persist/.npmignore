@@ -2,3 +2,6 @@ src/
 *.tgz
 tsconfig.json
 examples
+coverage
+__tests__
+__mocks__
