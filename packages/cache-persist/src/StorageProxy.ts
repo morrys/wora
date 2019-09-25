@@ -19,12 +19,17 @@ class StorageProxy implements IStorageHelper {
     private sets: Array<ILayer>;
     private removes: Array<ILayer>;
     private cache: ICache;
-    private queue: Queue;
+    private queue: {
+        push: {
+            (key: string, promise: true): Promise<void>;
+            (key: string): void;
+        };
+    };
 
     constructor(cache: ICache, storage: any, options: StorageHelperOptions = {}) {
         const { prefix, serialize, layers, errorHandling, throttle } = options;
         this.cache = cache;
-        this.queue = new Queue({
+        this.queue = Queue({
             throttle,
             errorHandling,
             execute: (flushKeys): Promise<any> => this.execute(flushKeys),
@@ -33,6 +38,7 @@ class StorageProxy implements IStorageHelper {
         this.layers = this.layers.concat(layers);
         this.layers = serialize ? this.layers.concat(jsonSerialize) : this.layers;
         this.storage = {
+            //evalute Promise.all
             multiRemove: async (keys) => {
                 for (let i = 0, l = keys.length; i < l; i++) {
                     await storage.removeItem(keys[i]);
@@ -47,6 +53,7 @@ class StorageProxy implements IStorageHelper {
                 }
                 return data;
             },
+            //evalute Promise.all
             multiSet: async (items: Array<Array<string>>) => {
                 for (let i = 0, l = items.length; i < l; i++) {
                     const [key, value] = items[i];
@@ -97,35 +104,22 @@ class StorageProxy implements IStorageHelper {
         );
     }
 
-    
     setItem(key: string, value: any, promise: true): Promise<void>;
     setItem(key: string, value: any): void;
     setItem(key: any, value: any, promise?: any) {
-        if(promise) {
-            return new Promise(async (resolve, _reject): Promise<void> => {
-                const item = this.set(key, value);
-                if (item) {
-                    await this.storage.setItem(item[0], item[1])
-                }
-                resolve();
-            });
+        if (promise) {
+            return this.queue.push(key, promise);
         }
-        return this.queue.push(key);
+        this.queue.push(key);
     }
 
     removeItem(key: string, promise: true): Promise<void>;
     removeItem(key: string): void;
     removeItem(key: any, promise?: any) {
-        if(promise) {
-            return new Promise(async (resolve, _reject): Promise<void> => {
-                const keyToRemove = this.remove(key);
-                if (keyToRemove) {
-                    await this.storage.removeItem(keyToRemove);
-                }
-                resolve();
-            });
+        if (promise) {
+            return this.queue.push(key, promise);
         }
-        return this.queue.push(key);
+        this.queue.push(key);
     }
 
     public execute(flushKeys: Array<string>): Promise<any> {
@@ -161,7 +155,10 @@ class StorageProxy implements IStorageHelper {
     }
 
     private init(): void {
-        this.checks = this.layers.filter((layer) => !!layer.check); // reverse?
+        this.checks = this.layers
+            .slice()
+            .reverse()
+            .filter((layer) => !!layer.check);
         this.sets = this.layers.filter((layer) => !!layer.set);
         this.removes = this.layers.filter((layer) => !!layer.remove);
         this.gets = this.layers
@@ -171,7 +168,9 @@ class StorageProxy implements IStorageHelper {
     }
 
     private filter(keys: Array<string>): Array<string> {
-        return keys.filter((key) => this.checks.reduce((currentValue, layer) => layer.check(key) && currentValue, true));
+        return keys.filter((key) =>
+            this.checks.reduce((currentValue, layer) => (!currentValue ? currentValue : layer.check(currentValue)), key),
+        );
     }
 
     private set(key: string, value: any): Array<string> {

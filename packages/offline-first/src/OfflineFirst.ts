@@ -115,7 +115,7 @@ class OfflineFirst<T> {
 
     public notify(): void {
         const { compare } = this.offlineOptions;
-        this.offlineStore.notify({state: Object.values<OfflineRecordCache<T>>(this.getState()).sort(compare)});
+        this.offlineStore.notify({ state: Object.values<OfflineRecordCache<T>>(this.getState()).sort(compare) });
     }
 
     public getState(): { [key: string]: any } {

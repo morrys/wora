@@ -12,10 +12,10 @@ export type ItemCache<T> = {
 };
 
 export interface ILayer {
-    set: (key: string, value: any) => Array<string>;
-    get: (key: string, value: any) => Array<string>;
-    remove?: (key: string) => string;
-    check?: (key: string) => boolean;
+    set: (key: string, value: any) => Array<string> | null;
+    get: (key: string, value: any) => Array<string> | null;
+    remove?: (key: string) => string | null;
+    check?: (key: string) => string | null;
 }
 
 export type CacheOptions = {
@@ -49,7 +49,7 @@ export interface ICache {
     remove(key: string): void;
     getAllKeys(): Array<string>;
     subscribe(callback: (state: any, action: any) => void): () => void;
-    notify(payload?: { state?: any, action?: any }):  void;
+    notify(payload?: { state?: any; action?: any }): void;
 }
 
 export type DataCache = {
@@ -78,4 +78,12 @@ export interface ICacheStorage {
 
 export type Subscription = {
     callback(message: string, state: any): void;
+};
+
+export type Observer<T> = {
+    start?: (subscription: Subscription) => any;
+    next?: (value?: T) => any;
+    error?: (error: Error) => any;
+    complete?: () => any;
+    unsubscribe?: (subscription: Subscription) => any;
 };

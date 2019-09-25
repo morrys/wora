@@ -83,15 +83,14 @@ class Cache implements ICache {
     }
 
     // TODO add parameter for promises
-    
-    public set(key: string, value: any, promise: true): Promise<void>
+
+    public set(key: string, value: any, promise: true): Promise<void>;
     public set(key: string, value: any): void;
-    public set(key: any, value: any, promise: any = false): void | Promise<void>  {
+    public set(key: any, value: any, promise: any = false): void | Promise<void> {
         this.data[key] = value;
         return this.storageProxy.setItem(key, value, promise);
     }
 
-    
     public delete(key: string, promise: true): Promise<void>;
     public delete(key: string): void;
     public delete(key: string, promise: any = false): void | Promise<void> {
@@ -116,7 +115,7 @@ class Cache implements ICache {
         return dispose;
     }
 
-    public notify(payload: { state?: any, action?: any } = {}): void {
+    public notify(payload: { state?: any; action?: any } = {}): void {
         const { state = this.toObject(), action = '' } = payload;
         this.subscriptions.forEach((subscription) => subscription.callback(state, action));
     }

@@ -1,11 +1,12 @@
 function createStorage(type) {
-    const state = {};
+    const state = { 'cache.restore': true };
     return {
         getAllKeys: () => Promise.resolve(Object.keys(state)),
-        setItem: (key, value) => Promise.resolve(() => { console.log("entro"); state[key] = value}),
-        removeItem: (key) => Promise.resolve(() => delete state[key]),
-        getItem: (key) => Promise.resolve(() => state[key]),
+        setItem: (key, value) => Promise.resolve(state[key] = value),
+        removeItem: (key) => Promise.resolve(delete state[key]),
+        getItem: (key) => Promise.resolve(state[key]),
+        getState: () => state
     };
 }
 
-module.exports = createStorage;
+export default createStorage;
