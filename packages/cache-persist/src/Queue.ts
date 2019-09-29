@@ -92,40 +92,43 @@ function Queue(options: { throttle?: number; execute: (keys: Array<string>) => P
     let inExecution = false;
     let resolvePush;
     let rejectPush;
+    let promisePush: Promise<void>;
     /*const complete = () => console.log("complete", Date.now());
     const next = () => console.log("next", Date.now());
     const start = () => console.log("start", Date.now());*/
-    let promisePush: Promise<void>;
     const queue: Array<string> = [];
     const { execute, throttle = 500, errorHandling = (_error): boolean => true } = options;
-
     function invokeFunc(): void {
         inExecution = true;
         //next();
         const flushKeys = Array.from(new Set(queue.splice(0)));
-        execute(flushKeys)
-            .then(() => {
-                if (resolvePush) {
-                    resolvePush();
-                }
-                /*if (queue.length === 0) {
-                    complete();
-                }*/
-            })
-            .catch((error) => {
-                if (rejectPush) {
-                    rejectPush();
+        // this allows to resolve only the promises registered before the execution
+        const resolve = resolvePush;
+        const reject = rejectPush;
+        resolvePush = null;
+        rejectPush = null;
+        promisePush = null;
+        const dispose = function(error?: Error) {
+            if (error) {
+                if (reject) {
+                    reject();
                 }
                 errorHandling(error);
-            })
-            .finally(() => {
-                cancelTimer();
-                promisePush = null;
-                inExecution = false;
-                if (queue.length > 0) {
-                    debounced();
+            } else {
+                if (resolve) {
+                    resolve();
                 }
-            });
+            }
+            cancelTimer();
+
+            inExecution = false;
+            if (queue.length > 0) {
+                debounced();
+            }
+        };
+        execute(flushKeys)
+            .then(() => dispose())
+            .catch((error) => dispose(error));
     }
 
     function timerExpired(): void {
@@ -156,7 +159,6 @@ function Queue(options: { throttle?: number; execute: (keys: Array<string>) => P
     function push(key: string): void;
     function push(key: any, promise?: any) {
         if (!promisePush && promise) {
-            //console.log("this.promisePush", this.promisePush)
             promisePush = new Promise((resolve, reject) => {
                 rejectPush = reject;
                 resolvePush = resolve;
