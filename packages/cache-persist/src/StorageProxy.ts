@@ -38,27 +38,43 @@ class StorageProxy implements IStorageHelper {
         this.layers = this.layers.concat(layers);
         this.layers = serialize ? this.layers.concat(jsonSerialize) : this.layers;
         this.storage = {
-            //evalute Promise.all
-            multiRemove: async (keys) => {
+            multiRemove: (keys): Promise<void> => {
+                const promises: Array<Promise<void>> = [];
                 for (let i = 0, l = keys.length; i < l; i++) {
-                    await storage.removeItem(keys[i]);
+                    promises.push(storage.removeItem(keys[i]));
                 }
+                return Promise.all(promises)
+                    .then(() => undefined)
+                    .catch((error) => {
+                        throw error;
+                    });
             },
-            multiGet: async (keys) => {
-                const data: Array<Array<string>> = [];
+            multiGet: (keys) => {
+                const promises: Array<Promise<void>> = [];
                 for (let i = 0, l = keys.length; i < l; i++) {
                     const key: string = keys[i];
-                    const value = await storage.getItem(key);
-                    data.push([key, value]);
+                    promises.push(
+                        storage
+                            .getItem(key)
+                            .then((value) => [key, value])
+                            .catch((error) => {
+                                throw error;
+                            }),
+                    );
                 }
-                return data;
+                return Promise.all(promises);
             },
-            //evalute Promise.all
-            multiSet: async (items: Array<Array<string>>) => {
+            multiSet: (items: Array<Array<string>>) => {
+                const promises: Array<Promise<void>> = [];
                 for (let i = 0, l = items.length; i < l; i++) {
                     const [key, value] = items[i];
-                    await storage.setItem(key, value);
+                    promises.push(storage.setItem(key, value));
                 }
+                return Promise.all(promises)
+                    .then(() => undefined)
+                    .catch((error) => {
+                        throw error;
+                    });
             },
             ...storage,
         } as ICacheStorage;
