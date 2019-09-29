@@ -1,5 +1,5 @@
 function createStorage(type) {
-    const state = { 'cache.restore': true, 'cache.cavolo': 1 };
+    const state = { 'cache.restore': true, 'cache.data': 1 };
     return {
         getAllKeys: () => Promise.resolve(Object.keys(state)),
         setItem: (key, value) => Promise.resolve((state[key] = value)),

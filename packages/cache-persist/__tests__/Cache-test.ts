@@ -5,25 +5,11 @@ import prefixLayer from '../src/layers/prefixLayer';
 
 jest.mock('../src/createStorage', () => require.requireActual('../__mocks__/createStorage').default);
 
-const INITIAL_STATE = { restore: true, cavolo: 1 };
+const INITIAL_STATE = { restore: true, data: 1 };
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
-/*describe('Cache promises', () => {
-    let cache;
-    beforeAll(() => {
-        cache = new Cache();
-    });
 
-    it('cache set', async () => {
-        await cache.set("prova2", 1, true);
-        await sleep(600);
-        expect(cache.get("prova2")).toBe(1);
-        cache.set("prova3", 1);
-        await sleep(600);
-    })
-});
-*/
 describe('Cache promises', () => {
     let cache;
     beforeAll(() => {
@@ -55,7 +41,6 @@ describe('Cache promises', () => {
         });
 });
 
-/*
 describe('Cache promises layers', () => {
     let cache;
     const storage: any = createStorage(null);
@@ -320,4 +305,3 @@ describe('Cache, others', () => {
         expect(callback).toHaveBeenCalledTimes(2);
     });
 });
-*/
