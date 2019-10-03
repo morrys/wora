@@ -1,16 +1,7 @@
-import { ILayer } from '../CacheTypes';
+import { IMutateKey } from '../CacheTypes';
 
-function mutateKeys(mutateSet: (key: string) => string, mutateGet: (key: string) => string, checkKey: (key: string) => boolean): ILayer {
-    return {
-        set: (key: string, value: any) => [mutateSet(key), value],
-        get: (key: string, value: any) => {
-            return [mutateGet(key), value];
-        },
-        remove: (key: string) => mutateSet(key),
-        check: (key: string) => {
-            return checkKey(key) ? mutateGet(key) : null;
-        },
-    } as ILayer;
+function mutateKeys(set: (key: string) => string | null, get: (key: string) => string | null): IMutateKey {
+    return { set, get } as IMutateKey;
 }
 
 export default mutateKeys;

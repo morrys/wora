@@ -1,8 +1,8 @@
-import { ILayer } from '../CacheTypes';
+import { IMutateKey } from '../CacheTypes';
 import mutateKeys from './mutateKeys';
 
-function filterKeys(filter: (key: string) => boolean): ILayer {
-    return mutateKeys((key) => (filter(key) ? key : null), (key) => key, (key) => filter(key));
+function filterKeys(filter: (key: string) => boolean): IMutateKey {
+    return mutateKeys((key) => (filter(key) ? key : null), (key) => (filter(key) ? key : null));
 }
 
 export default filterKeys;

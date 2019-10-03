@@ -1,6 +1,6 @@
 import jsonSerialize from './layers/jsonSerialize';
 import prefixLayer from './layers/prefixLayer';
-import { ICache, IStorageHelper, DataCache, ICacheStorage, ILayer, StorageHelperOptions } from './CacheTypes';
+import { ICache, IStorageHelper, DataCache, ICacheStorage, StorageHelperOptions } from './CacheTypes';
 import Queue from './Queue';
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
@@ -13,30 +13,44 @@ export function promiseVoid(execute = (): void => undefined): Promise<void> {
 
 class StorageProxy implements IStorageHelper {
     private storage: ICacheStorage;
-    private layers: Array<ILayer> = [];
-    private checks: Array<ILayer>;
-    private gets: Array<ILayer>;
-    private sets: Array<ILayer>;
-    private removes: Array<ILayer>;
+    private setKey: (key: string) => string | null;
+    private getKey: (key: string) => string | null;
+    private setValue: (value: any) => any;
+    private getValue: (value: any) => any;
     private cache: ICache;
     private queue: {
-        push: {
-            (key: string, promise: true): Promise<void>;
-            (key: string): void;
-        };
+        multiPush: (keys: Array<string>) => void;
+        push: (key: string) => void;
+        flush: () => Promise<void>;
     };
-
     constructor(cache: ICache, storage: any, options: StorageHelperOptions = {}) {
-        const { prefix, serialize, layers, errorHandling, throttle } = options;
+        const { prefix, serialize, mutateKeys, mutateValues, errorHandling, throttle } = options;
         this.cache = cache;
         this.queue = Queue({
             throttle,
             errorHandling,
             execute: (flushKeys): Promise<any> => this.execute(flushKeys),
         });
-        this.layers = prefix ? this.layers.concat(prefixLayer(prefix)) : this.layers;
-        this.layers = this.layers.concat(layers);
-        this.layers = serialize ? this.layers.concat(jsonSerialize) : this.layers;
+        if (prefix) {
+            mutateKeys.unshift(prefixLayer(prefix));
+        }
+        if (serialize) {
+            mutateValues.push(jsonSerialize);
+        }
+        this.getKey = this.compose(
+            ...mutateKeys
+                .slice()
+                .reverse()
+                .map((mutate) => mutate.get),
+        );
+        this.getValue = this.compose(
+            ...mutateValues
+                .slice()
+                .reverse()
+                .map((mutate) => mutate.get),
+        );
+        this.setKey = this.compose(...mutateKeys.map((mutate) => (key) => mutate.set(key)));
+        this.setValue = this.compose(...mutateValues.map((mutate) => mutate.set));
         this.storage = {
             multiRemove: (keys): Promise<void> => {
                 const promises: Array<Promise<void>> = [];
@@ -78,86 +92,58 @@ class StorageProxy implements IStorageHelper {
             },
             ...storage,
         } as ICacheStorage;
-        this.init();
-    }
-
-    public purge(): Promise<boolean> {
-        return this.storage.getAllKeys().then((keys: Array<string>) =>
-            this.storage
-                .multiRemove(this.filter(keys))
-                .then(() => true)
-                .catch(() => false),
-        );
     }
 
     public restore(): Promise<DataCache> {
         return this.storage
             .getAllKeys()
-            .then((keys: Array<string>) => this.storage.multiGet(this.filter(keys)))
+            .then((keys: Array<string>) => this.storage.multiGet(keys.filter((key) => !!this.getKey(key))))
             .then((data) => {
                 const result: DataCache = {};
                 for (let i = 0, l = data.length; i < l; i++) {
                     const [key, value] = data[i];
-                    const item = this.get(key, value);
-                    result[item[0]] = item[1];
+                    const keyMutate = this.getKey(key);
+                    const valueMutate = this.getValue(value);
+                    result[keyMutate] = valueMutate;
                 }
                 return result;
             });
     }
 
-    public replace(data: any): Promise<void> {
-        const items: Array<Array<string>> = [];
-        return this.purge().then(
-            (): Promise<void> => {
-                Object.entries(data).forEach(([key, value]) => {
-                    const item = this.set(key, value);
-                    if (item) {
-                        items.push(item);
-                    }
-                });
-                return this.storage.multiSet(items);
-            },
-        );
+    public multiPush(keys: Array<string>) {
+        this.queue.multiPush(keys);
     }
 
-    setItem(key: string, value: any, promise: true): Promise<void>;
-    setItem(key: string, value: any): void;
-    setItem(key: any, value: any, promise?: any) {
-        if (promise) {
-            return this.queue.push(key, promise);
-        }
+    public push(key: string) {
         this.queue.push(key);
     }
 
-    removeItem(key: string, promise: true): Promise<void>;
-    removeItem(key: string): void;
-    removeItem(key: any, promise?: any) {
-        if (promise) {
-            return this.queue.push(key, promise);
-        }
-        this.queue.push(key);
+    public flush(): Promise<void> {
+        return this.queue.flush();
     }
 
     public execute(flushKeys: Array<string>): Promise<any> {
-        const stateKeys = this.cache.getAllKeys();
+        const startTime = Date.now();
+        console.log('cache debounce 5', Date.now() - startTime);
         const removeKeys = [];
         const setValues = [];
         for (let i = 0, l = flushKeys.length; i < l; i++) {
             const key = flushKeys[i];
-            const isSet = stateKeys.includes(key);
+            const isSet = this.cache.has(key);
+            const mutateKey = this.setKey(key);
+            if (!mutateKey) {
+                continue;
+            }
             if (isSet) {
                 const value = this.cache.get(key);
-                const item = this.set(key, value);
-                if (item) {
-                    setValues.push(item);
-                }
+                const item = [mutateKey, this.setValue(value)];
+                setValues.push(item);
             } else {
-                const keyToRemove = this.remove(key);
-                if (keyToRemove) {
-                    removeKeys.push(keyToRemove);
-                }
+                removeKeys.push(mutateKey);
             }
         }
+
+        console.log('cache debounce 6', Date.now() - startTime);
         const promises = [];
         if (removeKeys.length > 0) {
             // TODO length === 1 remove
@@ -170,41 +156,16 @@ class StorageProxy implements IStorageHelper {
         return Promise.all(promises);
     }
 
-    private init(): void {
-        this.checks = this.layers
-            .slice()
-            .reverse()
-            .filter((layer) => !!layer.check);
-        this.sets = this.layers.filter((layer) => !!layer.set);
-        this.removes = this.layers.filter((layer) => !!layer.remove);
-        this.gets = this.layers
-            .slice()
-            .reverse()
-            .filter((layer) => !!layer.get);
-    }
+    private compose(...funcs) {
+        if (funcs.length === 0) {
+            return (arg) => arg;
+        }
 
-    private filter(keys: Array<string>): Array<string> {
-        return keys.filter((key) =>
-            this.checks.reduce((currentValue, layer) => (!currentValue ? currentValue : layer.check(currentValue)), key),
-        );
-    }
+        if (funcs.length === 1) {
+            return funcs[0];
+        }
 
-    private set(key: string, value: any): Array<string> {
-        return this.sets.reduce((currentValue, layer) => (!currentValue ? currentValue : layer.set(currentValue[0], currentValue[1])), [
-            key,
-            value,
-        ]);
-    }
-
-    private get(key: string, value: any): Array<string> {
-        return this.gets.reduce((currentValue, layer) => (!currentValue ? currentValue : layer.get(currentValue[0], currentValue[1])), [
-            key,
-            value,
-        ]);
-    }
-
-    private remove(key: string): string {
-        return this.removes.reduce((currentValue, layer) => (!currentValue ? currentValue : layer.remove(currentValue)), key);
+        return funcs.reduce((a, b) => (...args) => a(b(...args)));
     }
 }
 

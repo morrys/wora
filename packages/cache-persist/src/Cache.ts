@@ -3,6 +3,8 @@ import StorageProxy from './StorageProxy';
 import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper } from './CacheTypes';
 import NoStorageProxy from './NoStorageProxy';
 
+const hasOwn = Object.prototype.hasOwnProperty;
+
 class Cache implements ICache {
     public storageOptions;
     private data: DataCache = {};
@@ -15,7 +17,8 @@ class Cache implements ICache {
         const {
             prefix = 'cache',
             serialize = true,
-            layers = [],
+            mutateKeys = [],
+            mutateValues = [],
             webStorage = 'local',
             disablePersist = false,
             storage = createStorage(webStorage),
@@ -26,7 +29,8 @@ class Cache implements ICache {
             throttle,
             prefix,
             serialize,
-            layers,
+            mutateKeys,
+            mutateValues,
             errorHandling: (error): boolean => errorHandling(this, error),
         };
         this.storageOptions = storageOptions;
@@ -55,18 +59,17 @@ class Cache implements ICache {
         return this.promisesRestore;
     }
 
-    public replace(newData): Promise<void> {
-        this.data = newData ? Object.assign({}, newData) : Object.create(null);
-        return this.storageProxy.replace(newData);
+    public replace(newData: DataCache): void {
+        const keys = this.getAllKeys().concat(Object.keys(newData));
+        this.data = Object.assign({}, newData);
+        this.storageProxy.multiPush(keys);
+        //return this.storageProxy.replace(newData);
     }
 
-    public purge(): Promise<boolean> {
+    public purge(): void {
+        const keys = this.getAllKeys();
         this.data = Object.create(null);
-        return this.storageProxy.purge();
-    }
-
-    public clear(): Promise<boolean> {
-        return this.purge();
+        this.storageProxy.multiPush(keys);
     }
 
     // Relay: For performance problems, it is advisable to return the state directly.
@@ -74,34 +77,30 @@ class Cache implements ICache {
         return this.data;
     }
 
-    public toObject(): Readonly<{ [key: string]: any }> {
-        return this.getState();
+    public has(key: string): boolean {
+        return hasOwn.call(this.data, key);
     }
 
     public get(key: string): any {
         return this.data[key];
     }
 
-    // TODO add parameter for promises
-
-    public set(key: string, value: any, promise: true): Promise<void>;
-    public set(key: string, value: any): void;
-    public set(key: any, value: any, promise: any = false): void | Promise<void> {
+    public set(key: string, value: any): void {
         this.data[key] = value;
-        return this.storageProxy.setItem(key, value, promise);
+        this.storageProxy.push(key);
     }
 
-    public delete(key: string, promise: true): Promise<void>;
-    public delete(key: string): void;
-    public delete(key: string, promise: any = false): void | Promise<void> {
-        return this.set(key, null, promise);
+    public delete(key: string): void {
+        this.set(key, null);
     }
 
-    public remove(key: string): void;
-    public remove(key: string, promise: true): Promise<void>;
-    public remove(key: string, promise: any = false): void | Promise<void> {
+    public remove(key: string): void {
         delete this.data[key];
-        return this.storageProxy.removeItem(key, promise);
+        this.storageProxy.push(key);
+    }
+
+    public flush(): Promise<void> {
+        return this.storageProxy.flush();
     }
 
     public getAllKeys(): Array<string> {
@@ -116,7 +115,7 @@ class Cache implements ICache {
     }
 
     public notify(payload: { state?: any; action?: any } = {}): void {
-        const { state = this.toObject(), action = '' } = payload;
+        const { state = this.getState(), action = '' } = payload;
         this.subscriptions.forEach((subscription) => subscription.callback(state, action));
     }
 }

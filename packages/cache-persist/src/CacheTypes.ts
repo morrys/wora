@@ -1,7 +1,8 @@
 export type StorageHelperOptions = {
     serialize?: boolean;
     prefix?: string;
-    layers?: Array<ILayer>;
+    mutateKeys?: Array<IMutateKey>;
+    mutateValues?: Array<IMutateValue>;
     errorHandling?: (error: any) => boolean;
     throttle?: number;
 };
@@ -11,17 +12,21 @@ export type ItemCache<T> = {
     value: T;
 };
 
-export interface ILayer {
-    set: (key: string, value: any) => Array<string> | null;
-    get: (key: string, value: any) => Array<string> | null;
-    remove?: (key: string) => string | null;
-    check?: (key: string) => string | null;
+export interface IMutateKey {
+    set(key: string): string | null;
+    get(key: string): string | null;
+}
+
+export interface IMutateValue {
+    set(value: any): any;
+    get(value: any): any;
 }
 
 export type CacheOptions = {
     serialize?: boolean;
     prefix?: string | undefined | null;
-    layers?: Array<ILayer>;
+    mutateKeys?: Array<IMutateKey>;
+    mutateValues?: Array<IMutateValue>;
     storage?: ICacheStorage;
     webStorage?: 'local' | 'session';
     disablePersist?: boolean;
@@ -30,22 +35,15 @@ export type CacheOptions = {
 };
 
 export interface ICache {
-    purge(): Promise<boolean>;
+    purge(): void;
     restore(): Promise<DataCache>;
-    replace(data: any): Promise<void>;
+    replace(data: any): void;
     isRehydrated(): boolean;
-    clear(): Promise<boolean>;
     getState(): Readonly<{ [key: string]: any }>;
-    toObject(): Readonly<{ [key: string]: any }>;
     get(key: string): any;
-    set(key: string, value: any, promise?: boolean): void | Promise<void>;
-    set(key: string, value: any, promise: true): Promise<void>;
     set(key: string, value: any): void;
-    delete(key: string, promise?: boolean): void | Promise<void>;
-    delete(key: string, promise: true): Promise<void>;
+    has(key: string): boolean;
     delete(key: string): void;
-    remove(key: string, promise?: boolean): void | Promise<void>;
-    remove(key: string, promise: true): Promise<void>;
     remove(key: string): void;
     getAllKeys(): Array<string>;
     subscribe(callback: (state: any, action: any) => void): () => void;
@@ -57,13 +55,10 @@ export type DataCache = {
 };
 
 export interface IStorageHelper {
-    purge(): Promise<boolean>;
     restore(): Promise<DataCache>;
-    replace(data: any): Promise<void>;
-    setItem(key: string, value: any, promise: true): Promise<void>;
-    setItem(key: string, value: any): void;
-    removeItem(key: string, promise: true): Promise<void>;
-    removeItem(key: string): void;
+    multiPush(keys: Array<string>): void;
+    push(key: string): void;
+    flush(): Promise<void>;
 }
 
 export interface ICacheStorage {

@@ -1,10 +1,7 @@
-import { ILayer } from '../CacheTypes';
+import { IMutateValue } from '../CacheTypes';
 
-function mutateValues(mutateSet: (value: any) => any, mutateGet: (value: any) => any): ILayer {
-    return {
-        set: (key: string, value: any) => [key, mutateSet(value)],
-        get: (key: string, value: any) => [key, mutateGet(value)],
-    } as ILayer;
+function mutateValues(set: (value: any) => any, get: (value: any) => any): IMutateValue {
+    return { set, get } as IMutateValue;
 }
 
 export default mutateValues;

@@ -101,7 +101,10 @@ function Queue(options: { throttle?: number; execute: (keys: Array<string>) => P
     function invokeFunc(): void {
         inExecution = true;
         //next();
+        const startTime = Date.now();
         const flushKeys = Array.from(new Set(queue.splice(0)));
+
+        console.log('cache debounce 4', Date.now() - startTime);
         // this allows to resolve only the promises registered before the execution
         const resolve = resolvePush;
         const reject = rejectPush;
@@ -155,28 +158,37 @@ function Queue(options: { throttle?: number; execute: (keys: Array<string>) => P
         }
     }
 
-    function push(key: string, promise: true): Promise<void>;
-    function push(key: string): void;
-    function push(key: any, promise?: any) {
-        if (!promisePush && promise) {
-            promisePush = new Promise((resolve, reject) => {
-                rejectPush = reject;
-                resolvePush = resolve;
-            });
-        }
+    function multiPush(keys: Array<string>) {
+        /*if (!execution && queue.length === 0) {
+            start();
+        }*/
+        Array.prototype.push.apply(queue, keys);
+        //queue.push(...keys);
+        debounced();
+    }
 
+    function push(key: string) {
         /*if (!execution && queue.length === 0) {
             start();
         }*/
         queue.push(key);
         debounced();
-        if (promise) {
-            return promisePush;
+    }
+
+    function flush(): Promise<void> {
+        if (!promisePush) {
+            promisePush = new Promise((resolve, reject) => {
+                rejectPush = reject;
+                resolvePush = resolve;
+            });
         }
+        return promisePush;
     }
 
     return {
         push,
+        multiPush,
+        flush,
     };
 }
 
