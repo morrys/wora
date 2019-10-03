@@ -60,9 +60,10 @@ class OfflineFirst<T> {
     }
 
     public purge(): Promise<boolean> {
-        return this.offlineStore.purge().then((purged) => {
+        this.offlineStore.purge();
+        return this.offlineStore.flush().then(() => {
             this.notify();
-            return purged;
+            return true;
         });
     }
 
@@ -123,7 +124,8 @@ class OfflineFirst<T> {
     }
 
     public remove(id: string): Promise<void> {
-        return this.offlineStore.remove(id, true);
+        this.offlineStore.remove(id);
+        return this.offlineStore.flush();
     }
 
     public getListMutation(): ReadonlyArray<OfflineRecordCache<T>> {
@@ -206,8 +208,9 @@ class OfflineFirst<T> {
         const { request, serial } = options;
         const fetchTime = Date.now();
         const offlineRecord: OfflineRecordCache<T> = onPublish({ id, request, fetchTime, serial });
+        this.offlineStore.set(id, offlineRecord);
         return this.offlineStore
-            .set(id, offlineRecord, true)
+            .flush()
             .then(() => {
                 return offlineRecord;
             })

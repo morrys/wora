@@ -1,25 +1,17 @@
-import $$observable from 'symbol-observable'
-import Cache, { ICache, ILayer, prefixLayer, mutateValuesLayer } from '@wora/cache-persist'
+import $$observable from 'symbol-observable';
+import Cache, { ICache, prefixLayer } from '@wora/cache-persist';
 import isPlainObject from './redux/utils/isPlainObject';
 import ActionTypes from './redux/utils/actionTypes';
-import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
+import filterKeys from '@wora/cache-persist/lib/layers/filterKeys';
 
 export const REHYDRATE = `@@redux/RESTORED`; // added
 
-
-const reduxPersistLayer = (values, check, multiple, prefix) => {
-    if(!values) {
+const reduxPersistFilterKeys = (values, check, prefix) => {
+    if (!values) {
         return undefined;
     }
-    if(multiple) {
-        return filterKeys(key => check(key.substr(prefix.length)));
-    }
-    const mutateFunction = (value) => { Object.keys(value).filter(key => !check(key)).forEach(key =>  value[key] = undefined); return value };
-    
-    return mutateValuesLayer(mutateFunction, mutateFunction);
-
-}
-
+    return filterKeys((key) => check(key.substr(prefix.length)));
+};
 
 /**
  * Creates a Redux store that holds the state tree.
@@ -47,65 +39,63 @@ const reduxPersistLayer = (values, check, multiple, prefix) => {
  * and subscribe to changes.
  */
 
-function createStore(reducer: any, preloadedState?: any, enhancer?: any,
-    persistOptions?: any,
-     ) { //TODO TYPING
+function createStore(reducer: any, preloadedState?: any, enhancer?: any, persistOptions?: any) {
+    //TODO TYPING
 
     if (
         (typeof preloadedState === 'function' && typeof enhancer === 'function') ||
         (typeof enhancer === 'function' && typeof arguments[3] === 'function')
     ) {
-        throw new Error('CREATE1')
+        throw new Error('CREATE1');
     }
 
     if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
-        enhancer = preloadedState
-        preloadedState = undefined
+        enhancer = preloadedState;
+        preloadedState = undefined;
     }
 
     if (typeof enhancer !== 'undefined') {
         if (typeof enhancer !== 'function') {
-            throw new Error('CREATE2')
+            throw new Error('CREATE2');
         }
 
-        return enhancer(createStore)(reducer, preloadedState, undefined, persistOptions)
+        return enhancer(createStore)(reducer, preloadedState, undefined, persistOptions);
     }
 
     if (typeof reducer !== 'function') {
-        throw new Error('CREATE3')
+        throw new Error('CREATE3');
     }
 
-    
-    const { disablePersist= !persistOptions, 
-        version = -1, 
-        key = 'root', 
-        multiple = false, 
+    const {
+        disablePersist = !persistOptions,
+        version = -1,
+        // key = 'root', // TODO verify
         whitelist = undefined,
         blacklist = undefined,
-        layers = undefined,
-        migrate= (s: any, v: number) => Promise.resolve(s), 
-        stateReconciler= (s: any, o: any, r: any, c: any) => s,
-         } = persistOptions || {};
-
+        mutateKeys = undefined,
+        mutateValues = undefined,
+        migrate = (s: any, v: number) => Promise.resolve(s),
+        stateReconciler = (s: any, o: any, r: any, c: any) => s,
+    } = persistOptions || {};
 
     const prefLayer = prefixLayer('persist', ':');
     const prefix = 'persist' + ':';
-    const whiteLayer: ILayer = reduxPersistLayer(whitelist, (key) => whitelist.includes(key), multiple, prefix);
-    const blackLayer: ILayer = reduxPersistLayer(blacklist, (key) => !blacklist.includes(key), multiple, prefix);
-    const internalLayer = [prefLayer];
-    if(whiteLayer) {
-        internalLayer.push(whiteLayer);
+    const whiteLayer = reduxPersistFilterKeys(whitelist, (key) => whitelist.includes(key), prefix); // TODO verify
+    const blackLayer = reduxPersistFilterKeys(blacklist, (key) => !blacklist.includes(key), prefix); // TODO verify
+    const internalMutateKeys = [prefLayer];
+    if (whiteLayer) {
+        internalMutateKeys.push(whiteLayer);
     }
-    if(blackLayer) {
-        internalLayer.push(blackLayer);
+    if (blackLayer) {
+        internalMutateKeys.push(blackLayer);
     }
 
-    const customLayers = layers ? internalLayer.concat(layers) : internalLayer;
+    const customMutateKeys = mutateKeys ? internalMutateKeys.concat(mutateKeys) : internalMutateKeys;
 
-    const cache: ICache = new Cache({ disablePersist, prefix: null, layers: customLayers, ...persistOptions});
+    const cache: ICache = new Cache({ disablePersist, prefix: null, mutateKeys: customMutateKeys, mutateValues, ...persistOptions });
 
-    let currentReducer = reducer
-    let isDispatching = false
+    let currentReducer = reducer;
+    let isDispatching = false;
 
     /**
      * Reads the state tree managed by the store.
@@ -114,13 +104,9 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
      */
     function getState() {
         if (isDispatching) {
-            throw new Error('GETSTATE1')
+            throw new Error('GETSTATE1');
         }
-        return _internalGetState();
-    }
-
-    function _internalGetState() {
-        return multiple ? cache.getState() : cache.get(key);
+        return cache.getState();
     }
 
     /**
@@ -177,41 +163,33 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
      */
     function dispatch(action: any) {
         if (!isPlainObject(action)) {
-            throw new Error(
-                'DISPATCH1'
-            )
+            throw new Error('DISPATCH1');
         }
 
         if (typeof action.type === 'undefined') {
-            throw new Error('DISPATCH2')
+            throw new Error('DISPATCH2');
         }
 
         if (isDispatching) {
-            throw new Error('DISPATCH3')
+            throw new Error('DISPATCH3');
         }
 
         try {
             isDispatching = true;
-            const prevState = _internalGetState();
-            const state = currentReducer(prevState, action)
-            state._persist = { version, rehydrated: true }
-            if(multiple) {
-                Object.keys(state).forEach(key => {
-                    if(state[key]!==prevState[key]) {
-                        cache.set(key, state[key]);
-                    }
-                });
-            } else {
-                if(state!==prevState) {
-                    cache.set(key, state);
+            const prevState = getState();
+            const state = currentReducer(prevState, action);
+            state._persist = { version, rehydrated: true };
+            Object.keys(state).forEach((key) => {
+                if (state[key] !== prevState[key]) {
+                    cache.set(key, state[key]);
                 }
-            }
+            });
         } finally {
-            isDispatching = false
+            isDispatching = false;
         }
 
-        cache.notify({ state: getState(), action }); 
-        return action
+        cache.notify({ state: getState(), action });
+        return action;
     }
 
     /**
@@ -226,16 +204,16 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
      */
     function replaceReducer(nextReducer: any) {
         if (typeof nextReducer !== 'function') {
-            throw new Error('REPLACE1')
+            throw new Error('REPLACE1');
         }
 
-        currentReducer = nextReducer
+        currentReducer = nextReducer;
 
         // This action has a similiar effect to ActionTypes.INIT.
         // Any reducers that existed in both the new and old rootReducer
         // will receive the previous state. This effectively populates
         // the new state tree with any relevant data from the old one.
-        dispatch({ type: ActionTypes.REPLACE })
+        dispatch({ type: ActionTypes.REPLACE });
     }
 
     /**
@@ -245,7 +223,7 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
      * https://github.com/tc39/proposal-observable
      */
     function observable() {
-        const outerSubscribe = subscribe
+        const outerSubscribe = subscribe;
         return {
             /**
              * The minimal observable subscription method.
@@ -257,24 +235,24 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
              */
             subscribe(observer: any) {
                 if (typeof observer !== 'object' || observer === null) {
-                    throw new TypeError('OBSERVER1')
+                    throw new TypeError('OBSERVER1');
                 }
 
                 function observeState() {
                     if (observer.next) {
-                        observer.next(getState())
+                        observer.next(getState());
                     }
                 }
 
-                observeState()
-                const unsubscribe = outerSubscribe(observeState)
-                return { unsubscribe }
+                observeState();
+                const unsubscribe = outerSubscribe(observeState);
+                return { unsubscribe };
             },
 
             [$$observable]() {
-                return this
-            }
-        }
+                return this;
+            },
+        };
     }
 
     function isRehydrated(): boolean {
@@ -283,36 +261,44 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
 
     function restore(): Promise<void> {
         if (disablePersist) {
-            dispatch({ type: ActionTypes.INIT })
+            dispatch({ type: ActionTypes.INIT });
             return Promise.resolve();
         } else {
-            return cache.restore().then(async () => {
-                const restoredState = getState();
-                dispatch({ type: ActionTypes.INIT });
-                const haveStoredState = !!restoredState && !!restoredState._persist;
-                const migrateState = haveStoredState && await migrate(restoredState, version).then( (mState: any, state: any = getState()) => {
-                    return stateReconciler(mState, preloadedState, state, persistOptions);
-                })
-                const state = {...migrateState, _persist: { version, rehydrated: true } };
-                if(multiple) {
-                    await cache.replace(state);
-                    dispatch({ type: REHYDRATE });
-                    return;
-                }
-                cache.set(key, state);
-                dispatch({ type: REHYDRATE });
-            }).catch(error => {
-                throw error;
-            });
-        }
+            return cache
+                .restore()
+                .then(async () => {
+                    const checkReduxPersistStore = cache.getState();
+                    // TODO verify
+                    if (
+                        (!!checkReduxPersistStore && !checkReduxPersistStore._persist) ||
+                        (!!checkReduxPersistStore._persist && checkReduxPersistStore._persist.wora)
+                    ) {
+                        cache.replace(checkReduxPersistStore);
+                    }
+                    const restoredState = cache.getState();
 
+                    dispatch({ type: ActionTypes.INIT });
+                    const haveStoredState = !!restoredState && !!restoredState._persist;
+                    const migrateState =
+                        haveStoredState &&
+                        (await migrate(restoredState, version).then((mState: any, state: any = getState()) => {
+                            return stateReconciler(mState, preloadedState, state, persistOptions);
+                        }));
+                    const state = { ...migrateState, _persist: { version, rehydrated: true } };
+
+                    cache.replace(state);
+                    await cache.flush();
+                    dispatch({ type: REHYDRATE });
+                })
+                .catch((error) => {
+                    throw error;
+                });
+        }
     }
 
     // When a store is created, an "INIT" action is dispatched so that every
     // reducer returns their initial state. This effectively populates
     // the initial state tree.
-    
-
 
     return {
         dispatch,
@@ -321,8 +307,8 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any,
         replaceReducer,
         restore,
         isRehydrated,
-        [$$observable]: observable
-    }
+        [$$observable]: observable,
+    };
 }
 
 export default createStore;

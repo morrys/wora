@@ -48,6 +48,7 @@ export interface ICache {
     getAllKeys(): Array<string>;
     subscribe(callback: (state: any, action: any) => void): () => void;
     notify(payload?: { state?: any; action?: any }): void;
+    flush(): Promise<void>;
 }
 
 export type DataCache = {

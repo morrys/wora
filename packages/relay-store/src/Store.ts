@@ -45,8 +45,9 @@ export default class Store extends RelayModernStore {
         this.checkGC = checkGC;
     }
 
-    public purge(): Promise<boolean[]> {
-        return Promise.all([this._cache.purge(), (this as any)._recordSource.purge()]);
+    public purge(): Promise<void[]> {
+        this._cache.purge();
+        return Promise.all([this._cache.flush(), (this as any)._recordSource.purge()]);
     }
 
     public restore(): Promise<Cache[]> {

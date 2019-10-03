@@ -1,4 +1,4 @@
-import compose from './compose'
+import { compose } from '@wora/cache-persist';
 
 /**
  * Creates a store enhancer that applies middleware to the dispatch method
@@ -17,24 +17,24 @@ import compose from './compose'
  * @returns {Function} A store enhancer applying the middleware.
  */
 const applyMiddleware = (...middlewares) => {
-  return createStore => (...args) => {
-    const store = createStore(...args)
-    let dispatch:any = () => {
-      throw new Error('APPLY1')
-    }
+    return (createStore) => (...args) => {
+        const store = createStore(...args);
+        let dispatch: any = () => {
+            throw new Error('APPLY1');
+        };
 
-    const middlewareAPI = {
-      getState: store.getState,
-      dispatch: (...args) => dispatch(...args)
-    }
-    const chain = middlewares.map(middleware => middleware(middlewareAPI))
-    dispatch = compose(...chain)(store.dispatch)
+        const middlewareAPI = {
+            getState: store.getState,
+            dispatch: (...args) => dispatch(...args),
+        };
+        const chain = middlewares.map((middleware) => middleware(middlewareAPI));
+        dispatch = compose(...chain)(store.dispatch);
 
-    return {
-      ...store,
-      dispatch
-    }
-  }
-}
+        return {
+            ...store,
+            dispatch,
+        };
+    };
+};
 
 export default applyMiddleware;

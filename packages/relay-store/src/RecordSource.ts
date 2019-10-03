@@ -16,8 +16,9 @@ export default class RecordSource implements IMutableRecordSourceOffline {
         this._cache = cache;
     }
 
-    public purge(): Promise<boolean> {
-        return this._cache.purge();
+    public purge(): Promise<void> {
+        this._cache.purge();
+        return this._cache.flush();
     }
 
     public restore(): Promise<DataCache> {
@@ -49,7 +50,7 @@ export default class RecordSource implements IMutableRecordSourceOffline {
     }
 
     public has(dataID: string): boolean {
-        return this._cache.getState().hasOwnProperty(dataID);
+        return this._cache.has(dataID);
     }
 
     public load(dataID: string, callback: (error: Error, record: Record) => void): void {

@@ -2,6 +2,7 @@ import jsonSerialize from './layers/jsonSerialize';
 import prefixLayer from './layers/prefixLayer';
 import { ICache, IStorageHelper, DataCache, ICacheStorage, StorageHelperOptions } from './CacheTypes';
 import Queue from './Queue';
+import compose from './utils/compose';
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
     return Promise.resolve(execute());
@@ -37,20 +38,20 @@ class StorageProxy implements IStorageHelper {
         if (serialize) {
             mutateValues.push(jsonSerialize);
         }
-        this.getKey = this.compose(
+        this.getKey = compose(
             ...mutateKeys
                 .slice()
                 .reverse()
                 .map((mutate) => mutate.get),
         );
-        this.getValue = this.compose(
+        this.getValue = compose(
             ...mutateValues
                 .slice()
                 .reverse()
                 .map((mutate) => mutate.get),
         );
-        this.setKey = this.compose(...mutateKeys.map((mutate) => (key) => mutate.set(key)));
-        this.setValue = this.compose(...mutateValues.map((mutate) => mutate.set));
+        this.setKey = compose(...mutateKeys.map((mutate) => (key) => mutate.set(key)));
+        this.setValue = compose(...mutateValues.map((mutate) => mutate.set));
         this.storage = {
             multiRemove: (keys): Promise<void> => {
                 const promises: Array<Promise<void>> = [];
@@ -154,18 +155,6 @@ class StorageProxy implements IStorageHelper {
             promises.push(this.storage.multiSet(setValues));
         }
         return Promise.all(promises);
-    }
-
-    private compose(...funcs) {
-        if (funcs.length === 0) {
-            return (arg) => arg;
-        }
-
-        if (funcs.length === 1) {
-            return funcs[0];
-        }
-
-        return funcs.reduce((a, b) => (...args) => a(b(...args)));
     }
 }
 
