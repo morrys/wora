@@ -12,7 +12,7 @@
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
     "styled-components": "4.2.0",
-    "@wora/cache-persist": "2.0.0-rc.1"
+    "@wora/cache-persist": "file:../../../wora-cache-persist-2.0.0-rc.3-a4.tgz"
   },
   "scripts": {
     "start": "react-scripts-ts start",
@@ -24,8 +24,8 @@
     "@types/enzyme": "^3.1.14",
     "@types/jest": "^22.2.3",
     "@types/node": "^10.0.4",
-    "@types/react": "^16.3.13",
-    "@types/react-dom": "^16.0.5",
+    "@types/react": "^16.9.5",
+    "@types/react-dom": "^16.9.1",
     "@types/react-redux": "5.0.19",
     "@types/redux-mock-store": "^1.0.0",
     "enzyme": "^3.6.0",
@@ -33,7 +33,7 @@
     "jest-enzyme": "^6.1.2",
     "klaw-sync": "^4.0.0",
     "redux-mock-store": "^1.5.3",
-    "typescript": "^3.1.1"
+    "typescript": "^3.6.3"
   },
   "browserslist": [
     ">0.2%",

@@ -148,7 +148,7 @@ describe('Cache layers', () => {
         expect(cache.getState()).toEqual({ prova: 1 });
     });
     it('cache remove', async () => {
-        cache.remove('prova', true);
+        cache.remove('prova');
         expect(cache.get('prova')).toBeUndefined();
         await cache.flush();
     });
@@ -329,5 +329,21 @@ describe('Cache, others', () => {
         dispose();
         cache.notify();
         expect(callback).toHaveBeenCalledTimes(2);
+    });
+
+    it('cache flush', async () => {
+        console.log('cache flush start');
+        const startTime = Date.now();
+        const cache = new Cache();
+        await cache.restore();
+        console.log('cache flush 1', Date.now() - startTime);
+        Array.from(Array(10000).keys()).forEach((index) => {
+            cache.set(`prova${index}`, index);
+        });
+        cache.flush().then(() => console.log('cache flush 2', Date.now() - startTime));
+        cache.set('prova', 2);
+        await cache.flush();
+        console.log('cache flush 3', Date.now() - startTime);
+        expect(cache.get('prova')).toBe(2);
     });
 });

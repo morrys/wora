@@ -1,20 +1,15 @@
-import { IStorageHelper, DataCache } from './CacheTypes';
+import { IStorageHelper } from './CacheTypes';
 import { promiseVoid, promiseResult } from './StorageProxy';
-
-class NoStorageProxy implements IStorageHelper {
-    public restore(): Promise<DataCache> {
-        return promiseResult(() => {
-            return {};
-        });
-    }
-
-    public multiPush(keys: Array<string>) {}
-
-    public push(key: string) {}
-
-    public flush(): Promise<void> {
-        return promiseVoid();
-    }
+function NoStorageProxy() {
+    return {
+        restore: () => {
+            return promiseResult(() => {
+                return {};
+            });
+        },
+        push: (_keys: string) => undefined,
+        flush: () => promiseVoid(),
+    } as IStorageHelper;
 }
 
 export default NoStorageProxy;

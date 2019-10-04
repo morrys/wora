@@ -57,7 +57,6 @@ export type DataCache = {
 
 export interface IStorageHelper {
     restore(): Promise<DataCache>;
-    multiPush(keys: Array<string>): void;
     push(key: string): void;
     flush(): Promise<void>;
 }
@@ -74,12 +73,4 @@ export interface ICacheStorage {
 
 export type Subscription = {
     callback(message: string, state: any): void;
-};
-
-export type Observer<T> = {
-    start?: (subscription: Subscription) => any;
-    next?: (value?: T) => any;
-    error?: (error: Error) => any;
-    complete?: () => any;
-    unsubscribe?: (subscription: Subscription) => any;
 };

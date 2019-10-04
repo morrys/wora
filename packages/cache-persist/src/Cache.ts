@@ -6,7 +6,6 @@ import NoStorageProxy from './NoStorageProxy';
 const hasOwn = Object.prototype.hasOwnProperty;
 
 class Cache implements ICache {
-    public storageOptions;
     private data: DataCache = {};
     private rehydrated = false;
     private subscriptions: Set<Subscription> = new Set();
@@ -33,9 +32,8 @@ class Cache implements ICache {
             mutateValues,
             errorHandling: (error): boolean => errorHandling(this, error),
         };
-        this.storageOptions = storageOptions;
         this.rehydrated = disablePersist || !storage;
-        this.storageProxy = this.rehydrated ? new NoStorageProxy() : new StorageProxy(this, storage, storageOptions);
+        this.storageProxy = this.rehydrated ? NoStorageProxy() : StorageProxy(this, storage, storageOptions);
     }
 
     public isRehydrated(): boolean {
@@ -62,14 +60,14 @@ class Cache implements ICache {
     public replace(newData: DataCache): void {
         const keys = this.getAllKeys().concat(Object.keys(newData));
         this.data = Object.assign({}, newData);
-        this.storageProxy.multiPush(keys);
+        keys.forEach((key) => this.storageProxy.push(key));
         //return this.storageProxy.replace(newData);
     }
 
     public purge(): void {
         const keys = this.getAllKeys();
         this.data = Object.create(null);
-        this.storageProxy.multiPush(keys);
+        keys.forEach((key) => this.storageProxy.push(key));
     }
 
     // Relay: For performance problems, it is advisable to return the state directly.

@@ -1,7 +1,6 @@
 import jsonSerialize from './layers/jsonSerialize';
 import prefixLayer from './layers/prefixLayer';
-import { ICache, IStorageHelper, DataCache, ICacheStorage, StorageHelperOptions } from './CacheTypes';
-import Queue from './Queue';
+import { ICache, IStorageHelper, DataCache, ICacheStorage, StorageHelperOptions, IMutateValue, IMutateKey } from './CacheTypes';
 import compose from './utils/compose';
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
@@ -12,135 +11,194 @@ export function promiseVoid(execute = (): void => undefined): Promise<void> {
     return promiseResult(execute);
 }
 
-class StorageProxy implements IStorageHelper {
-    private storage: ICacheStorage;
-    private setKey: (key: string) => string | null;
-    private getKey: (key: string) => string | null;
-    private setValue: (value: any) => any;
-    private getValue: (value: any) => any;
-    private cache: ICache;
-    private queue: {
-        multiPush: (keys: Array<string>) => void;
-        push: (key: string) => void;
-        flush: () => Promise<void>;
-    };
-    constructor(cache: ICache, storage: any, options: StorageHelperOptions = {}) {
-        const { prefix, serialize, mutateKeys, mutateValues, errorHandling, throttle } = options;
-        this.cache = cache;
-        this.queue = Queue({
-            throttle,
-            errorHandling,
-            execute: (flushKeys): Promise<any> => this.execute(flushKeys),
-        });
-        if (prefix) {
-            mutateKeys.unshift(prefixLayer(prefix));
-        }
-        if (serialize) {
-            mutateValues.push(jsonSerialize);
-        }
-        this.getKey = compose(
-            ...mutateKeys
-                .slice()
-                .reverse()
-                .map((mutate) => mutate.get),
-        );
-        this.getValue = compose(
+const SPLIT = '####';
+
+function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOptions = {}): IStorageHelper {
+    const { prefix, serialize, mutateKeys, mutateValues, errorHandling, throttle = 500 } = options;
+    let timerId = null;
+    let inExecution = false;
+    let resolveFlush;
+    let rejectFlush;
+    let promiseFlush: Promise<void>;
+    /*const complete = () => console.log("complete", Date.now());
+    const next = () => console.log("next", Date.now());
+    const start = () => console.log("start", Date.now());*/
+    const queue: Array<string> = [];
+    if (prefix) {
+        mutateKeys.unshift(prefixLayer(prefix));
+    }
+    if (serialize) {
+        mutateValues.push(jsonSerialize);
+    }
+    const mutateValue: IMutateValue = {
+        set: compose(...mutateValues.map((mutate) => mutate.set)),
+        get: compose(
             ...mutateValues
                 .slice()
                 .reverse()
                 .map((mutate) => mutate.get),
-        );
-        this.setKey = compose(...mutateKeys.map((mutate) => (key) => mutate.set(key)));
-        this.setValue = compose(...mutateValues.map((mutate) => mutate.set));
-        this.storage = {
-            multiRemove: (keys): Promise<void> => {
-                const promises: Array<Promise<void>> = [];
-                for (let i = 0, l = keys.length; i < l; i++) {
-                    promises.push(storage.removeItem(keys[i]));
-                }
-                return Promise.all(promises)
-                    .then(() => undefined)
-                    .catch((error) => {
-                        throw error;
-                    });
-            },
-            multiGet: (keys) => {
-                const promises: Array<Promise<void>> = [];
-                for (let i = 0, l = keys.length; i < l; i++) {
-                    const key: string = keys[i];
-                    promises.push(
-                        storage
-                            .getItem(key)
-                            .then((value) => [key, value])
-                            .catch((error) => {
-                                throw error;
-                            }),
-                    );
-                }
-                return Promise.all(promises);
-            },
-            multiSet: (items: Array<Array<string>>) => {
-                const promises: Array<Promise<void>> = [];
-                for (let i = 0, l = items.length; i < l; i++) {
-                    const [key, value] = items[i];
-                    promises.push(storage.setItem(key, value));
-                }
-                return Promise.all(promises)
-                    .then(() => undefined)
-                    .catch((error) => {
-                        throw error;
-                    });
-            },
-            ...storage,
-        } as ICacheStorage;
-    }
+        ),
+    };
+    const mutateKey: IMutateKey = {
+        set: compose(...mutateKeys.map((mutate) => (key) => (key != null ? mutate.set(key) : null))),
+        get: compose(
+            ...mutateKeys
+                .slice()
+                .reverse()
+                .map((mutate) => (key) => (key != null ? mutate.get(key) : null)),
+        ),
+    };
+    const storage = {
+        multiRemove: (keys): Promise<void> => {
+            const promises: Array<Promise<void>> = [];
+            for (let i = 0, l = keys.length; i < l; i++) {
+                promises.push(cacheStorage.removeItem(keys[i]));
+            }
+            return Promise.all(promises)
+                .then(() => undefined)
+                .catch((error) => {
+                    throw error;
+                });
+        },
+        multiGet: (keys) => {
+            const promises: Array<Promise<void>> = [];
+            for (let i = 0, l = keys.length; i < l; i++) {
+                const key: string = keys[i];
+                promises.push(
+                    cacheStorage
+                        .getItem(key)
+                        .then((value) => [key, value])
+                        .catch((error) => {
+                            throw error;
+                        }),
+                );
+            }
+            return Promise.all(promises);
+        },
+        multiSet: (items: Array<Array<string>>) => {
+            const promises: Array<Promise<void>> = [];
+            for (let i = 0, l = items.length; i < l; i++) {
+                const [key, value] = items[i];
+                promises.push(cacheStorage.setItem(key, value));
+            }
+            return Promise.all(promises)
+                .then(() => undefined)
+                .catch((error) => {
+                    throw error;
+                });
+        },
+        ...cacheStorage,
+    } as ICacheStorage;
 
-    public restore(): Promise<DataCache> {
-        return this.storage
+    function restore(): Promise<DataCache> {
+        return storage
             .getAllKeys()
-            .then((keys: Array<string>) => this.storage.multiGet(keys.filter((key) => !!this.getKey(key))))
+            .then((keys: Array<string>) => storage.multiGet(keys.filter((key) => !!mutateKey.get(key))))
             .then((data) => {
                 const result: DataCache = {};
                 for (let i = 0, l = data.length; i < l; i++) {
                     const [key, value] = data[i];
-                    const keyMutate = this.getKey(key);
-                    const valueMutate = this.getValue(value);
+                    const keyMutate = mutateKey.get(key);
+                    const valueMutate = mutateValue.get(value);
                     result[keyMutate] = valueMutate;
                 }
                 return result;
             });
     }
 
-    public multiPush(keys: Array<string>) {
-        this.queue.multiPush(keys);
+    function push(key: string) {
+        /*if (!execution && queue.length === 0) {
+            start();
+        }*/
+        const newKey = mutateKey.set(key);
+        if (newKey) {
+            queue.push(`${key}${SPLIT}${newKey}`);
+            debounced();
+        }
     }
 
-    public push(key: string) {
-        this.queue.push(key);
+    function flush(): Promise<void> {
+        console.log('flush', inExecution);
+        if (!inExecution) {
+            cancelTimer();
+            return execute();
+        }
+        if (!promiseFlush) {
+            promiseFlush = new Promise((resolve, reject) => {
+                rejectFlush = reject;
+                resolveFlush = resolve;
+            });
+        }
+        return promiseFlush;
     }
 
-    public flush(): Promise<void> {
-        return this.queue.flush();
+    function timerExpired(): void {
+        if (!inExecution) {
+            execute();
+        }
+        setNextTimer(); // maybe it is not needed, evalute check on queue
     }
 
-    public execute(flushKeys: Array<string>): Promise<any> {
+    function cancelTimer() {
+        if (!timerId) return;
+        clearTimeout(timerId);
+        timerId = null;
+    }
+
+    function setNextTimer() {
+        cancelTimer();
+        timerId = setTimeout(timerExpired, throttle);
+    }
+
+    function debounced() {
+        if (!timerId) {
+            setNextTimer();
+        }
+    }
+
+    function execute(): Promise<void> {
+        inExecution = true;
+        //next();
         const startTime = Date.now();
+        const flushKeys = Array.from(new Set(queue.splice(0)));
+
+        console.log('cache debounce 4', Date.now() - startTime);
+        // this allows to resolve only the promises registered before the execution
+        const resolve = resolveFlush;
+        const reject = rejectFlush;
+        resolveFlush = null;
+        rejectFlush = null;
+        promiseFlush = null;
+        const dispose = function(error?: Error) {
+            if (error) {
+                if (reject) {
+                    reject();
+                }
+                errorHandling(error);
+            } else {
+                if (resolve) {
+                    resolve();
+                }
+            }
+            cancelTimer();
+
+            inExecution = false;
+            if (queue.length > 0) {
+                debounced();
+            }
+        };
         console.log('cache debounce 5', Date.now() - startTime);
         const removeKeys = [];
         const setValues = [];
         for (let i = 0, l = flushKeys.length; i < l; i++) {
-            const key = flushKeys[i];
-            const isSet = this.cache.has(key);
-            const mutateKey = this.setKey(key);
-            if (!mutateKey) {
-                continue;
-            }
+            const [key, newKey] = flushKeys[i].split(SPLIT);
+            const isSet = cache.has(key);
             if (isSet) {
-                const value = this.cache.get(key);
-                const item = [mutateKey, this.setValue(value)];
+                const value = cache.get(key);
+                const item = [newKey, mutateValue.set(value)];
                 setValues.push(item);
             } else {
-                removeKeys.push(mutateKey);
+                removeKeys.push(newKey);
             }
         }
 
@@ -148,14 +206,22 @@ class StorageProxy implements IStorageHelper {
         const promises = [];
         if (removeKeys.length > 0) {
             // TODO length === 1 remove
-            promises.push(this.storage.multiRemove(removeKeys));
+            promises.push(storage.multiRemove(removeKeys));
         }
         if (setValues.length > 0) {
             // TODO length === 1 set
-            promises.push(this.storage.multiSet(setValues));
+            promises.push(storage.multiSet(setValues));
         }
-        return Promise.all(promises);
+        return Promise.all(promises)
+            .then(() => dispose())
+            .catch((error) => dispose(error));
     }
+
+    return {
+        push,
+        restore,
+        flush,
+    };
 }
 
 export default StorageProxy;

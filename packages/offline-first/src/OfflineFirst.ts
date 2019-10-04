@@ -1,4 +1,4 @@
-import Cache, { CacheOptions } from '@wora/cache-persist';
+import Cache, { CacheOptions, ICache } from '@wora/cache-persist';
 import { NetInfo } from '@wora/netinfo';
 
 export type Request<T> = {
@@ -29,7 +29,7 @@ export type OfflineFirstOptions<T> = {
 };
 
 class OfflineFirst<T> {
-    private offlineStore: Cache;
+    private offlineStore: ICache;
     private busy = false;
     private offlineOptions: OfflineFirstOptions<T>;
     private online = false;

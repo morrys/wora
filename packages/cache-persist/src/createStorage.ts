@@ -5,7 +5,7 @@ import { promiseVoid, promiseResult } from './StorageProxy';
 
 function createStorage(type: string): ICacheStorage {
     const storageType = `${type}Storage`;
-    if (!(typeof self !== 'object' || !(storageType in self))) {
+    if (typeof self !== 'object' || !(storageType in self)) {
         return null;
     }
     const storage = self[storageType];
