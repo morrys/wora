@@ -1,17 +1,10 @@
 import $$observable from 'symbol-observable';
-import Cache, { ICache, prefixLayer } from '@wora/cache-persist';
+import Cache, { ICache, CacheOptions } from '@wora/cache-persist';
 import isPlainObject from './redux/utils/isPlainObject';
 import ActionTypes from './redux/utils/actionTypes';
 import filterKeys from '@wora/cache-persist/lib/layers/filterKeys';
 
 export const REHYDRATE = `@@redux/RESTORED`; // added
-
-const reduxPersistFilterKeys = (values, check, prefix) => {
-    if (!values) {
-        return undefined;
-    }
-    return filterKeys((key) => check(key.substr(prefix.length)));
-};
 
 /**
  * Creates a Redux store that holds the state tree.
@@ -38,8 +31,16 @@ const reduxPersistFilterKeys = (values, check, prefix) => {
  * @returns {Store} A Redux store that lets you read the state, dispatch actions
  * and subscribe to changes.
  */
+export type CacheOptionsRedux = CacheOptions & {
+    version?: number;
+    key?: string;
+    whitelist?: Array<string>;
+    blacklist?: Array<string>;
+    migrate?: (s: any, v: number) => Promise<any>;
+    stateReconciler?: (s: any, o: any, r: any, c: any) => any;
+};
 
-function createStore(reducer: any, preloadedState?: any, enhancer?: any, persistOptions?: any) {
+function createStore(reducer: any, preloadedState?: any, enhancer?: any, persistOptions?: CacheOptionsRedux) {
     //TODO TYPING
 
     if (
@@ -69,7 +70,7 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
     const {
         disablePersist = !persistOptions,
         version = -1,
-        // key = 'root', // TODO verify
+        key = 'root', // TODO verify
         whitelist = undefined,
         blacklist = undefined,
         mutateKeys = undefined,
@@ -78,21 +79,24 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
         stateReconciler = (s: any, o: any, r: any, c: any) => s,
     } = persistOptions || {};
 
-    const prefLayer = prefixLayer('persist', ':');
-    const prefix = 'persist' + ':';
-    const whiteLayer = reduxPersistFilterKeys(whitelist, (key) => whitelist.includes(key), prefix); // TODO verify
-    const blackLayer = reduxPersistFilterKeys(blacklist, (key) => !blacklist.includes(key), prefix); // TODO verify
-    const internalMutateKeys = [prefLayer];
-    if (whiteLayer) {
-        internalMutateKeys.push(whiteLayer);
+    const internalMutateKeys = [];
+    const prefix = `persist:${key}`;
+    if (whitelist) {
+        internalMutateKeys.push(filterKeys((key) => whitelist.includes(key)));
     }
-    if (blackLayer) {
-        internalMutateKeys.push(blackLayer);
+    if (blacklist) {
+        internalMutateKeys.push(filterKeys((key) => !blacklist.includes(key)));
     }
 
     const customMutateKeys = mutateKeys ? internalMutateKeys.concat(mutateKeys) : internalMutateKeys;
 
-    const cache: ICache = new Cache({ disablePersist, prefix: null, mutateKeys: customMutateKeys, mutateValues, ...persistOptions });
+    const cache: ICache = new Cache({
+        disablePersist,
+        prefix,
+        mutateKeys: customMutateKeys,
+        mutateValues,
+        ...persistOptions,
+    });
 
     let currentReducer = reducer;
     let isDispatching = false;
@@ -176,9 +180,8 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
 
         try {
             isDispatching = true;
-            const prevState = getState();
+            const { _persist, ...prevState } = cache.getState();
             const state = currentReducer(prevState, action);
-            state._persist = { version, rehydrated: true };
             Object.keys(state).forEach((key) => {
                 if (state[key] !== prevState[key]) {
                     cache.set(key, state[key]);
@@ -267,14 +270,10 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
             return cache
                 .restore()
                 .then(async () => {
-                    const checkReduxPersistStore = cache.getState();
-                    // TODO verify
-                    if (
-                        (!!checkReduxPersistStore && !checkReduxPersistStore._persist) ||
-                        (!!checkReduxPersistStore._persist && checkReduxPersistStore._persist.wora)
-                    ) {
+                    /*const checkReduxPersistStore = cache.getState();
+                    // TODO migration redux-persist
                         cache.replace(checkReduxPersistStore);
-                    }
+                    */
                     const restoredState = cache.getState();
 
                     dispatch({ type: ActionTypes.INIT });
@@ -284,7 +283,7 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
                         (await migrate(restoredState, version).then((mState: any, state: any = getState()) => {
                             return stateReconciler(mState, preloadedState, state, persistOptions);
                         }));
-                    const state = { ...migrateState, _persist: { version, rehydrated: true } };
+                    const state = { ...migrateState, _persist: { version, rehydrated: true, wora: true } };
 
                     cache.replace(state);
                     await cache.flush();

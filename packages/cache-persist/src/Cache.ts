@@ -1,7 +1,5 @@
-import createStorage from './createStorage';
 import StorageProxy from './StorageProxy';
-import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper } from './CacheTypes';
-import NoStorageProxy from './NoStorageProxy';
+import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper, ICacheStorage } from './CacheTypes';
 
 const hasOwn = Object.prototype.hasOwnProperty;
 
@@ -12,28 +10,13 @@ class Cache implements ICache {
     private storageProxy: IStorageHelper;
     private promisesRestore;
 
-    constructor(options: CacheOptions = {}) {
-        const {
-            prefix = 'cache',
-            serialize = true,
-            mutateKeys = [],
-            mutateValues = [],
-            webStorage = 'local',
-            disablePersist = false,
-            storage = createStorage(webStorage),
-            errorHandling = (_cache, _error): boolean => true,
-            throttle,
-        } = options;
-        const storageOptions = {
-            throttle,
-            prefix,
-            serialize,
-            mutateKeys,
-            mutateValues,
-            errorHandling: (error): boolean => errorHandling(this, error),
-        };
-        this.rehydrated = disablePersist || !storage;
-        this.storageProxy = this.rehydrated ? NoStorageProxy() : StorageProxy(this, storage, storageOptions);
+    constructor(options?: CacheOptions) {
+        this.storageProxy = StorageProxy(this, options);
+        this.rehydrated = !this.storageProxy.getStorage();
+    }
+
+    public getStorage(): ICacheStorage {
+        return this.storageProxy.getStorage();
     }
 
     public isRehydrated(): boolean {

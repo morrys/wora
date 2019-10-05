@@ -1,12 +1,3 @@
-export type StorageHelperOptions = {
-    serialize?: boolean;
-    prefix?: string;
-    mutateKeys?: Array<IMutateKey>;
-    mutateValues?: Array<IMutateValue>;
-    errorHandling?: (error: any) => boolean;
-    throttle?: number;
-};
-
 export type ItemCache<T> = {
     key: string;
     value: T;
@@ -41,6 +32,7 @@ export interface ICache {
     isRehydrated(): boolean;
     getState(): Readonly<{ [key: string]: any }>;
     get(key: string): any;
+    getStorage(): ICacheStorage;
     set(key: string, value: any): void;
     has(key: string): boolean;
     delete(key: string): void;
@@ -59,6 +51,7 @@ export interface IStorageHelper {
     restore(): Promise<DataCache>;
     push(key: string): void;
     flush(): Promise<void>;
+    getStorage(): ICacheStorage;
 }
 
 export interface ICacheStorage {

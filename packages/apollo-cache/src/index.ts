@@ -16,8 +16,10 @@ class ApolloCache extends InMemoryCache implements IPersistImpl {
             ...persistOptions,
         };
         this.cache = new Cache(persistOptionsApollo);
-        (this.cache as any).toObject = () => this.cache.getState();
-        (this.cache as any).clear = () => this.cache.purge();
+        (this.cache as any).toObject = (): Readonly<{
+            [key: string]: any;
+        }> => this.cache.getState();
+        (this.cache as any).clear = (): void => this.cache.purge();
     }
 
     public hydrated(): Promise<Cache> {

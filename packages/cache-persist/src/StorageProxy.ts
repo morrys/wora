@@ -1,7 +1,8 @@
 import jsonSerialize from './layers/jsonSerialize';
 import prefixLayer from './layers/prefixLayer';
-import { ICache, IStorageHelper, DataCache, ICacheStorage, StorageHelperOptions, IMutateValue, IMutateKey } from './CacheTypes';
+import { ICache, IStorageHelper, DataCache, ICacheStorage, IMutateValue, IMutateKey, CacheOptions } from './CacheTypes';
 import compose from './utils/compose';
+import createStorage from './createStorage';
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
     return Promise.resolve(execute());
@@ -13,8 +14,33 @@ export function promiseVoid(execute = (): void => undefined): Promise<void> {
 
 const SPLIT = '####';
 
-function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOptions = {}): IStorageHelper {
-    const { prefix, serialize, mutateKeys, mutateValues, errorHandling, throttle = 500 } = options;
+const NoStorageProxy: IStorageHelper = {
+    restore: () => {
+        return promiseResult(() => {
+            return {};
+        });
+    },
+    push: (_keys: string) => undefined,
+    flush: () => promiseVoid(),
+    getStorage: () => undefined,
+};
+
+function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper {
+    const {
+        prefix = 'cache',
+        serialize = true,
+        webStorage = 'local',
+        mutateKeys = [],
+        mutateValues = [],
+        errorHandling = (_cache, _error): boolean => true,
+        throttle = 500,
+        disablePersist = false,
+        storage = createStorage(webStorage),
+    } = options;
+    const disable = disablePersist || !storage;
+    if (disable) {
+        return NoStorageProxy;
+    }
     let timerId = null;
     let inExecution = false;
     let resolveFlush;
@@ -40,19 +66,19 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
         ),
     };
     const mutateKey: IMutateKey = {
-        set: compose(...mutateKeys.map((mutate) => (key) => (key != null ? mutate.set(key) : null))),
+        set: compose(...mutateKeys.map((mutate) => (key): string => (key != null ? mutate.set(key) : null))),
         get: compose(
             ...mutateKeys
                 .slice()
                 .reverse()
-                .map((mutate) => (key) => (key != null ? mutate.get(key) : null)),
+                .map((mutate) => (key): string => (key != null ? mutate.get(key) : null)),
         ),
     };
-    const storage = {
+    const internalStorage = {
         multiRemove: (keys): Promise<void> => {
             const promises: Array<Promise<void>> = [];
             for (let i = 0, l = keys.length; i < l; i++) {
-                promises.push(cacheStorage.removeItem(keys[i]));
+                promises.push(storage.removeItem(keys[i]));
             }
             return Promise.all(promises)
                 .then(() => undefined)
@@ -61,11 +87,11 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
                 });
         },
         multiGet: (keys) => {
-            const promises: Array<Promise<void>> = [];
+            const promises: Array<Promise<Array<string>>> = [];
             for (let i = 0, l = keys.length; i < l; i++) {
                 const key: string = keys[i];
                 promises.push(
-                    cacheStorage
+                    storage
                         .getItem(key)
                         .then((value) => [key, value])
                         .catch((error) => {
@@ -79,7 +105,7 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
             const promises: Array<Promise<void>> = [];
             for (let i = 0, l = items.length; i < l; i++) {
                 const [key, value] = items[i];
-                promises.push(cacheStorage.setItem(key, value));
+                promises.push(storage.setItem(key, value));
             }
             return Promise.all(promises)
                 .then(() => undefined)
@@ -87,13 +113,13 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
                     throw error;
                 });
         },
-        ...cacheStorage,
+        ...storage,
     } as ICacheStorage;
 
     function restore(): Promise<DataCache> {
-        return storage
+        return internalStorage
             .getAllKeys()
-            .then((keys: Array<string>) => storage.multiGet(keys.filter((key) => !!mutateKey.get(key))))
+            .then((keys: Array<string>) => internalStorage.multiGet(keys.filter((key) => !!mutateKey.get(key))))
             .then((data) => {
                 const result: DataCache = {};
                 for (let i = 0, l = data.length; i < l; i++) {
@@ -106,7 +132,7 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
             });
     }
 
-    function push(key: string) {
+    function push(key: string): void {
         /*if (!execution && queue.length === 0) {
             start();
         }*/
@@ -124,7 +150,7 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
             return execute();
         }
         if (!promiseFlush) {
-            promiseFlush = new Promise((resolve, reject) => {
+            promiseFlush = new Promise((resolve, reject): void => {
                 rejectFlush = reject;
                 resolveFlush = resolve;
             });
@@ -139,18 +165,18 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
         setNextTimer(); // maybe it is not needed, evalute check on queue
     }
 
-    function cancelTimer() {
+    function cancelTimer(): void {
         if (!timerId) return;
         clearTimeout(timerId);
         timerId = null;
     }
 
-    function setNextTimer() {
+    function setNextTimer(): void {
         cancelTimer();
         timerId = setTimeout(timerExpired, throttle);
     }
 
-    function debounced() {
+    function debounced(): void {
         if (!timerId) {
             setNextTimer();
         }
@@ -169,12 +195,12 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
         resolveFlush = null;
         rejectFlush = null;
         promiseFlush = null;
-        const dispose = function(error?: Error) {
+        const dispose = function(error?: Error): void {
             if (error) {
                 if (reject) {
                     reject();
                 }
-                errorHandling(error);
+                errorHandling(cache, error);
             } else {
                 if (resolve) {
                     resolve();
@@ -192,11 +218,8 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
         const setValues = [];
         for (let i = 0, l = flushKeys.length; i < l; i++) {
             const [key, newKey] = flushKeys[i].split(SPLIT);
-            const isSet = cache.has(key);
-            if (isSet) {
-                const value = cache.get(key);
-                const item = [newKey, mutateValue.set(value)];
-                setValues.push(item);
+            if (cache.has(key)) {
+                setValues.push([newKey, mutateValue.set(cache.get(key))]);
             } else {
                 removeKeys.push(newKey);
             }
@@ -206,11 +229,11 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
         const promises = [];
         if (removeKeys.length > 0) {
             // TODO length === 1 remove
-            promises.push(storage.multiRemove(removeKeys));
+            promises.push(internalStorage.multiRemove(removeKeys));
         }
         if (setValues.length > 0) {
             // TODO length === 1 set
-            promises.push(storage.multiSet(setValues));
+            promises.push(internalStorage.multiSet(setValues));
         }
         return Promise.all(promises)
             .then(() => dispose())
@@ -221,7 +244,8 @@ function StorageProxy(cache: ICache, cacheStorage: any, options: StorageHelperOp
         push,
         restore,
         flush,
-    };
+        getStorage: () => internalStorage,
+    } as IStorageHelper;
 }
 
 export default StorageProxy;
