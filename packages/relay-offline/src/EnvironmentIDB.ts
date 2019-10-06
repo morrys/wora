@@ -31,7 +31,7 @@ class EnvironmentIDB {
         let idbStore: CacheOptions;
         let idbRecords: CacheOptions;
         let idbOffline: CacheOptions;
-        const { gcScheduler, operationLoader, persistOptions } = storeOptions;
+        const { gcScheduler, operationLoader, getDataID, persistOptions } = storeOptions;
         if (typeof window !== 'undefined') {
             const { name = 'relay', onUpgrade, version } = idbOptions;
             const idbStorages: ICacheStorage[] = IDBStorage.create({

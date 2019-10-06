@@ -35,11 +35,11 @@
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
-    "@wora/offline-first": "file:../offline-first",
-    "@wora/cache-persist": "file:../cache-persist",
-    "@wora/relay-store": "file:../relay-store",
-    "uuid": "3.3.2",
-    "fbjs": "^1.0.0"
+    "@wora/cache-persist": "^2.0.0",
+    "@wora/offline-first": "^1.0.0",
+    "@wora/relay-store": "^1.0.0",
+    "fbjs": "^1.0.0",
+    "uuid": "3.3.2"
   },
   "peerDependencies": {
     "relay-runtime": ">=3.0.0"
@@ -47,5 +47,5 @@
   "devDependencies": {
     "relay-runtime": "^4.0.0"
   },
-  "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"
+  "gitHead": "0ceaff4e89ec8a1a5b5547b803f67bcb9166c5af"
 }
