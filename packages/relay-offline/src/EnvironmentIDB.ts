@@ -65,7 +65,7 @@ class EnvironmentIDB {
             };
         }
         const recordSource = new RecordSource(idbRecords);
-        const store = new Store(recordSource, idbStore, idbRecords, gcScheduler, operationLoader);
+        const store = new Store(recordSource, idbStore, gcScheduler, operationLoader);
         return new RelayModernEnvironment({ ...config, store }, offlineOptions, idbOffline);
     }
 }
