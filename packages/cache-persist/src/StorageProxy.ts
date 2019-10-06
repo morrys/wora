@@ -145,6 +145,9 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
 
     function flush(): Promise<void> {
         console.log('flush', inExecution);
+        if (queue.length === 0) {
+            return Promise.resolve();
+        }
         if (!inExecution) {
             cancelTimer();
             return execute();
@@ -154,6 +157,7 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
                 rejectFlush = reject;
                 resolveFlush = resolve;
             });
+            debounced(); //
         }
         return promiseFlush;
     }

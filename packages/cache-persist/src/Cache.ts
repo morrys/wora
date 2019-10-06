@@ -9,10 +9,12 @@ class Cache implements ICache {
     private subscriptions: Set<Subscription> = new Set();
     private storageProxy: IStorageHelper;
     private promisesRestore;
+    private mergeState: (restoredState: DataCache) => Promise<DataCache> | DataCache;
 
     constructor(options?: CacheOptions) {
         this.storageProxy = StorageProxy(this, options);
         this.rehydrated = !this.storageProxy.getStorage();
+        this.mergeState = options && options.mergeState ? options.mergeState : (restoredState) => restoredState;
     }
 
     public getStorage(): ICacheStorage {
@@ -29,8 +31,18 @@ class Cache implements ICache {
         }
         this.promisesRestore = this.storageProxy
             .restore()
-            .then((result) => {
-                this.data = result;
+            .then((restoredState) => {
+                this.data = restoredState;
+                return this.mergeState(restoredState);
+            })
+            .then((newState) => {
+                if (this.data !== newState) {
+                    console.log('entro', newState);
+                    this.replace(newState);
+                    return this.flush();
+                }
+            })
+            .then(() => {
                 this.rehydrated = true;
                 return this;
             })
