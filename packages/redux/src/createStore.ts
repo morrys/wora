@@ -1,5 +1,5 @@
 import $$observable from 'symbol-observable';
-import Cache, { ICache, CacheOptions } from '@wora/cache-persist';
+import Cache, { ICache, CacheOptions, mutateKeysLayer, prefixLayer } from '@wora/cache-persist';
 import isPlainObject from './redux/utils/isPlainObject';
 import ActionTypes from './redux/utils/actionTypes';
 import filterKeys from '@wora/cache-persist/lib/layers/filterKeys';
@@ -78,9 +78,13 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
         migrate = (s: any, v: number) => Promise.resolve(s),
         stateReconciler = (s: any, o: any, r: any, c: any) => s,
     } = persistOptions || {};
-
-    const internalMutateKeys = [];
     const prefix = `persist:${key}`;
+    const reduxPersistKey = `redux-persist`;
+    const migrateReduxPersistKey = mutateKeysLayer(
+        (key) => (key === `${prefix}.${reduxPersistKey}` ? prefix : key),
+        (key) => (key === prefix ? `${prefix}.${reduxPersistKey}` : key),
+    );
+    const internalMutateKeys = [migrateReduxPersistKey, prefixLayer(prefix)];
     if (whitelist) {
         internalMutateKeys.push(filterKeys((key) => whitelist.includes(key)));
     }
@@ -92,7 +96,7 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
 
     const cache: ICache = new Cache({
         disablePersist,
-        prefix,
+        prefix: null,
         mutateKeys: customMutateKeys,
         mutateValues,
         ...persistOptions,
@@ -270,12 +274,11 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
             return cache
                 .restore()
                 .then(async () => {
-                    /*const checkReduxPersistStore = cache.getState();
-                    // TODO migration redux-persist
-                        cache.replace(checkReduxPersistStore);
-                    */
+                    const migrateReduxPersist = cache.get(reduxPersistKey);
+                    if (migrateReduxPersist) {
+                        cache.replace(migrateReduxPersist);
+                    }
                     const restoredState = cache.getState();
-
                     dispatch({ type: ActionTypes.INIT });
                     const haveStoredState = !!restoredState && !!restoredState._persist;
                     const migrateState =

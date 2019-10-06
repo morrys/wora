@@ -1,7 +1,7 @@
 import { Record } from 'relay-runtime/lib/RelayCombinedEnvironmentTypes';
 import * as RelayRecordState from 'relay-runtime/lib/RelayRecordState';
 import { MutableRecordSource } from 'relay-runtime/lib/RelayStoreTypes';
-import { ICache, DataCache } from '@wora/cache-persist';
+import Cache, { ICache, DataCache, CacheOptions } from '@wora/cache-persist';
 
 const { EXISTENT, NONEXISTENT, UNKNOWN } = RelayRecordState;
 
@@ -12,8 +12,13 @@ export interface IMutableRecordSourceOffline extends MutableRecordSource {
 export default class RecordSource implements IMutableRecordSourceOffline {
     private _cache: ICache;
 
-    constructor(cache: ICache) {
-        this._cache = cache;
+    constructor(persistOptions: CacheOptions = {}) {
+        const persistOptionsRecordSource = {
+            prefix: 'relay-records',
+            serialize: true,
+            ...persistOptions,
+        };
+        this._cache = new Cache(persistOptionsRecordSource);
     }
 
     public purge(): Promise<void> {
@@ -43,7 +48,7 @@ export default class RecordSource implements IMutableRecordSourceOffline {
 
     public getStatus(dataID: string): RelayRecordState {
         const state = this._cache.getState();
-        if (!state.hasOwnProperty(dataID)) {
+        if (!this._cache.has(dataID)) {
             return UNKNOWN;
         }
         return state[dataID] == null ? NONEXISTENT : EXISTENT;

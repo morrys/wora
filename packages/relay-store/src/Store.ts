@@ -6,33 +6,29 @@ import * as RelayReferenceMarker from 'relay-runtime/lib/RelayReferenceMarker';
 import Cache, { CacheOptions } from '@wora/cache-persist';
 import RecordSource from './RecordSource';
 
+export type CacheOptionsStore = CacheOptions & {
+    defaultTTL?: number;
+};
+
 export default class Store extends RelayModernStore {
     _cache: Cache;
     checkGC: () => boolean;
     _defaultTTL: number;
 
     constructor(
-        defaultTTL: number = 10 * 60 * 1000,
-        persistOptions: CacheOptions = {},
-        persistOptionsRecords: CacheOptions = {},
+        recordSource: RecordSource,
+        persistOptions: CacheOptionsStore = {},
         gcScheduler?: Scheduler,
         operationLoader?: OperationLoader,
+        getDataID?: any, // do not use
     ) {
+        const { defaultTTL = 10 * 60 * 1000 } = persistOptions;
         const persistOptionsStore = {
             prefix: 'relay-store',
             serialize: true,
             ...persistOptions,
         };
-        const persistOptionsRecordSource = {
-            prefix: 'relay-records',
-            serialize: true,
-            ...persistOptions,
-            ...persistOptionsRecords,
-        };
-        const cacheRecordSource = new Cache(persistOptionsRecordSource);
-        const recordSource = new RecordSource(cacheRecordSource);
-
-        super(recordSource, gcScheduler, operationLoader);
+        super(recordSource, gcScheduler, operationLoader, getDataID);
 
         this.checkGC = (): boolean => true;
 

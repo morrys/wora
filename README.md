@@ -2,7 +2,7 @@
 
 ## [Documentation](https://morrys.github.io/wora/)
 
-The GitHub page is under construction, especially the favicon :)
+the github page contains all the documentation relating to the libraries distributed by this monorepo.
 
 ## Community challenge
 

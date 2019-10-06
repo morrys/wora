@@ -28,10 +28,15 @@ export interface MutableRecordSourceOffline extends MutableRecordSource {
 }
 
 export default class RecordSource implements MutableRecordSourceOffline {
-    private _cache: Cache;
+    private _cache: ICache;
 
-    constructor(cache: Cache ) {
-        this._cache = cache;
+    constructor(persistOptions: CacheOptions = {}) {
+        const persistOptionsRecordSource = {
+            prefix: 'relay-records',
+            serialize: true,
+            ...persistOptions,
+        };
+        this._cache = new Cache(persistOptionsRecordSource);
     }
     
     ///...
@@ -45,14 +50,22 @@ The extensions to the RelayModerStore object are listed below to add the feature
 
 #### Costructor
 
-* add three parameter: 
-  * defaultTTL: number = 10 * 60 * 1000
-  * persistOptions: CacheOptions = {}
-  * persistOptionsRecords: CacheOptions = {}
+```ts
+export type CacheOptionsStore = CacheOptions & {
+    defaultTTL?: number;
+};
+
+export default class Store extends RelayModernStore {
+    constructor(
+        recordSource: RecordSource,
+        persistOptions: CacheOptionsStore = {},
+        gcScheduler?: Scheduler,
+        operationLoader?: OperationLoader,
+        getDataID?: any, // do not use
+```
+
 
 * Replaced the variable _roots: Map <number, NormalizationSelector> with _cache: Cache `wora/cache-persist`
-
-* removed the `source: MutableRecordSource` parameter, now it is created from the store using the parameter `persistOptionsRecords`
 
 #### Retain Method
 
@@ -116,13 +129,16 @@ yarn add @wora/relay-store
 ### Examples
 
 ```ts
-import { Store } from '@wora/relay-store';
+import { RecordSource, Store } from '@wora/relay-store';
 import { CacheOptions } from "@wora/cache-persist";
 
 const defaultTTL: number = 10 * 60 * 1000, // optional, default
-const persistOptions: CacheOptions = {}; // optional, default
+const persistOptions: CacheOptions = {
+    defaultTTL
+}; // optional, default
 const persistOptionsRecords: CacheOptions = {}; // optional, default
-const store = new Store(defaultTTL, persistOptions, persistOptionsRecords);
+const recordSource = new RecordSource(persistOptionsRecords);
+const store = new Store(recordSource, persistOptions);
 
 
 // ...
