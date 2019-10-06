@@ -1,6 +1,6 @@
 {
   "name": "@wora/offline-first",
-  "version": "0.0.6",
+  "version": "1.0.0",
   "keywords": [
     "cache",
     "wora",
@@ -29,7 +29,9 @@
     "clean-dep": "rimraf node_modules/*",
     "prepare": "npm run build",
     "prebuild": "npm run clean",
-    "build": "tsc"
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.{j,t}s*\"",
+    "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "@wora/netinfo": "file:../netinfo",

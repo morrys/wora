@@ -10,44 +10,34 @@ title: Cache Persist
 
 ### Cache
 
-The Cache is the component that manages the local cache of the application and the only component with which the application must interface. It exposes synchronous methods when the information to be returned does not require communication with storage, the methods are asynchronous.
-It also exposes two methods to allow subscriptions and notification of the cache status.
+The cache is the component that manages the local cache of the application and is the only component with which the application must interface.
 
+**Allows the use of any storage in synchronous mode.** 
+The only asynchronous methods they expose are:
 
-* **Sync method**
+`restore`, necessary to recover and initialize the state.
 
-isRehydrated(): boolean; // true if restored
+`flush`, forces data to be stored in the persistence queue
 
-getState(): Readonly<{v[key: string]: any; }>; // return in memory state
-
-toObject(): Readonly<{v[key: string]: any; }>; // return in memory state
-
-get(key: string): any; // get value from in memory state
-
-getAllKeys(): Array<string>; // getAllKeys value from in memory state
-
-* **Async method**
-
-replace(data: any): Promise<void> 
-
-restore(): Promise<Cache>; // restore storage, set rehydratad
-
-purge(): Promise<boolean>; // purge state and storage
-
-clear(): Promise<boolean>; // purge state and storage
-
-set(key: string, value: any): Promise<any>; // set value in state (sync) and in storage (async)
-
-delete(key: string): Promise<any>; // delete value in state (sync) and in storage (async)
-    
-remove(key: string): Promise<any>; // remove value in state (sync) and in storage (async)
-
-* **Subscriptions and notifications**
-
-subscribe( callback: (message: string, state: any) => void, ): () => void // subscription management
-
-notify(message: string = "notify data"): void // notification of the message and status to all subscriptions
-
+```ts
+export interface ICache {
+    purge(): void;
+    replace(data: any): void;
+    isRehydrated(): boolean;
+    getState(): Readonly<{ [key: string]: any }>;
+    get(key: string): any;
+    set(key: string, value: any): void;
+    has(key: string): boolean;
+    delete(key: string): void;
+    remove(key: string): void;
+    getAllKeys(): Array<string>;
+    subscribe(callback: (state: any, action: any) => void): () => void;
+    notify(payload?: { state?: any; action?: any }): void;
+    getStorage(): ICacheStorage;
+    restore(): Promise<DataCache>;
+    flush(): Promise<void>;
+}
+```
 
 ### Storage Proxy
 
@@ -69,32 +59,17 @@ The layers currently available within the library are:
 It is possible to implement any other layer component by implementing the interface described below:
 
 ```ts
-export type ItemCache<T> = {
-    key: string,
-    value: T
+export interface IMutateKey {
+    set(key: string): string | null;
+    get(key: string): string | null;
 }
 
-export interface Layer<T> {
-    set: (key: string, value: T) => ItemCache<T>
-    get: (key: string, value: T) => ItemCache<T>
-    remove?: (key: string) => string
-    check?: (key: string) => boolean
+export interface IMutateValue {
+    set(value: any): any;
+    get(value: any): any;
 }
 ```
 
-The main communication flows between the cache and storage are described below to highlight when these layers are used.
-
-* setting flow
-
-![alt-text](assets/cache-persist-set-flow.png)
-
-* removal flow
-
-![alt-text](assets/cache-persist-remove-flow.png)
-
-* restoring flow
-
-![alt-text](assets/cache-persist-restore-flow.png)
 
 ### Storage
 
@@ -108,18 +83,18 @@ Inside the library there is the possibility to use the following storage:
 
 **IndexedDB**
 
-**nostorage**
 
 If you need to use different storage than those currently provided, simply create a customized storage that implements the following interface:
 
 ```ts
-export interface Storage {
-    multiRemove: (keys: Array<string>) => Promise<void>,
-    multiGet: (keys: Array<string>) => Promise<DataCache>,
-    getAllKeys: () => Promise<Array<string>>,
-    multiSet: (items: Array<ItemCache<any>>) => Promise<void>,
-    setItem: (key: string, value: string) => Promise<void>,
-    removeItem: (key: string) => Promise<void> 
+export interface ICacheStorage {
+    multiRemove?(keys: Array<string>): Promise<void>;
+    multiGet?(keys: Array<string>): Promise<Array<Array<string>>>;
+    multiSet?(items: Array<Array<string>>): Promise<void>;
+    getAllKeys(): Promise<Array<string>>;
+    getItem(key: string): Promise<string>;
+    setItem(key: string, value: string): Promise<void>;
+    removeItem(key: string): Promise<void>;
 }
 ```
 
@@ -133,26 +108,41 @@ yarn add @wora/cache-persist
 ```
 
 ## Cache Options
-CacheOptions {
-    serialize?: boolean,
-    prefix?: string | undefined | null,
-    layers?: Array<Layer<any>>,
-    storage?: CacheStorage, 
-    webStorage?: "local" | "session",
-    disablePersist?: boolean
-}
 
-storage: custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.
+```ts
+export type CacheOptions = {
+    serialize?: boolean;
+    prefix?: string | undefined | null;
+    mergeState?: (restoredState: DataCache) => Promise<DataCache> | DataCache;
+    mutateKeys?: Array<IMutateKey>;
+    mutateValues?: Array<IMutateValue>;
+    storage?: ICacheStorage;
+    webStorage?: 'local' | 'session';
+    disablePersist?: boolean;
+    errorHandling?: (cache: ICache, error: any) => boolean;
+    throttle?: number;
+};
+```
 
-prefix: prefix keys, default "cache" (use the prefixLayer)
+* **storage:** custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.
+ 
+* **mergeState:** callback called during the restore that allows to merge the data recovered from the store and the initial data.
 
-serialize: if it is true, the data will be serialized and deserialized JSON (use the jsonSerialize)
+* **prefix:** prefix keys, default "cache" (use the prefixLayer as first mutateKeys)
 
-webStorage: local for localStorage, session for sessionStorage. default local
+* **serialize:** if it is true, the data will be serialized and deserialized JSON (use the jsonSerialize as last mutateValues)
 
-disablePersist: if it is true, nostorage is used
+* **webStorage:** local for localStorage, session for sessionStorage. default local
 
-layers: it is possible to configure which layers to use (eg filerKeys)
+* **disablePersist:** if it is true, nostorage is used
+
+* **mutateKeys:** it is possible to configure which functions will change the keys (eg filterKeys)
+
+* **mutateValues:** it is possible to configure which functions will change the values (eg filterKeys)
+
+* **throttle:** waiting time for data storage
+
+* **errorHandling:** callback performed in case of errors during store saving
 
 
 ## Usage default
@@ -200,18 +190,19 @@ cacheidb1.restore().then(() => {
 
 ```ts
 import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
+import { IMutateKey } from '@wora/cache-persist';
 
-const filterPersistAuth: Layer<any> = filterKeys(key => key.includes("auth"));
+const filterPersistAuth: IMutateKey = filterKeys(key => key.includes("auth"));
 
-const filterNoPersistAuth: Layer<any> = filterKeys(key => !key.includes("auth"));
+const filterNoPersistAuth: IMutateKey = filterKeys(key => !key.includes("auth"));
 
 const CacheLocal1 = new Cache({
-    layers: [filterNoPersistAuth],
+    mutateKeys: [filterNoPersistAuth],
     prefix: 'cache1',
 });
 
 const CacheLocal2 = new Cache({
-    layers: [filterPersistAuth],
+    mutateKeys: [filterPersistAuth],
     prefix: 'cache2',
 });
 ```
@@ -226,11 +217,11 @@ import { DataCache } from '@wora/cache-persist';
 const [result, setResult] = useState<{loading: boolean, data: DataCache}>({loading: true, data: {}});
 
  useEffect(() => {
-    const dispose = cache.subscribe((message, state) => {
+    const dispose = cache.subscribe((state, action) => {
       setResult({loading: false, data: state});
     });
     cache.restore().then(() => {
-      cache.notify("restored");
+      cache.notify({ action: "restored" });
     })
     return () => dispose();
     

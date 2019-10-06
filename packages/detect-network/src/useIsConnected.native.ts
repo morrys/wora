@@ -1,8 +1,9 @@
-import NetInfo from "@react-native-community/netinfo";
+/* eslint import/no-extraneous-dependencies:0 */
+import NetInfo from '@react-native-community/netinfo';
 
-import useIsConnectedInternal from "./internal/useIsConnected"
+import useIsConnectedInternal from './internal/useIsConnected';
 
 export function useIsConnected(): boolean {
-    return useIsConnectedInternal(NetInfo)
-  }
+    return useIsConnectedInternal(NetInfo);
+}
 export default useIsConnected;

@@ -1,14 +1,13 @@
-import { Layer } from '../CacheTypes';
-import { PREFIX_DELIMITER } from '../Cache';
+import { IMutateKey } from '../CacheTypes';
+import mutateKeys from './mutateKeys';
+export const PREFIX_DELIMITER = '.';
 
-function prefixLayer(prefix: string): Layer<any> {
-    const prefixKey = prefix + PREFIX_DELIMITER;
-    return {
-        set: (key: string, value: any) => { return { key: prefixKey + key, value } },
-        get: (key: string, value: any) => { return { key: key.slice(prefixKey.length), value } },
-        remove: (key: string) => { return prefixKey + key },
-        check: (key: string) => { return key.startsWith(prefixKey) }
-    }
+function prefixLayer(prefix: string, delimiter: string = PREFIX_DELIMITER): IMutateKey {
+    const prefixKey = prefix + delimiter;
+    return mutateKeys(
+        (key) => prefixKey + key,
+        (key: string) => (key.startsWith(prefixKey) ? key.slice(prefixKey.length) : null),
+    ) as IMutateKey;
 }
 
 export default prefixLayer;

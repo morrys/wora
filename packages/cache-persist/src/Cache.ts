@@ -1,104 +1,115 @@
-import createStorage from "./storage";
 import StorageProxy from './StorageProxy';
-import { DataCache, Subscription, CacheOptions } from "./CacheTypes";
-import noStorage from './nostorage';
+import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper, ICacheStorage } from './CacheTypes';
 
-export const PREFIX_DELIMITER: string = ".";
+const hasOwn = Object.prototype.hasOwnProperty;
 
-class Cache {
+class Cache implements ICache {
     private data: DataCache = {};
-    private rehydrated: boolean = false;
-    private _subscriptions: Set<Subscription> = new Set();
-    public storageOptions;
-    private storageProxy;
+    private rehydrated = false;
+    private subscriptions: Set<Subscription> = new Set();
+    private storageProxy: IStorageHelper;
+    private promisesRestore;
+    private mergeState: (restoredState: DataCache) => Promise<DataCache> | DataCache;
 
-    constructor(options: CacheOptions = {}) {
-        const { 
-            storage, 
-            prefix = 'cache', 
-            serialize = true, 
-            layers = [],
-            webStorage = 'local',
-            disablePersist = false
-        } = options;
-        const storageOptions = { prefix, serialize, layers };
-        this.storageOptions = storageOptions;
-        this.storageProxy = new StorageProxy(disablePersist ? noStorage() : storage || createStorage(webStorage), storageOptions);        
+    constructor(options?: CacheOptions) {
+        this.storageProxy = StorageProxy(this, options);
+        this.rehydrated = !this.storageProxy.getStorage();
+        this.mergeState = options && options.mergeState ? options.mergeState : (restoredState): DataCache => restoredState;
     }
 
-    public isRehydrated(): boolean { return this.rehydrated}
+    public getStorage(): ICacheStorage {
+        return this.storageProxy.getStorage();
+    }
 
-    public restore(): Promise<Cache> {
-        return new Promise((resolve, reject) => {
-            this.storageProxy.restore().then(result => {
-                this.data = result;
+    public isRehydrated(): boolean {
+        return this.rehydrated;
+    }
+
+    public restore(): Promise<ICache> {
+        if (this.promisesRestore) {
+            return this.promisesRestore;
+        }
+        this.promisesRestore = this.storageProxy
+            .restore()
+            .then((restoredState) => {
+                this.data = restoredState;
+                return this.mergeState(restoredState);
+            })
+            .then((newState) => {
+                if (this.data !== newState) {
+                    console.log('entro', newState);
+                    this.replace(newState);
+                    return this.flush();
+                }
+            })
+            .then(() => {
                 this.rehydrated = true;
-                resolve(this)
-            }).catch(e => reject(e));
-        })
-        
+                return this;
+            })
+            .catch((e) => {
+                throw e;
+            });
+        return this.promisesRestore;
     }
 
-    public replace(newData): Promise<void> {
-        this.data = newData ? Object.assign({}, newData) : Object.create(null);
-        return this.storageProxy.replace(newData);
+    public replace(newData: DataCache): void {
+        const keys = this.getAllKeys().concat(Object.keys(newData));
+        this.data = Object.assign({}, newData);
+        keys.forEach((key) => this.storageProxy.push(key));
+        //return this.storageProxy.replace(newData);
     }
 
-    public purge(): Promise<boolean> {
+    public purge(): void {
+        const keys = this.getAllKeys();
         this.data = Object.create(null);
-        return this.storageProxy.purge();
+        keys.forEach((key) => this.storageProxy.push(key));
     }
 
-    public clear(): Promise<boolean> {
-        return this.purge();
-    }
-
+    // Relay: For performance problems, it is advisable to return the state directly.
     public getState(): Readonly<{ [key: string]: any }> {
-        return Object.assign({}, this.data);
+        return this.data;
     }
 
-    public toObject(): Readonly<{ [key: string]: any }> {
-        return this.getState();
+    public has(key: string): boolean {
+        return hasOwn.call(this.data, key);
     }
 
     public get(key: string): any {
         return this.data[key];
     }
 
-    public set(key: string, value: any): Promise<any> {
+    public set(key: string, value: any): void {
         this.data[key] = value;
-        return this.storageProxy.setItem(key, value);
+        this.storageProxy.push(key);
     }
 
-    public delete(key: string): Promise<any> {
-        return this.set(key, null)
+    public delete(key: string): void {
+        this.set(key, null);
     }
 
-    public remove(key: string): Promise<any> {
+    public remove(key: string): void {
         delete this.data[key];
-        return this.storageProxy.removeItem(key);
+        this.storageProxy.push(key);
+    }
+
+    public flush(): Promise<void> {
+        return this.storageProxy.flush();
     }
 
     public getAllKeys(): Array<string> {
         return Object.keys(this.data);
     }
 
-    public subscribe(
-        callback: (message: string, state: any) => void,
-    ): () => void {
+    public subscribe(callback: (state: any, action: any) => void): () => boolean {
         const subscription = { callback };
-        const dispose = () => {
-            this._subscriptions.delete(subscription);
-        };
-        this._subscriptions.add(subscription);
+        const dispose = (): boolean => this.subscriptions.delete(subscription);
+        this.subscriptions.add(subscription);
         return dispose;
     }
 
-    public notify(message: string = "notify data"): void {
-        const state = this.toObject();
-        this._subscriptions.forEach(subscription => {
-            subscription.callback(message, state);
-        });
+    public notify(payload: { state?: any; action?: any } = {}): void {
+        const { state = this.getState(), action = '' } = payload;
+        this.subscriptions.forEach((subscription) => subscription.callback(state, action));
     }
 }
 

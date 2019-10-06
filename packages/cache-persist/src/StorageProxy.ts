@@ -1,134 +1,255 @@
 import jsonSerialize from './layers/jsonSerialize';
 import prefixLayer from './layers/prefixLayer';
-import { CacheStorage, DataCache, Storage, Layer, StorageHelperOptions, ItemCache } from './CacheTypes';
-
+import { ICache, IStorageHelper, DataCache, ICacheStorage, IMutateValue, IMutateKey, CacheOptions } from './CacheTypes';
+import compose from './utils/compose';
+import createStorage from './createStorage';
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
-    return new Promise((resolve, reject) => {
-        resolve(execute())
-    });
+    return Promise.resolve(execute());
 }
 
-export function promiseVoid(execute: () => void): Promise<void> {
-    return new Promise((resolve, reject) => {
-        execute()
-        resolve()
-    });
+export function promiseVoid(execute = (): void => undefined): Promise<void> {
+    return promiseResult(execute);
 }
 
+const SPLIT = '####';
 
-class StorageHelper implements CacheStorage {
+const NoStorageProxy: IStorageHelper = {
+    restore: () => {
+        return promiseResult(() => {
+            return {};
+        });
+    },
+    push: (_keys: string) => undefined,
+    flush: () => promiseVoid(),
+    getStorage: () => undefined,
+};
 
-    storage: Storage;
-    serialize: boolean;
-    prefix: string;
-    layers: Array<Layer<any>> = [];
-    checks: Array<Layer<any>>;
-    gets: Array<Layer<any>>;
-    sets: Array<Layer<any>>;
-    removes: Array<Layer<any>>;
-
-
-    constructor(storage: any, options: StorageHelperOptions = {}) {
-        const { prefix, serialize, layers } = options;
-        this.serialize = serialize;
-        this.prefix = prefix;
-        this.layers = prefix ? this.layers.concat(prefixLayer(prefix)) : this.layers
-        this.layers = this.layers.concat(layers);
-        this.layers = serialize ? this.layers.concat(jsonSerialize) : this.layers;
-        this.storage = storage;
-        this.init();
+function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper {
+    const {
+        prefix = 'cache',
+        serialize = true,
+        webStorage = 'local',
+        mutateKeys = [],
+        mutateValues = [],
+        errorHandling = (_cache, _error): boolean => true,
+        throttle = 500,
+        disablePersist = false,
+        storage = createStorage(webStorage),
+    } = options;
+    const disable = disablePersist || !storage;
+    if (disable) {
+        return NoStorageProxy;
     }
-
-    purge(): Promise<boolean> {
-        return this.storage.getAllKeys().then((keys: Array<string>) =>
-            this.storage.multiRemove(this.filter(keys))
-                .then(() => true)
-                .catch(() => false)
-        );
+    let timerId = null;
+    let inExecution = false;
+    let resolveFlush;
+    let rejectFlush;
+    let promiseFlush: Promise<void>;
+    /*const complete = () => console.log("complete", Date.now());
+    const next = () => console.log("next", Date.now());
+    const start = () => console.log("start", Date.now());*/
+    const queue: Array<string> = [];
+    if (prefix) {
+        mutateKeys.unshift(prefixLayer(prefix));
     }
-    restore(): Promise<DataCache> {
-        return this.storage.getAllKeys().then((keys: Array<string>) =>
-            this.storage.multiGet(this.filter(keys))).then(data => {
-                const result: DataCache = {};
-                Object.entries(data).forEach(([key, value]) => {
-                    const item = this.get(key, value)
-                    result[item.key] = item.value;
+    if (serialize) {
+        mutateValues.push(jsonSerialize);
+    }
+    const mutateValue: IMutateValue = {
+        set: compose(...mutateValues.map((mutate) => mutate.set)),
+        get: compose(
+            ...mutateValues
+                .slice()
+                .reverse()
+                .map((mutate) => mutate.get),
+        ),
+    };
+    const mutateKey: IMutateKey = {
+        set: compose(...mutateKeys.map((mutate) => (key): string => (key != null ? mutate.set(key) : null))),
+        get: compose(
+            ...mutateKeys
+                .slice()
+                .reverse()
+                .map((mutate) => (key): string => (key != null ? mutate.get(key) : null)),
+        ),
+    };
+    const internalStorage = {
+        multiRemove: (keys): Promise<void> => {
+            const promises: Array<Promise<void>> = [];
+            for (let i = 0, l = keys.length; i < l; i++) {
+                promises.push(storage.removeItem(keys[i]));
+            }
+            return Promise.all(promises)
+                .then(() => undefined)
+                .catch((error) => {
+                    throw error;
                 });
+        },
+        multiGet: (keys) => {
+            const promises: Array<Promise<Array<string>>> = [];
+            for (let i = 0, l = keys.length; i < l; i++) {
+                const key: string = keys[i];
+                promises.push(
+                    storage
+                        .getItem(key)
+                        .then((value) => [key, value])
+                        .catch((error) => {
+                            throw error;
+                        }),
+                );
+            }
+            return Promise.all(promises);
+        },
+        multiSet: (items: Array<Array<string>>) => {
+            const promises: Array<Promise<void>> = [];
+            for (let i = 0, l = items.length; i < l; i++) {
+                const [key, value] = items[i];
+                promises.push(storage.setItem(key, value));
+            }
+            return Promise.all(promises)
+                .then(() => undefined)
+                .catch((error) => {
+                    throw error;
+                });
+        },
+        ...storage,
+    } as ICacheStorage;
+
+    function restore(): Promise<DataCache> {
+        return internalStorage
+            .getAllKeys()
+            .then((keys: Array<string>) => internalStorage.multiGet(keys.filter((key) => !!mutateKey.get(key))))
+            .then((data) => {
+                const result: DataCache = {};
+                for (let i = 0, l = data.length; i < l; i++) {
+                    const [key, value] = data[i];
+                    const keyMutate = mutateKey.get(key);
+                    const valueMutate = mutateValue.get(value);
+                    result[keyMutate] = valueMutate;
+                }
                 return result;
             });
     }
-    replace(data: any): Promise<void> {
-        const items: Array<ItemCache<any>> = [];
-        return this.purge().then(async () => {
-            Object.entries(data).forEach(([key, value]) => {
-                const item = this.set(key, value);
-                if(item) {
-                    items.push(item);
-                }
-                
+
+    function push(key: string): void {
+        /*if (!execution && queue.length === 0) {
+            start();
+        }*/
+        const newKey = mutateKey.set(key);
+        if (newKey) {
+            queue.push(`${key}${SPLIT}${newKey}`);
+            debounced();
+        }
+    }
+
+    function flush(): Promise<void> {
+        console.log('flush', inExecution);
+        if (queue.length === 0) {
+            return Promise.resolve();
+        }
+        if (!inExecution) {
+            cancelTimer();
+            return execute();
+        }
+        if (!promiseFlush) {
+            promiseFlush = new Promise((resolve, reject): void => {
+                rejectFlush = reject;
+                resolveFlush = resolve;
             });
-            await this.storage.multiSet(items);
-        })
-
+            debounced(); //
+        }
+        return promiseFlush;
     }
 
-    removeItem(key: string): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            const keyToRemove = this.remove(key);
-            if (keyToRemove) {
-                await this.storage.removeItem(keyToRemove);
+    function timerExpired(): void {
+        if (!inExecution) {
+            execute();
+        }
+        setNextTimer(); // maybe it is not needed, evalute check on queue
+    }
+
+    function cancelTimer(): void {
+        if (!timerId) return;
+        clearTimeout(timerId);
+        timerId = null;
+    }
+
+    function setNextTimer(): void {
+        cancelTimer();
+        timerId = setTimeout(timerExpired, throttle);
+    }
+
+    function debounced(): void {
+        if (!timerId) {
+            setNextTimer();
+        }
+    }
+
+    function execute(): Promise<void> {
+        inExecution = true;
+        //next();
+        const startTime = Date.now();
+        const flushKeys = Array.from(new Set(queue.splice(0)));
+
+        console.log('cache debounce 4', Date.now() - startTime);
+        // this allows to resolve only the promises registered before the execution
+        const resolve = resolveFlush;
+        const reject = rejectFlush;
+        resolveFlush = null;
+        rejectFlush = null;
+        promiseFlush = null;
+        const dispose = function(error?: Error): void {
+            if (error) {
+                if (reject) {
+                    reject();
+                }
+                errorHandling(cache, error);
+            } else {
+                if (resolve) {
+                    resolve();
+                }
             }
-            resolve()
-        })
-    }
+            cancelTimer();
 
-    setItem(key: string, value: any): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            const item = this.set(key, value);
-            if (item) {
-                await this.storage.setItem(item.key, item.value)
+            inExecution = false;
+            if (queue.length > 0) {
+                debounced();
             }
-            resolve()
-        })
+        };
+        console.log('cache debounce 5', Date.now() - startTime);
+        const removeKeys = [];
+        const setValues = [];
+        for (let i = 0, l = flushKeys.length; i < l; i++) {
+            const [key, newKey] = flushKeys[i].split(SPLIT);
+            if (cache.has(key)) {
+                setValues.push([newKey, mutateValue.set(cache.get(key))]);
+            } else {
+                removeKeys.push(newKey);
+            }
+        }
+
+        console.log('cache debounce 6', Date.now() - startTime);
+        const promises = [];
+        if (removeKeys.length > 0) {
+            // TODO length === 1 remove
+            promises.push(internalStorage.multiRemove(removeKeys));
+        }
+        if (setValues.length > 0) {
+            // TODO length === 1 set
+            promises.push(internalStorage.multiSet(setValues));
+        }
+        return Promise.all(promises)
+            .then(() => dispose())
+            .catch((error) => dispose(error));
     }
 
-    init() {
-        this.checks = this.layers.filter((layer => !!layer.check));
-        this.sets = this.layers.filter((layer => !!layer.set));
-        this.removes = this.layers.filter((layer => !!layer.remove));
-        this.gets = this.layers.slice().reverse().filter((layer => !!layer.get));
-    }
-
-    filter(keys: Array<string>): Array<string> {
-        return keys.filter((key => this.checks.reduce(
-            (currentValue, layer) => layer.check(key) && currentValue,
-            true
-        )));
-    }
-
-    set(key: string, value: any): ItemCache<any> {
-        return this.sets.reduce(
-            (currentValue, layer) => !currentValue ? currentValue : layer.set(currentValue.key, currentValue.value),
-            { key, value }
-        );
-    }
-    get(key: string, value: any): ItemCache<any> {
-        return this.gets.reduce(
-            (currentValue, layer) => !currentValue ? currentValue : layer.get(currentValue.key, currentValue.value),
-            { key, value }
-        );
-    }
-    remove(key: string): string {
-        return this.removes.reduce(
-            (currentValue, layer) => !currentValue ? currentValue : layer.remove(currentValue),
-            key
-        );
-    }
-
-
-
+    return {
+        push,
+        restore,
+        flush,
+        getStorage: () => internalStorage,
+    } as IStorageHelper;
 }
 
-
-export default StorageHelper;
+export default StorageProxy;

@@ -1,6 +1,6 @@
 {
   "name": "@wora/apollo-offline",
-  "version": "0.1.3",
+  "version": "1.0.0",
   "keywords": [
     "wora",
     "cache-persist",
@@ -30,7 +30,9 @@
     "clean-dep": "rimraf node_modules/*",
     "prepare": "npm run build",
     "prebuild": "npm run clean",
-    "build": "tsc"
+    "build": "tsc",
+    "format": "prettier --write \"src/**/*.{j,t}s*\"",
+    "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
     "uuid": "3.3.2",
@@ -41,6 +43,7 @@
   },
   "peerDependencies": {
     "apollo-client": ">=2.6.0",
+    "apollo-utilities": ">=1.0.0",
     "apollo-link": ">=1.0.0",
     "graphql": "^0.11.3 || ^0.12.3 || ^0.13.0 || ^14.0.0"
   },

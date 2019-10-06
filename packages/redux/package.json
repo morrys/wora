@@ -1,0 +1,40 @@
+{
+  "name": "@wora/redux",
+  "version": "1.0.0",
+  "keywords": [
+    "cache",
+    "wora",
+    "cache-persist",
+    "inmemory",
+    "redux",
+    "redux-persist"
+  ],
+  "main": "lib/index.js",
+  "license": "MIT",
+  "description": "@wora Redux",
+  "author": {
+    "name": "morrys"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "homepage": "https://github.com/morrys/wora",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morrys/wora"
+  },
+  "scripts": {
+    "clean": "rimraf lib/*",
+    "clean-dep": "rimraf node_modules/*",
+    "prepare": "npm run build",
+    "prebuild": "npm run clean",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@wora/cache-persist": "file:../cache-persist",
+    "symbol-observable": "^1.2.0"
+  },
+  "devDependencies": {
+    "react-redux": "^7.1.0"
+  }
+}
