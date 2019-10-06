@@ -71,31 +71,29 @@
         </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Cache Persist</h1></header><article><div><span><h2><a class="anchor" aria-hidden="true" id="architecture"></a><a href="#architecture" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Architecture</h2>
 <p><img src="/wora/docs/assets/cache-persist-architecture.png" alt="alt-text"></p>
 <h3><a class="anchor" aria-hidden="true" id="cache"></a><a href="#cache" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Cache</h3>
-<p>The Cache is the component that manages the local cache of the application and the only component with which the application must interface. It exposes synchronous methods when the information to be returned does not require communication with storage, the methods are asynchronous.
-It also exposes two methods to allow subscriptions and notification of the cache status.</p>
-<ul>
-<li><strong>Sync method</strong></li>
-</ul>
-<p>isRehydrated(): boolean; // true if restored</p>
-<p>getState(): Readonly&lt;{v[key: string]: any; }&gt;; // return in memory state</p>
-<p>toObject(): Readonly&lt;{v[key: string]: any; }&gt;; // return in memory state</p>
-<p>get(key: string): any; // get value from in memory state</p>
-<p>getAllKeys(): Array<string>; // getAllKeys value from in memory state</p>
-<ul>
-<li><strong>Async method</strong></li>
-</ul>
-<p>replace(data: any): Promise<void></p>
-<p>restore(): Promise<Cache>; // restore storage, set rehydratad</p>
-<p>purge(): Promise<boolean>; // purge state and storage</p>
-<p>clear(): Promise<boolean>; // purge state and storage</p>
-<p>set(key: string, value: any): Promise<any>; // set value in state (sync) and in storage (async)</p>
-<p>delete(key: string): Promise<any>; // delete value in state (sync) and in storage (async)</p>
-<p>remove(key: string): Promise<any>; // remove value in state (sync) and in storage (async)</p>
-<ul>
-<li><strong>Subscriptions and notifications</strong></li>
-</ul>
-<p>subscribe( callback: (message: string, state: any) =&gt; void, ): () =&gt; void // subscription management</p>
-<p>notify(message: string = &quot;notify data&quot;): void // notification of the message and status to all subscriptions</p>
+<p>The cache is the component that manages the local cache of the application and is the only component with which the application must interface.</p>
+<p><strong>Allows the use of any storage in synchronous mode.</strong>
+The only asynchronous methods they expose are:</p>
+<p><code>restore</code>, necessary to recover and initialize the state.</p>
+<p><code>flush</code>, forces data to be stored in the persistence queue</p>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> ICache {
+    purge(): <span class="hljs-built_in">void</span>;
+    replace(data: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">void</span>;
+    isRehydrated(): <span class="hljs-built_in">boolean</span>;
+    getState(): Readonly&lt;{ [key: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">any</span> }&gt;;
+    <span class="hljs-keyword">get</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">any</span>;
+    <span class="hljs-keyword">set</span>(key: <span class="hljs-built_in">string</span>, value: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">void</span>;
+    has(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">boolean</span>;
+    <span class="hljs-keyword">delete</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span>;
+    remove(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span>;
+    getAllKeys(): <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;;
+    subscribe(callback: <span class="hljs-function">(<span class="hljs-params">state: <span class="hljs-built_in">any</span>, action: <span class="hljs-built_in">any</span></span>) =&gt;</span> <span class="hljs-built_in">void</span>): <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">void</span>;
+    notify(payload?: { state?: <span class="hljs-built_in">any</span>; action?: <span class="hljs-built_in">any</span> }): <span class="hljs-built_in">void</span>;
+    getStorage(): ICacheStorage;
+    restore(): <span class="hljs-built_in">Promise</span>&lt;DataCache&gt;;
+    flush(): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
+}
+</code></pre>
 <h3><a class="anchor" aria-hidden="true" id="storage-proxy"></a><a href="#storage-proxy" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Storage Proxy</h3>
 <p>The proxy storage is the intermediary that connects the local cache to the storage.</p>
 <h3><a class="anchor" aria-hidden="true" id="middleware-layer"></a><a href="#middleware-layer" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Middleware Layer</h3>
@@ -107,46 +105,31 @@ It also exposes two methods to allow subscriptions and notification of the cache
 <li><p><strong>filterKeys</strong>: this layer allows you to define a function to determine which keys persist.</p></li>
 </ul>
 <p>It is possible to implement any other layer component by implementing the interface described below:</p>
-<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> ItemCache&lt;T&gt; = {
-    key: <span class="hljs-built_in">string</span>,
-    value: T
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> IMutateKey {
+    <span class="hljs-keyword">set</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">string</span> | <span class="hljs-literal">null</span>;
+    <span class="hljs-keyword">get</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">string</span> | <span class="hljs-literal">null</span>;
 }
 
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> Layer&lt;T&gt; {
-    <span class="hljs-keyword">set</span>: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span>, value: T</span>) =&gt;</span> ItemCache&lt;T&gt;
-    <span class="hljs-keyword">get</span>: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span>, value: T</span>) =&gt;</span> ItemCache&lt;T&gt;
-    remove?: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">string</span>
-    check?: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">boolean</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> IMutateValue {
+    <span class="hljs-keyword">set</span>(value: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">any</span>;
+    <span class="hljs-keyword">get</span>(value: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">any</span>;
 }
 </code></pre>
-<p>The main communication flows between the cache and storage are described below to highlight when these layers are used.</p>
-<ul>
-<li>setting flow</li>
-</ul>
-<p><img src="/wora/docs/assets/cache-persist-set-flow.png" alt="alt-text"></p>
-<ul>
-<li>removal flow</li>
-</ul>
-<p><img src="/wora/docs/assets/cache-persist-remove-flow.png" alt="alt-text"></p>
-<ul>
-<li>restoring flow</li>
-</ul>
-<p><img src="/wora/docs/assets/cache-persist-restore-flow.png" alt="alt-text"></p>
 <h3><a class="anchor" aria-hidden="true" id="storage"></a><a href="#storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Storage</h3>
 <p>Inside the library there is the possibility to use the following storage:</p>
 <p><strong>localStorage (web default)</strong></p>
 <p><strong>AsyncStorage (default react-native)</strong></p>
 <p><strong>sessionStorage</strong></p>
 <p><strong>IndexedDB</strong></p>
-<p><strong>nostorage</strong></p>
 <p>If you need to use different storage than those currently provided, simply create a customized storage that implements the following interface:</p>
-<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> Storage {
-    multiRemove: <span class="hljs-function">(<span class="hljs-params">keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;,
-    multiGet: <span class="hljs-function">(<span class="hljs-params">keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;DataCache&gt;,
-    getAllKeys: <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;,
-    multiSet: <span class="hljs-function">(<span class="hljs-params">items: <span class="hljs-built_in">Array</span>&lt;ItemCache&lt;<span class="hljs-built_in">any</span>&gt;&gt;</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;,
-    setItem: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span>, value: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;,
-    removeItem: <span class="hljs-function">(<span class="hljs-params">key: <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt; 
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> ICacheStorage {
+    multiRemove?(keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
+    multiGet?(keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;&gt;;
+    multiSet?(items: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
+    getAllKeys(): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;;
+    getItem(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">string</span>&gt;;
+    setItem(key: <span class="hljs-built_in">string</span>, value: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
+    removeItem(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
 }
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="installation"></a><a href="#installation" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Installation</h2>
@@ -154,20 +137,31 @@ It also exposes two methods to allow subscriptions and notification of the cache
 <pre><code class="hljs"><span class="hljs-selector-tag">yarn</span> <span class="hljs-selector-tag">add</span> @<span class="hljs-keyword">wora</span>/<span class="hljs-keyword">cache</span>-<span class="hljs-keyword">persist</span>
 </code></pre>
 <h2><a class="anchor" aria-hidden="true" id="cache-options"></a><a href="#cache-options" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Cache Options</h2>
-<p>CacheOptions {
-serialize?: boolean,
-prefix?: string | undefined | null,
-layers?: Array&lt;Layer<any>&gt;,
-storage?: CacheStorage,
-webStorage?: &quot;local&quot; | &quot;session&quot;,
-disablePersist?: boolean
-}</p>
-<p>storage: custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.</p>
-<p>prefix: prefix keys, default &quot;cache&quot; (use the prefixLayer)</p>
-<p>serialize: if it is true, the data will be serialized and deserialized JSON (use the jsonSerialize)</p>
-<p>webStorage: local for localStorage, session for sessionStorage. default local</p>
-<p>disablePersist: if it is true, nostorage is used</p>
-<p>layers: it is possible to configure which layers to use (eg filerKeys)</p>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> CacheOptions = {
+    serialize?: <span class="hljs-built_in">boolean</span>;
+    prefix?: <span class="hljs-built_in">string</span> | <span class="hljs-literal">undefined</span> | <span class="hljs-literal">null</span>;
+    mergeState?: <span class="hljs-function">(<span class="hljs-params">restoredState: DataCache</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;DataCache&gt; | DataCache;
+    mutateKeys?: <span class="hljs-built_in">Array</span>&lt;IMutateKey&gt;;
+    mutateValues?: <span class="hljs-built_in">Array</span>&lt;IMutateValue&gt;;
+    storage?: ICacheStorage;
+    webStorage?: <span class="hljs-string">'local'</span> | <span class="hljs-string">'session'</span>;
+    disablePersist?: <span class="hljs-built_in">boolean</span>;
+    errorHandling?: <span class="hljs-function">(<span class="hljs-params">cache: ICache, error: <span class="hljs-built_in">any</span></span>) =&gt;</span> <span class="hljs-built_in">boolean</span>;
+    throttle?: <span class="hljs-built_in">number</span>;
+};
+</code></pre>
+<ul>
+<li><p><strong>storage:</strong> custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.</p></li>
+<li><p><strong>mergeState:</strong> callback called during the restore that allows to merge the data recovered from the store and the initial data.</p></li>
+<li><p><strong>prefix:</strong> prefix keys, default &quot;cache&quot; (use the prefixLayer as first mutateKeys)</p></li>
+<li><p><strong>serialize:</strong> if it is true, the data will be serialized and deserialized JSON (use the jsonSerialize as last mutateValues)</p></li>
+<li><p><strong>webStorage:</strong> local for localStorage, session for sessionStorage. default local</p></li>
+<li><p><strong>disablePersist:</strong> if it is true, nostorage is used</p></li>
+<li><p><strong>mutateKeys:</strong> it is possible to configure which functions will change the keys (eg filterKeys)</p></li>
+<li><p><strong>mutateValues:</strong> it is possible to configure which functions will change the values (eg filterKeys)</p></li>
+<li><p><strong>throttle:</strong> waiting time for data storage</p></li>
+<li><p><strong>errorHandling:</strong> callback performed in case of errors during store saving</p></li>
+</ul>
 <h2><a class="anchor" aria-hidden="true" id="usage-default"></a><a href="#usage-default" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage default</h2>
 <pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
 <span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache();
@@ -206,18 +200,19 @@ cacheidb1.restore().then(<span class="hljs-function"><span class="hljs-params">(
 </code></pre>
 <h3><a class="anchor" aria-hidden="true" id="example-use-filterkeys-layer"></a><a href="#example-use-filterkeys-layer" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Example use filterKeys Layer</h3>
 <pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> filterKeys  <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist/lib/layers/filterKeys'</span>;
+<span class="hljs-keyword">import</span> { IMutateKey } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist'</span>;
 
-<span class="hljs-keyword">const</span> filterPersistAuth: Layer&lt;<span class="hljs-built_in">any</span>&gt; = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> key.includes(<span class="hljs-string">"auth"</span>));
+<span class="hljs-keyword">const</span> filterPersistAuth: IMutateKey = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> key.includes(<span class="hljs-string">"auth"</span>));
 
-<span class="hljs-keyword">const</span> filterNoPersistAuth: Layer&lt;<span class="hljs-built_in">any</span>&gt; = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> !key.includes(<span class="hljs-string">"auth"</span>));
+<span class="hljs-keyword">const</span> filterNoPersistAuth: IMutateKey = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> !key.includes(<span class="hljs-string">"auth"</span>));
 
 <span class="hljs-keyword">const</span> CacheLocal1 = <span class="hljs-keyword">new</span> Cache({
-    layers: [filterNoPersistAuth],
+    mutateKeys: [filterNoPersistAuth],
     prefix: <span class="hljs-string">'cache1'</span>,
 });
 
 <span class="hljs-keyword">const</span> CacheLocal2 = <span class="hljs-keyword">new</span> Cache({
-    layers: [filterPersistAuth],
+    mutateKeys: [filterPersistAuth],
     prefix: <span class="hljs-string">'cache2'</span>,
 });
 </code></pre>
@@ -229,18 +224,18 @@ cacheidb1.restore().then(<span class="hljs-function"><span class="hljs-params">(
 <span class="hljs-keyword">const</span> [result, setResult] = useState&lt;{loading: <span class="hljs-built_in">boolean</span>, data: DataCache}&gt;({loading: <span class="hljs-literal">true</span>, data: {}});
 
  useEffect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-    <span class="hljs-keyword">const</span> dispose = cache.subscribe(<span class="hljs-function">(<span class="hljs-params">message, state</span>) =&gt;</span> {
+    <span class="hljs-keyword">const</span> dispose = cache.subscribe(<span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> {
       setResult({loading: <span class="hljs-literal">false</span>, data: state});
     });
     cache.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-      cache.notify(<span class="hljs-string">"restored"</span>);
+      cache.notify({ action: <span class="hljs-string">"restored"</span> });
     })
     <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> dispose();
     
   },
     []);
 </code></pre>
-</span></div></article></div><div class="docLastUpdate"><em>Last updated on 2019-7-31 by lorenzo.digiacomo</em></div><div class="docs-prevnext"><a class="docs-prev button" href="/wora/docs/introduction"><span class="arrow-prev">← </span><span>wora</span></a><a class="docs-next button" href="/wora/docs/relay-store"><span>Relay Store</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#architecture">Architecture</a><ul class="toc-headings"><li><a href="#cache">Cache</a></li><li><a href="#storage-proxy">Storage Proxy</a></li><li><a href="#middleware-layer">Middleware Layer</a></li><li><a href="#storage">Storage</a></li></ul></li><li><a href="#installation">Installation</a></li><li><a href="#cache-options">Cache Options</a></li><li><a href="#usage-default">Usage default</a></li><li><a href="#usage-indexeddb">Usage indexedDB</a><ul class="toc-headings"><li><a href="#example-use-filterkeys-layer">Example use filterKeys Layer</a></li></ul></li><li><a href="#subscribe-and-notify-example-with-hooks">Subscribe and notify example with hooks</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/wora/" class="nav-home"><img src="/wora/img/favicon.ico" alt="Morrys Repositories" width="66" height="58"/></a><div><h5>Docs</h5><a href="/wora/docs/en/introduction.html">about wora</a></div><div><h5>Community</h5><a href="/wora/en/users.html">User Showcase</a></div><div><h5>More</h5><a href="https://github.com/morrys/wora">GitHub</a><a class="github-button" href="https://github.com/morrys/wora" data-icon="octicon-star" data-count-href="https://github.com/morrys/wora/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a><div class="social"><a href="https://twitter.com/m0rrys" class="twitter-follow-button">Follow @m0rrys</a></div></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/wora/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2019 Lorenzo Di Giacomo</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
+</span></div></article></div><div class="docLastUpdate"><em>Last updated on 2019-10-6 by morrys</em></div><div class="docs-prevnext"><a class="docs-prev button" href="/wora/docs/introduction"><span class="arrow-prev">← </span><span>wora</span></a><a class="docs-next button" href="/wora/docs/relay-store"><span>Relay Store</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#architecture">Architecture</a><ul class="toc-headings"><li><a href="#cache">Cache</a></li><li><a href="#storage-proxy">Storage Proxy</a></li><li><a href="#middleware-layer">Middleware Layer</a></li><li><a href="#storage">Storage</a></li></ul></li><li><a href="#installation">Installation</a></li><li><a href="#cache-options">Cache Options</a></li><li><a href="#usage-default">Usage default</a></li><li><a href="#usage-indexeddb">Usage indexedDB</a><ul class="toc-headings"><li><a href="#example-use-filterkeys-layer">Example use filterKeys Layer</a></li></ul></li><li><a href="#subscribe-and-notify-example-with-hooks">Subscribe and notify example with hooks</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/wora/" class="nav-home"><img src="/wora/img/favicon.ico" alt="Morrys Repositories" width="66" height="58"/></a><div><h5>Docs</h5><a href="/wora/docs/en/introduction.html">about wora</a></div><div><h5>Community</h5><a href="/wora/en/users.html">User Showcase</a></div><div><h5>More</h5><a href="https://github.com/morrys/wora">GitHub</a><a class="github-button" href="https://github.com/morrys/wora" data-icon="octicon-star" data-count-href="https://github.com/morrys/wora/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a><div class="social"><a href="https://twitter.com/m0rrys" class="twitter-follow-button">Follow @m0rrys</a></div></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/wora/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2019 Lorenzo Di Giacomo</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {
                     return;
