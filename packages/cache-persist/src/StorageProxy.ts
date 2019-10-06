@@ -46,9 +46,6 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
     let resolveFlush;
     let rejectFlush;
     let promiseFlush: Promise<void>;
-    /*const complete = () => console.log("complete", Date.now());
-    const next = () => console.log("next", Date.now());
-    const start = () => console.log("start", Date.now());*/
     const queue: Array<string> = [];
     if (prefix) {
         mutateKeys.unshift(prefixLayer(prefix));
@@ -144,7 +141,6 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
     }
 
     function flush(): Promise<void> {
-        console.log('flush', inExecution);
         if (queue.length === 0) {
             return Promise.resolve();
         }
@@ -189,10 +185,7 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
     function execute(): Promise<void> {
         inExecution = true;
         //next();
-        const startTime = Date.now();
         const flushKeys = Array.from(new Set(queue.splice(0)));
-
-        console.log('cache debounce 4', Date.now() - startTime);
         // this allows to resolve only the promises registered before the execution
         const resolve = resolveFlush;
         const reject = rejectFlush;
@@ -217,7 +210,6 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
                 debounced();
             }
         };
-        console.log('cache debounce 5', Date.now() - startTime);
         const removeKeys = [];
         const setValues = [];
         for (let i = 0, l = flushKeys.length; i < l; i++) {
@@ -229,7 +221,6 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
             }
         }
 
-        console.log('cache debounce 6', Date.now() - startTime);
         const promises = [];
         if (removeKeys.length > 0) {
             // TODO length === 1 remove

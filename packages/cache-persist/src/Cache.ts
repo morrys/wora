@@ -37,7 +37,6 @@ class Cache implements ICache {
             })
             .then((newState) => {
                 if (this.data !== newState) {
-                    console.log('entro', newState);
                     this.replace(newState);
                     return this.flush();
                 }
