@@ -24,9 +24,7 @@ class EnvironmentIDB {
             persistOptions?: CacheOptionsStore;
             gcScheduler?: Scheduler;
             operationLoader?: OperationLoader;
-            ttl?: number;
-            onUpgrade?: IOnUpgrade;
-            version?: number;
+            getDataID?: any; // do not use
         } = {},
         offlineStoreOptions: CacheOptions = {},
     ): RelayModernEnvironment {
@@ -65,7 +63,7 @@ class EnvironmentIDB {
             };
         }
         const recordSource = new RecordSource(idbRecords);
-        const store = new Store(recordSource, idbStore, gcScheduler, operationLoader);
+        const store = new Store(recordSource, idbStore, gcScheduler, operationLoader, getDataID);
         return new RelayModernEnvironment({ ...config, store }, offlineOptions, idbOffline);
     }
 }
