@@ -28,11 +28,11 @@ const store = createStore(
     {
       key: 'root',
       version: 2,
-      //multiple: boolean, to save individual status keys 
-      //layers?: Array<Layer>
+      //mutateKeys?: Array<IMutateKey>
+      //mutateValues?: Array<IMutateValue>
       //blacklist?: Array<string>, backward compatibility
       //whitelist?: Array<string>, backward compatibility
-      //throttle?: number, backward compatibility
+      //throttle?: number
       //migrate?: (PersistedState, number) => Promise<PersistedState>, backward compatibility
       //stateReconciler?: false | StateReconciler<S>, backward compatibility
     }
@@ -64,7 +64,7 @@ const store = createStore(
 
 sagaMiddleware.run(rootSaga)
 
-<ReduxProvider store={store} loading={null}>
+<ReduxProvider store={store}>
 
 
 ```
