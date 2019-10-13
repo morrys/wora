@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "keywords": [
     "wora",
     "cache-persist",
@@ -35,9 +35,9 @@
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
-    "@wora/cache-persist": "^2.0.0",
-    "@wora/offline-first": "^1.0.0",
-    "@wora/relay-store": "^1.0.0",
+    "@wora/cache-persist": "file:../cache-persist",
+    "@wora/offline-first": "file:../offline-first",
+    "@wora/relay-store": "file:../relay-store",
     "fbjs": "^1.0.0",
     "uuid": "3.3.2"
   },
