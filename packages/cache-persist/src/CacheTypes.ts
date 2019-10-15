@@ -14,9 +14,10 @@ export interface IMutateValue {
 }
 
 export type CacheOptions = {
+    initialState?: DataCache;
     serialize?: boolean;
     prefix?: string | undefined | null;
-    mergeState?: (restoredState: DataCache) => Promise<DataCache> | DataCache;
+    mergeState?: (restoredState?: DataCache, initialState?: DataCache) => Promise<DataCache> | DataCache;
     mutateKeys?: Array<IMutateKey>;
     mutateValues?: Array<IMutateValue>;
     storage?: ICacheStorage;

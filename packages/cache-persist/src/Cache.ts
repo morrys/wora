@@ -4,17 +4,18 @@ import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper, ICacheSt
 const hasOwn = Object.prototype.hasOwnProperty;
 
 class Cache implements ICache {
-    private data: DataCache = {};
+    private data: DataCache;
     private rehydrated = false;
     private subscriptions: Set<Subscription> = new Set();
     private storageProxy: IStorageHelper;
     private promisesRestore;
-    private mergeState: (restoredState: DataCache) => Promise<DataCache> | DataCache;
+    private mergeState: (restoredState: DataCache, initialState: DataCache) => Promise<DataCache> | DataCache;
 
     constructor(options?: CacheOptions) {
         this.storageProxy = StorageProxy(this, options);
         this.rehydrated = !this.storageProxy.getStorage();
-        this.mergeState = options && options.mergeState ? options.mergeState : (restoredState): DataCache => restoredState;
+        this.data = options ? options.initialState : {};
+        this.mergeState = options && options.mergeState ? options.mergeState : (restoredState, _initialState): DataCache => restoredState;
     }
 
     public getStorage(): ICacheStorage {
@@ -32,8 +33,9 @@ class Cache implements ICache {
         this.promisesRestore = this.storageProxy
             .restore()
             .then((restoredState) => {
+                const initialState = this.data;
                 this.data = restoredState;
-                return this.mergeState(restoredState);
+                return this.mergeState(restoredState, initialState);
             })
             .then((newState) => {
                 if (this.data !== newState) {
