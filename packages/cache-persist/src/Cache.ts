@@ -14,7 +14,7 @@ class Cache implements ICache {
     constructor(options?: CacheOptions) {
         this.storageProxy = StorageProxy(this, options);
         this.rehydrated = !this.storageProxy.getStorage();
-        this.data = options ? options.initialState : {};
+        this.data = options && options.initialState ? options.initialState : {};
         this.mergeState = options && options.mergeState ? options.mergeState : (restoredState, _initialState): DataCache => restoredState;
     }
 

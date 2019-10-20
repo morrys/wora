@@ -132,15 +132,17 @@ describe('Cache ssr initial data ', () => {
     };
     beforeAll(() => {
         cache = new Cache({
-            mergeState: (restoredState) => ssrState,
+            initialState: ssrState,
+            mergeState: (restoredState, initialState) => initialState,
         });
     });
 
     it('cache restored', async () => {
         expect(cache.isRehydrated()).not.toBeTruthy();
+        cache.set('test4', 4);
         await cache.restore();
         expect(cache.isRehydrated()).toBeTruthy();
-        expect(cache.getState()).toEqual(ssrState);
+        expect(cache.getState()).toEqual({ ...ssrState, test4: 4 });
     });
     it('cache set', async () => {
         cache.set('prova', 1);
