@@ -18,7 +18,6 @@ class RelayModernEnvironment extends Environment {
         super(config);
         this._storeOffline = StoreOffline.create(this, persistOfflineOptions, offlineOptions);
         (this as any)._store.setCheckGC(() => this.isOnline());
-        //this._storeOffline = StoreOffline.create(this, persistOptions, persistCallback, callback);
     }
 
     public clearCache(): Promise<boolean> {
@@ -34,6 +33,9 @@ class RelayModernEnvironment extends Environment {
         return Promise.all([this._storeOffline.restore(), ((this as any)._store as Store).restore()])
             .then((_result) => {
                 this._isRestored = true;
+                const updateRecords = (this as any)._store.__getUpdatedRecordIDs();
+                Object.keys((this as any)._store.getSource().toJSON()).forEach((key) => (updateRecords[key] = true));
+                (this as any)._store.notify();
                 return true;
             })
             .catch((error) => {
