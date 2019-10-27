@@ -11,11 +11,12 @@ import ErrorUtils from 'fbjs/lib/ErrorUtils';
 import RelayRecordSourceMutator from 'relay-runtime/lib/RelayRecordSourceMutator';
 import RelayRecordSourceProxy from 'relay-runtime/lib/RelayRecordSourceProxy';
 import RelayReader from 'relay-runtime/lib/RelayReader';
+import { Store } from 'relay-runtime';
 import normalizeRelayPayload from 'relay-runtime/lib/normalizeRelayPayload';
 import { GraphQLResponseWithData } from 'relay-runtime/lib/RelayNetworkTypes';
 import { NormalizationSelector, RelayResponsePayload } from 'relay-runtime/lib/RelayStoreTypes';
 
-import { Observable as RelayObservable } from 'relay-runtime';
+import { Observable as RelayObservable, RelayRecordSource } from 'relay-runtime';
 import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache, Request } from '@wora/offline-first';
 
 export type Payload = {
@@ -102,12 +103,118 @@ async function executeMutation(environment, network = environment.getNetwork(), 
     return network.execute(operation.node.params, operation.variables, { force: true, metadata: offlineRecord }, uploadables).toPromise();
 }
 
+function _processOptimisticResponse(response: GraphQLResponseWithData, updater: any): void {
+    if (response == null && updater == null) {
+        return;
+    }
+    const optimisticUpdates: Array<any> = [];
+    if (response) {
+        const payload = normalizeResponse(response, this._operation.root, ROOT_TYPE, {
+            getDataID: this._getDataID,
+            path: [],
+            request: this._operation.request,
+        });
+        optimisticUpdates.push({
+            operation: this._operation,
+            payload,
+            updater,
+        });
+        /*if (payload.moduleImportPayloads && payload.moduleImportPayloads.length) {
+        const moduleImportPayloads = payload.moduleImportPayloads;
+        const operationLoader = this._operationLoader;
+        invariant(
+          operationLoader,
+          'RelayModernEnvironment: Expected an operationLoader to be ' +
+            'configured when using `@match`.',
+        );
+        while (moduleImportPayloads.length) {
+          const moduleImportPayload = moduleImportPayloads.shift();
+          const operation = operationLoader.get(
+            moduleImportPayload.operationReference,
+          );
+          if (operation == null) {
+            continue;
+          }
+          const selector = createNormalizationSelector(
+            operation,
+            moduleImportPayload.dataID,
+            moduleImportPayload.variables,
+          );
+          const modulePayload = normalizeResponse(
+            {data: moduleImportPayload.data},
+            selector,
+            moduleImportPayload.typeName,
+            {
+              getDataID: this._getDataID,
+              path: moduleImportPayload.path,
+              request: this._operation.request,
+            },
+          );
+          validateOptimisticResponsePayload(modulePayload);
+          optimisticUpdates.push({
+            operation: this._operation,
+            payload: modulePayload,
+            updater: null,
+          });
+          if (modulePayload.moduleImportPayloads) {
+            moduleImportPayloads.push(...modulePayload.moduleImportPayloads);
+          }
+        }
+      }*/
+    } else if (updater) {
+        optimisticUpdates.push({
+            operation: this._operation,
+            payload: {
+                connectionEvents: null,
+                errors: null,
+                fieldPayloads: null,
+                incrementalPlaceholders: null,
+                moduleImportPayloads: null,
+                source: RelayRecordSource.create(),
+            },
+            updater: updater,
+        });
+    }
+    this._optimisticUpdates = optimisticUpdates;
+    optimisticUpdates.forEach((update) => this._publishQueue.applyUpdate(update));
+    const updatedOwners = this._publishQueue.run();
+}
+
+function process() {
+    const sink = RelayRecordSource.create();
+    const combinedConnectionEvents = [];
+    const mutator = new RelayRecordSourceMutator(environment.getStore().getSource(), sink, combinedConnectionEvents);
+    const store = new RelayRecordSourceProxy(mutator, environment._publishQueue._getDataID, environment._publishQueue._handlerProvider);
+
+    const processUpdate = (optimisticUpdate) => {
+        if (optimisticUpdate.storeUpdater) {
+            const { storeUpdater } = optimisticUpdate;
+            ErrorUtils.applyWithGuard(storeUpdater, null, [store], null, 'RelayPublishQueue:applyUpdates');
+        } else {
+            const { operation, payload, updater } = optimisticUpdate;
+            const { connectionEvents, source, fieldPayloads } = payload;
+            const selectorStore = new RelayRecordSourceSelectorProxy(mutator, store, operation.fragment);
+            let selectorData;
+            if (source) {
+                store.publishSource(source, fieldPayloads);
+                selectorData = lookupSelector(source, operation.fragment);
+            }
+            if (connectionEvents) {
+                combinedConnectionEvents.push(...connectionEvents);
+            }
+            if (updater) {
+                ErrorUtils.applyWithGuard(updater, null, [selectorStore, selectorData], null, 'RelayPublishQueue:applyUpdates');
+            }
+        }
+    };
+}
+
 export function publish(environment, mutationOptions): any {
     // TODO type observable
     return RelayObservable.create((sink) => {
         const { operation, optimisticResponse, optimisticUpdater, updater, uploadables } = mutationOptions;
 
-        const backup = new RelayInMemoryRecordSource();
+        environment.getStore().snapshot();
 
         if (optimisticResponse || optimisticUpdater) {
             const sink = new RelayInMemoryRecordSource();
@@ -133,6 +240,7 @@ export function publish(environment, mutationOptions): any {
                     'RelayPublishQueue:applyUpdates',
                 );
         }
+        const backup = environment.getStore().getSource()._sink;
         let sinkPublish = new RelayInMemoryRecordSource();
         if (optimisticResponse) {
             const normalizePayload = normalizeResponse({ data: optimisticResponse }, operation.root, ROOT_TYPE, [], environment._getDataID);
@@ -194,24 +302,16 @@ function normalizeResponse(
     response: GraphQLResponseWithData,
     selector: NormalizationSelector,
     typeName: string,
-    path: ReadonlyArray<string>,
-    getDataID: GetDataID,
+    options: any,
 ): RelayResponsePayload {
     const { data, errors } = response;
-    const source = new RelayInMemoryRecordSource();
+    const source = RelayRecordSource.create();
     const record = RelayModernRecord.create(selector.dataID, typeName);
     source.set(selector.dataID, record);
-    const normalizeResult = RelayResponseNormalizer.normalize(source, selector, data, {
-        handleStrippedNulls: true,
-        path,
-        getDataID,
-    });
+    const relayPayload = RelayResponseNormalizer.normalize(source, selector, data, options);
     return {
+        ...relayPayload,
         errors,
-        incrementalPlaceholders: normalizeResult.incrementalPlaceholders,
-        fieldPayloads: normalizeResult.fieldPayloads,
-        moduleImportPayloads: normalizeResult.moduleImportPayloads,
-        source,
     };
 }
 

@@ -1,6 +1,5 @@
-import { Record } from 'relay-runtime/lib/RelayCombinedEnvironmentTypes';
-import * as RelayRecordState from 'relay-runtime/lib/RelayRecordState';
-import { MutableRecordSource } from 'relay-runtime/lib/RelayStoreTypes';
+import * as RelayRecordState from 'relay-runtime/lib/store/RelayRecordState';
+import { MutableRecordSource, Record, RecordMap } from 'relay-runtime/lib/store/RelayStoreTypes';
 import Cache, { ICache, DataCache, CacheOptions } from '@wora/cache-persist';
 
 const { EXISTENT, NONEXISTENT, UNKNOWN } = RelayRecordState;
@@ -58,10 +57,6 @@ export default class RecordSource implements IMutableRecordSourceOffline {
         return this._cache.has(dataID);
     }
 
-    public load(dataID: string, callback: (error: Error, record: Record) => void): void {
-        callback(null, this.get(dataID));
-    }
-
     public remove(dataID: string): void {
         this._cache.remove(dataID);
     }
@@ -74,7 +69,7 @@ export default class RecordSource implements IMutableRecordSourceOffline {
         return this._cache.getAllKeys().length;
     }
 
-    public toJSON(): any {
+    public toJSON(): RecordMap {
         return this._cache.getState();
     }
 }

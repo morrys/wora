@@ -32,13 +32,9 @@ class Cache implements ICache {
         }
         this.promisesRestore = this.storageProxy
             .restore()
-            .then((restoredState) => {
-                const initialState = this.data;
-                this.data = restoredState;
-                return this.mergeState(restoredState, initialState);
-            })
-            .then((newState) => {
-                if (this.data !== newState) {
+            .then((restoredState) => [restoredState, this.mergeState(restoredState, this.data)])
+            .then(([restoredState, newState]) => {
+                if (restoredState !== newState) {
                     this.replace(newState);
                     return this.flush();
                 }

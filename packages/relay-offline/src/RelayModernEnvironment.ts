@@ -1,11 +1,11 @@
 import { Environment, Observable as RelayObservable, GraphQLResponse } from 'relay-runtime';
 
-import { EnvironmentConfig } from 'relay-runtime/lib/RelayModernEnvironment';
+import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironment';
 
 import { Store } from '@wora/relay-store';
 import { CacheOptions } from '@wora/cache-persist';
 
-import { NormalizationSelector, Disposable } from 'relay-runtime/lib/RelayStoreTypes';
+import { NormalizationSelector, Disposable } from 'relay-runtime';
 
 import StoreOffline, { OfflineOptions, Payload, publish } from './OfflineFirstRelay';
 import OfflineFirst from '@wora/offline-first';
@@ -14,7 +14,7 @@ class RelayModernEnvironment extends Environment {
     private _isRestored: boolean;
     private _storeOffline: OfflineFirst<Payload>;
 
-    constructor(config: EnvironmentConfig, offlineOptions: OfflineOptions<Payload>, persistOfflineOptions: CacheOptions = {}) {
+    constructor(config: EnvironmentConfig, offlineOptions: OfflineOptions<Payload> = {}, persistOfflineOptions: CacheOptions = {}) {
         super(config);
         this._storeOffline = StoreOffline.create(this, persistOfflineOptions, offlineOptions);
         (this as any)._store.setCheckGC(() => this.isOnline());
@@ -79,6 +79,7 @@ class RelayModernEnvironment extends Environment {
     }
 
     public executeMutation(mutationOptions): RelayObservable<GraphQLResponse> {
+        console.log('execute', this.isOnline());
         if (this.isOnline()) {
             return super.executeMutation(mutationOptions);
         } else {
