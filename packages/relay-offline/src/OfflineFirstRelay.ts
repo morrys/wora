@@ -180,7 +180,7 @@ function _processOptimisticResponse(response: GraphQLResponseWithData, updater: 
     const updatedOwners = this._publishQueue.run();
 }
 
-function process() {
+function process(environment) {
     const sink = RelayRecordSource.create();
     const combinedConnectionEvents = [];
     const mutator = new RelayRecordSourceMutator(environment.getStore().getSource(), sink, combinedConnectionEvents);
@@ -207,6 +207,39 @@ function process() {
             }
         }
     };
+}
+
+export function publish(environment, mutationOptions): any {
+    const { operation, optimisticResponse, optimisticUpdater, updater, uploadables } = mutationOptions;
+    let optimisticConfig;
+    if (optimisticResponse || optimisticUpdater) {
+        optimisticConfig = {
+            operation,
+            response: optimisticResponse,
+            updater: optimisticUpdater,
+        };
+    }
+    return RelayObservable.create((sink) => {
+        /*const sinkNothing = RelayObservable.create((sink) => {
+        }*/
+        const source = RelayObservable.create((sink) => {
+            // come recuperare i dati che sono stati inseriti? override del publish? dello store?
+            const backup = environment.getStore().getSource()._sink;
+        });
+        const executor = RelayModernQueryExecutor.execute({
+            operation,
+            operationLoader: environment._operationLoader,
+            optimisticConfig,
+            publishQueue: environment._publishQueue,
+            scheduler: environment._scheduler,
+            sink,
+            source,
+            updater: optimisticResponse ? updater : optimisticUpdater,
+            operationTracker: environment._operationTracker,
+            getDataID: environment._getDataID,
+        });
+        return () => executor.cancel();
+    });
 }
 
 export function publish(environment, mutationOptions): any {
@@ -245,7 +278,7 @@ export function publish(environment, mutationOptions): any {
         if (optimisticResponse) {
             const normalizePayload = normalizeResponse({ data: optimisticResponse }, operation.root, ROOT_TYPE, [], environment._getDataID);
             const { fieldPayloads, source } = normalizePayload;
-            // updater only for configs
+            // updater only for configs next(upload response)
             sinkPublish = environment._publishQueue._getSourceFromPayload({
                 fieldPayloads,
                 operation,
@@ -263,7 +296,7 @@ export function publish(environment, mutationOptions): any {
             const mutator = new RelayRecordSourceMutator(environment.getStore().getSource(), sinkPublish);
             const store = new RelayRecordSourceProxy(mutator, environment._getDataID);
             ErrorUtils.applyWithGuard(optimisticUpdater, null, [store], null, 'RelayPublishQueue:commitUpdaters');
-            /*    
+            /*     next(optimisticUpdater {})
             if (optimisticUpdater != null) {
                 optimisticUpdater(environment.getStore());
             }
