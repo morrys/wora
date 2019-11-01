@@ -30,7 +30,7 @@ class RelayModernEnvironment extends Environment {
         if (this._isRestored) {
             return Promise.resolve(true);
         }
-        return Promise.all([this._storeOffline.restore(), ((this as any)._store as Store).restore()])
+        return Promise.all([this._storeOffline.restore(), ((this as any)._store as Store).hydrated()])
             .then((_result) => {
                 this._isRestored = true;
                 const updateRecords = (this as any)._store.__getUpdatedRecordIDs();

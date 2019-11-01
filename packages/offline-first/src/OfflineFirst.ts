@@ -208,7 +208,7 @@ class OfflineFirst<T> {
         const { request, serial } = options;
         const fetchTime = Date.now();
         const offlineRecord: OfflineRecordCache<T> = onPublish({ id, request, fetchTime, serial });
-        this.offlineStore.set(id, offlineRecord);
+        this.offlineStore.set(offlineRecord.id, offlineRecord);
         return this.offlineStore
             .flush()
             .then(() => {
