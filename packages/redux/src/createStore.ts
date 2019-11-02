@@ -1,10 +1,11 @@
 import $$observable from 'symbol-observable';
-import Cache, { ICache, CacheOptions, mutateKeysLayer, prefixLayer } from '@wora/cache-persist';
+import Cache, { ICache, CacheOptions, mutateKeysLayer, prefixLayer, DataCache } from '@wora/cache-persist';
 import isPlainObject from './redux/utils/isPlainObject';
 import ActionTypes from './redux/utils/actionTypes';
 import filterKeys from '@wora/cache-persist/lib/layers/filterKeys';
 
-export const REHYDRATE = `@@redux/RESTORED`; // added
+export const REHYDRATE = `@@redux/REHYDRATE`; // added
+export const REHYDRATE_ERROR = `@@redux/REHYDRATE_ERROR`; // added
 
 /**
  * Creates a Redux store that holds the state tree.
@@ -67,6 +68,7 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
         throw new Error('CREATE3');
     }
 
+    let promiseRestore;
     const {
         disablePersist = !persistOptions,
         version = -1,
@@ -99,8 +101,30 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
         prefix: null,
         mutateKeys: customMutateKeys,
         mutateValues,
+        initialState: preloadedState,
+        mergeState: async (originalRestoredState = {}, initialState = {}) => {
+            const migrateReduxPersist = originalRestoredState[reduxPersistKey];
+            if (migrateReduxPersist) {
+                cache.replace(migrateReduxPersist);
+            }
+            const restoredState = migrateReduxPersist || originalRestoredState;
+
+            const haveStoredState = !!restoredState && !!restoredState._persist;
+            const state = haveStoredState
+                ? await migrate(restoredState, version).then((mState: any) => {
+                      dispatch({ type: REHYDRATE });
+                      const reducedState = cache.getState();
+                      return stateReconciler(mState, initialState, reducedState, persistOptions);
+                  })
+                : initialState;
+            return { ...state, _persist: { version, rehydrated: true, wora: true } };
+        },
         ...persistOptions,
     });
+
+    if (disablePersist) {
+        promiseRestore = Promise.resolve();
+    }
 
     let currentReducer = reducer;
     let isDispatching = false;
@@ -263,44 +287,25 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
     }
 
     function isRehydrated(): boolean {
-        return cache.isRehydrated();
+        return disablePersist || cache.isRehydrated();
     }
 
-    function restore(): Promise<void> {
-        if (disablePersist) {
-            dispatch({ type: ActionTypes.INIT });
-            return Promise.resolve();
-        } else {
-            return cache
-                .restore()
-                .then(async () => {
-                    const migrateReduxPersist = cache.get(reduxPersistKey);
-                    if (migrateReduxPersist) {
-                        cache.replace(migrateReduxPersist);
-                    }
-                    const restoredState = cache.getState();
-                    dispatch({ type: ActionTypes.INIT });
-                    const haveStoredState = !!restoredState && !!restoredState._persist;
-                    const migrateState =
-                        haveStoredState &&
-                        (await migrate(restoredState, version).then((mState: any, state: any = getState()) => {
-                            return stateReconciler(mState, preloadedState, state, persistOptions);
-                        }));
-                    const state = { ...migrateState, _persist: { version, rehydrated: true, wora: true } };
-
-                    cache.replace(state);
-                    await cache.flush();
-                    dispatch({ type: REHYDRATE });
-                })
-                .catch((error) => {
-                    throw error;
-                });
+    function restore(): Promise<DataCache> {
+        if (promiseRestore) {
+            return promiseRestore;
         }
+        promiseRestore = cache.restore();
+        return promiseRestore;
     }
 
     // When a store is created, an "INIT" action is dispatched so that every
     // reducer returns their initial state. This effectively populates
     // the initial state tree.
+    dispatch({ type: ActionTypes.INIT });
+
+    restore()
+        .then(() => undefined)
+        .catch((error) => dispatch({ type: REHYDRATE_ERROR, error }));
 
     return {
         dispatch,

@@ -55,13 +55,9 @@ export type CacheOptionsStore = CacheOptions & {
     defaultTTL?: number;
 };
 
+
 export default class Store extends RelayModernStore {
-    constructor(
-        recordSource: RecordSource,
-        persistOptions: CacheOptionsStore = {},
-        gcScheduler?: Scheduler,
-        operationLoader?: OperationLoader,
-        getDataID?: any, // do not use
+    constructor(recordSource: RecordSource, persistOptions: CacheOptionsStore = {}, ...args)
 ```
 
 
@@ -69,9 +65,8 @@ export default class Store extends RelayModernStore {
 
 #### Retain Method
 
-Added the `retainConfig: {ttl: number, execute: boolean}` parameter
+Added the `retainConfig: { ttl?: number } ` parameter
 The **TTL value** is used to give the possibility to **specify a different TTL for each individual query**.
-The **execute** value is used to **update the retainTime** of the query when set to true.
 
 Replaced the logic of saving queries in the store. First it was managed through the **Map roots** whose **key** was an **incremental numeric value**, **now** it is managed through the **Cache object of wora/cache-persist** and the **key** is the **composition of the name of the query and its variables**.
 This allows you to **avoid** having **multiple references of the same query**.
@@ -111,9 +106,9 @@ allows you to define a custom condition to execute the garbage collector
 
 allows you to purge the store
 
-#### add restore Method
+#### add hydrate Method
 
-allows you to restore the store from storage
+allows you to hydrate the store from storage
 
 
 ## Installation

@@ -29,7 +29,7 @@ import ApolloCache from '@wora/apollo-cache';
 const cache = new ApolloCache({...});
 
 // IMPORTANT: await before instantiating ApolloClient, else queries might run before the cache is persisted
-await cache.hydrated();
+await cache.hydrate();
 
 // Continue setting up Apollo as usual.
 

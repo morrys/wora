@@ -4,6 +4,7 @@ import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironmen
 
 import { Store } from '@wora/relay-store';
 import { CacheOptions } from '@wora/cache-persist';
+import ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
 
 import { NormalizationSelector, Disposable } from 'relay-runtime';
 
@@ -11,13 +12,17 @@ import StoreOffline, { OfflineOptions, Payload, IRelayStoreOffline } from './Off
 import OfflineFirst from '@wora/offline-first';
 
 class RelayModernEnvironment extends Environment {
-    private _rehydrated: boolean;
+    private _rehydrated = !ExecutionEnvironment.canUseDOM;
     private _relayStoreOffline: IRelayStoreOffline;
+    private promisesRestore;
 
     constructor(config: EnvironmentConfig, persistOfflineOptions: CacheOptions = {}) {
         super(config);
         this._relayStoreOffline = StoreOffline.create(persistOfflineOptions);
         this.setOfflineOptions();
+        if (this._rehydrated) {
+            this.promisesRestore = Promise.resolve(true);
+        }
         (this as any)._store.setCheckGC(() => this.isOnline()); // todo refactor use listener & holdgc
     }
 
@@ -27,26 +32,27 @@ class RelayModernEnvironment extends Environment {
         });
     }
 
-    public setOfflineOptions(offlineOptions?: OfflineOptions<Payload>) {
+    public setOfflineOptions(offlineOptions?: OfflineOptions<Payload>): void {
         this._relayStoreOffline.setOfflineOptions(this, offlineOptions);
     }
 
     public hydrate(): Promise<boolean> {
-        if (this._rehydrated) {
-            return Promise.resolve(true);
+        if (!this.promisesRestore) {
+            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), ((this as any)._store as Store).hydrate()])
+                .then((_result) => {
+                    this._rehydrated = true;
+                    const updateRecords = (this as any)._store.__getUpdatedRecordIDs();
+                    Object.keys((this as any)._store.getSource().toJSON()).forEach((key) => (updateRecords[key] = true));
+                    (this as any)._store.notify();
+                    return true;
+                })
+                .catch((error) => {
+                    this._rehydrated = false;
+                    throw error;
+                });
         }
-        return Promise.all([this.getStoreOffline().hydrate(), ((this as any)._store as Store).hydrate()])
-            .then((_result) => {
-                this._rehydrated = true;
-                const updateRecords = (this as any)._store.__getUpdatedRecordIDs();
-                Object.keys((this as any)._store.getSource().toJSON()).forEach((key) => (updateRecords[key] = true));
-                (this as any)._store.notify();
-                return true;
-            })
-            .catch((error) => {
-                this._rehydrated = false;
-                throw error;
-            });
+
+        return this.promisesRestore;
     }
 
     public isRehydrated(): boolean {

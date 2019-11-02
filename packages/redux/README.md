@@ -15,7 +15,6 @@ yarn add @wora/redux
 
 ```ts
 import { createStore, applyMiddleware, combineReducers } from '@wora/redux'
-import ReduxProvider from '@wora/redux/libs/react/ReduxProvider'
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -41,16 +40,12 @@ const store = createStore(
 
 sagaMiddleware.run(rootSaga)
 
-
-<ReduxProvider store={store} loading={null}>
-
 ```
 
 ### Examples without Persist
 
 ```ts
 import { createStore, applyMiddleware, combineReducers } from '@wora/redux'
-import ReduxProvider from '@wora/redux/libs/react/ReduxProvider'
 
 const sagaMiddleware = createSagaMiddleware()
 
@@ -64,7 +59,6 @@ const store = createStore(
 
 sagaMiddleware.run(rootSaga)
 
-<ReduxProvider store={store}>
 
 
 ```

@@ -45,6 +45,7 @@ class Cache implements ICache {
                 return this;
             })
             .catch((e) => {
+                this.promisesRestore = null;
                 throw e;
             });
         return this.promisesRestore;

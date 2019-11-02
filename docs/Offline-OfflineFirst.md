@@ -25,23 +25,23 @@ const persistOptionsStoreOffline = {
     serialize: true,
 };
 
-function execute(offlineRecord) {
+asyncfunction execute(offlineRecord) {
     // ... fetch
 }
 
-function discard(offlineRecord) {
+async function  discard(offlineRecord) {
     // ... rollback
     return true;
 }
 
-function complete(offlineRecord) {
+async function complete(offlineRecord) {
     // ... commit
     return true;
 }
     
 const options: OfflineFirstOptions<Payload> = {
         execute: (offlineRecord: any) => execute(offlineRecord),
-        finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>> ) => void,
+        finish?: (mutations: ReadonlyArray<OfflineRecordCache<T>>, error?: Error ) => undefined,
         onComplete: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => complete(options),
         onDiscard: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => discard(options),
             };
@@ -69,18 +69,25 @@ offlineFirst.publish({
 
 export type OfflineFirstOptions<T> = {
     manualExecution?: boolean;
-    execute: (offlineRecord: OfflineRecordCache<T>) => Promise<any>,
-    finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>> ) => void,
-    onComplete?: (options: { offlineRecord: OfflineRecordCache<T>, response: any }) => boolean;
-    onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>, error: any }) => boolean;
-    onPublish?: ( offlineRecord: OfflineRecordCache<T>) => OfflineRecordCache<T>,
+    execute: (offlineRecord: OfflineRecordCache<T>) => Promise<any>;
+    start?: (mutations: ReadonlyArray<OfflineRecordCache<T>>) => Promise<void>;
+    onExecute?: (mutation: OfflineRecordCache<T>) => Promise<OfflineRecordCache<T>>;
+    finish?: (mutations: ReadonlyArray<OfflineRecordCache<T>>, error?: Error) => Promise<void>;
+    onComplete?: (options: { offlineRecord: OfflineRecordCache<T>; response: any }) => Promise<boolean>;
+    onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>; error: any }) => Promise<boolean>;
+    onPublish?: (offlineRecord: OfflineRecordCache<T>) => Promise<OfflineRecordCache<T>>;
     compare?: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => number;
-}
+    // onDispatch?: (request: any) => any;
+};
 
 ```
 * execute: this is the only mandatory parameter. In this function, communications with the server must be implemented.
 
+* start: function that is called once the request queue has been started.
+
 * finish: function that is called once the request queue has been processed.
+
+* onExecute: function that is called before the request is sent to the network.
 
 * manualExecution: if set to true, requests in the queue are no longer performed automatically as soon as you go back online. invoke manually: `offlineFirst.process();`
 
@@ -147,7 +154,6 @@ export type OfflineRecordCache<T> = {
     id: string,
     request: Request<T>,
     fetchTime: number,
-    state?: string,
     retry?: number,
     error?: any,
     serial?: boolean
@@ -155,7 +161,7 @@ export type OfflineRecordCache<T> = {
 
 ```
 
-* The parameters `fetchTime`, `state`,`retry` and `error` are managed automatically by the library during the offline process.
+* The parameters `fetchTime`,`retry` and `error` are managed automatically by the library during the offline process.
 
 
 ## This library depends exclusively on @wora/cache-persist and @wora/netinfo and I recommend using all their features and potential.

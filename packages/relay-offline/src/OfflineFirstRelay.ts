@@ -42,7 +42,7 @@ class RelayStoreOffline {
     }
 }
 
-function setOfflineOptions(environment, offlineOptions: OfflineOptions<Payload> = {}) {
+function setOfflineOptions(environment, offlineOptions: OfflineOptions<Payload> = {}): void {
     const { onComplete, onDiscard, network, manualExecution, finish, onPublish } = offlineOptions;
 
     const options: OfflineFirstOptions<Payload> = {
@@ -113,7 +113,7 @@ export function publish(environment, mutationOptions): any {
         let sinkPublish;
 
         const source = RelayObservable.create((sink) => {
-            store.publish = function(source) {
+            store.publish = function(source): void {
                 sinkPublish = source;
                 store.publish = originalPublish;
                 store.publish(source);

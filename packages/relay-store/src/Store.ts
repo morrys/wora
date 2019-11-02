@@ -44,7 +44,7 @@ export default class Store extends RelayModernStore {
         return Promise.all([this._cache.restore(), (this as any)._recordSource.restore()]);
     }
 
-    public retain(selector: NormalizationSelector, retainConfig: any = {}): Disposable {
+    public retain(selector: NormalizationSelector, retainConfig: { ttl?: number } = {}): Disposable {
         const { ttl = this._defaultTTL } = retainConfig;
         const name = selector.node.name + '.' + JSON.stringify(selector.variables);
         const dispose = (): void => {

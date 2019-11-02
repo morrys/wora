@@ -41,7 +41,7 @@ class ApolloStoreOffline {
     }
 }
 
-function setOfflineOptions(client, offlineOptions: OfflineOptions<Payload> = {}) {
+function setOfflineOptions(client, offlineOptions: OfflineOptions<Payload> = {}): void {
     const { onComplete, onDiscard, link, manualExecution, finish, onPublish } = offlineOptions;
 
     const options: OfflineFirstOptions<Payload> = {

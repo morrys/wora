@@ -12,7 +12,6 @@ export type OfflineRecordCache<T> = {
     id: string;
     request: Request<T>;
     fetchTime: number;
-    state?: string;
     retry?: number;
     error?: any;
     serial?: boolean;
@@ -33,7 +32,7 @@ export type OfflineFirstOptions<T> = {
 
 const defaultOfflineOptions = {
     manualExecution: false,
-    start: (mutations) => Promise.resolve(undefined),
+    start: (_mutations) => Promise.resolve(undefined),
     finish: (_mutations, _error) => Promise.resolve(undefined),
     onExecute: (mutation) => Promise.resolve(mutation),
     onComplete: (_options) => Promise.resolve(true),
@@ -41,7 +40,7 @@ const defaultOfflineOptions = {
     compare: (v1, v2) => v1.fetchTime - v2.fetchTime,
     onPublish: (offlineRecord) => Promise.resolve(offlineRecord),
     execute: (_offlineRecord) => Promise.reject(new Error('set execute offline options')),
-};
+} as OfflineFirstOptions<any>;
 
 class OfflineFirst<T> {
     private offlineStore: ICache;
@@ -59,9 +58,13 @@ class OfflineFirst<T> {
         };
 
         this.offlineStore = new Cache(persistOptionsStoreOffline);
+
+        if (this.rehydrated) {
+            this.promisesRestore = Promise.resolve(true);
+        }
     }
 
-    public setOfflineOptions(offlineOptions?: OfflineFirstOptions<T>) {
+    public setOfflineOptions(offlineOptions?: OfflineFirstOptions<T>): void {
         this.offlineOptions = {
             ...defaultOfflineOptions,
             ...offlineOptions,
@@ -90,33 +93,31 @@ class OfflineFirst<T> {
     }
 
     public hydrate(): Promise<boolean> {
-        if (this.promisesRestore) {
-            return this.promisesRestore;
-        }
-        if (this.rehydrated) {
-            this.promisesRestore = Promise.resolve(true);
-        }
-        this.promisesRestore = Promise.all([NetInfo.isConnected.fetch(), this.offlineStore.restore()])
-            .then((result) => {
-                this.addNetInfoListener((isConnected: boolean) => {
+        if (!this.promisesRestore) {
+            this.promisesRestore = Promise.all([NetInfo.isConnected.fetch(), this.offlineStore.restore()])
+                .then((result) => {
+                    this.addNetInfoListener((isConnected: boolean) => {
+                        this.online = isConnected;
+                        if (isConnected && !this.isManualExecution()) {
+                            this.process();
+                        }
+                    });
+                    const isConnected = result[0];
                     this.online = isConnected;
                     if (isConnected && !this.isManualExecution()) {
                         this.process();
                     }
+                    this.notify();
+                    this.rehydrated = true;
+                    return true;
+                })
+                .catch((error) => {
+                    this.rehydrated = false;
+                    this.promisesRestore = null;
+                    throw error;
                 });
-                const isConnected = result[0];
-                this.online = isConnected;
-                if (isConnected && !this.isManualExecution()) {
-                    this.process();
-                }
-                this.notify();
-                this.rehydrated = true;
-                return true;
-            })
-            .catch((error) => {
-                this.rehydrated = false;
-                throw error;
-            });
+        }
+
         return this.promisesRestore;
     }
 
@@ -163,7 +164,7 @@ class OfflineFirst<T> {
                 try {
                     for (const mutation of listMutation) {
                         const processMutation = await onExecute(mutation);
-                        if (!processMutation.state) {
+                        if (processMutation) {
                             if (!processMutation.serial) {
                                 parallelPromises.push(this.executeMutation(processMutation));
                             } else {
@@ -193,13 +194,11 @@ class OfflineFirst<T> {
     public executeMutation(offlineRecord: OfflineRecordCache<T>): Promise<void> {
         const { execute, onComplete, onDiscard } = this.offlineOptions;
         const { id } = offlineRecord;
-        offlineRecord.state = 'start';
         offlineRecord.error = undefined;
         offlineRecord.retry = offlineRecord.retry ? offlineRecord.retry + 1 : 0;
         return this.set(id, { ...offlineRecord }).then(() => {
             return execute(offlineRecord)
                 .then(async (response) => {
-                    offlineRecord.state = 'complete';
                     offlineRecord.error = undefined;
                     return onComplete({ offlineRecord, response }).then((complete) => {
                         if (complete) {

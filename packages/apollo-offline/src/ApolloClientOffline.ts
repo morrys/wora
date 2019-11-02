@@ -12,13 +12,17 @@ export type OfflineApolloClientOptions = Omit<ApolloClientOptions<NormalizedCach
 
 class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
     private apolloStoreOffline: IApolloStoreOffline;
-    private rehydrated = false;
+    private rehydrated = typeof window === 'undefined';
+    private promisesRestore;
 
     constructor(apolloOptions: OfflineApolloClientOptions, persistOptions: CacheOptions = {}) {
         super(apolloOptions);
-        (this.queryManager as any).isOnline = true;
+        (this.queryManager as any).isOnline = typeof window === 'undefined';
         this.apolloStoreOffline = ApolloStoreOffline.create(persistOptions);
         this.setOfflineOptions();
+        if (this.rehydrated) {
+            this.promisesRestore = Promise.resolve(true);
+        }
         this.getStoreOffline().addNetInfoListener((isConnected: boolean) => {
             (this.queryManager as any).isOnline = isConnected;
         });
@@ -35,23 +39,25 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
         };
     }
 
-    public setOfflineOptions(offlineOptions?: OfflineOptions<Payload>) {
+    public setOfflineOptions(offlineOptions?: OfflineOptions<Payload>): void {
         this.apolloStoreOffline.setOfflineOptions(this, offlineOptions);
     }
 
     public hydrate(): Promise<boolean> {
-        if (this.rehydrated) {
-            return Promise.resolve(true);
+        if (!this.promisesRestore) {
+            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloStore).hydrate()])
+                .then((_result) => {
+                    this.rehydrated = true;
+                    return true;
+                })
+                .catch((error) => {
+                    this.rehydrated = false;
+                    this.promisesRestore = null;
+                    throw error;
+                });
         }
-        return Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloStore).hydrate()])
-            .then((_result) => {
-                this.rehydrated = true;
-                return true;
-            })
-            .catch((error) => {
-                this.rehydrated = false;
-                throw error;
-            });
+
+        return this.promisesRestore;
     }
 
     public getStoreOffline(): OfflineFirst<any> {
@@ -83,14 +89,5 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
         return super.mutate(options);
     }
 }
-
-/*
-const client = new OfflineApolloClient({
-  link: httpLink,
-  cache: new ApolloCache({
-    dataIdFromObject: o => o.id
-  })
-});
-*/
 
 export default OfflineApolloClient;
