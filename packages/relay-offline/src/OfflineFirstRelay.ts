@@ -1,6 +1,5 @@
 import { CacheOptions } from '@wora/cache-persist';
 import { v4 as uuid } from 'uuid';
-import RelayModernEnvironment from './RelayModernEnvironment';
 import * as RelayModernQueryExecutor from 'relay-runtime/lib/store/RelayModernQueryExecutor';
 import resolveImmediate from 'relay-runtime/lib/util/resolveImmediate';
 
@@ -18,41 +17,54 @@ export type OfflineOptions<T> = Omit<OfflineFirstOptions<T>, 'execute'> & {
     network?: Network;
 };
 
+export interface IRelayStoreOffline {
+    storeOffline: OfflineFirst<Payload>;
+    publish: (environment, mutationOptions) => any;
+    setOfflineOptions: (environment, offlineOptions?: OfflineOptions<Payload>) => void;
+}
+
 class RelayStoreOffline {
-    public static create<Payload>(
-        environment: RelayModernEnvironment,
-        persistOptions: CacheOptions = {},
-        offlineOptions: OfflineOptions<Payload> = {},
-    ): OfflineFirst<Payload> {
-        const persistOptionsStoreOffline = {
-            prefix: 'relay-offline',
-            serialize: true,
-            ...persistOptions,
-        };
+    public static create(persistOptions: CacheOptions = {}): IRelayStoreOffline {
+        {
+            const persistOptionsStoreOffline = {
+                prefix: 'relay-offline',
+                serialize: true,
+                ...persistOptions,
+            };
 
-        const { onComplete, onDiscard, network, manualExecution, finish, onPublish } = offlineOptions;
-
-        const options: OfflineFirstOptions<Payload> = {
-            manualExecution,
-            execute: (offlineRecord: any) => executeMutation(environment, network, offlineRecord),
-            onComplete: (options: any) => complete(environment, onComplete, options),
-            onDiscard: (options: any) => discard(environment, onDiscard, options),
-        };
-        if (onPublish) {
-            options.onPublish = onPublish;
+            const storeOffline = new OfflineFirst<Payload>(persistOptionsStoreOffline);
+            return {
+                storeOffline,
+                publish,
+                setOfflineOptions,
+            };
         }
-        if (finish) {
-            options.finish = finish;
-        }
-        return new OfflineFirst(options, persistOptionsStoreOffline);
     }
+}
+
+function setOfflineOptions(environment, offlineOptions: OfflineOptions<Payload> = {}) {
+    const { onComplete, onDiscard, network, manualExecution, finish, onPublish } = offlineOptions;
+
+    const options: OfflineFirstOptions<Payload> = {
+        manualExecution,
+        execute: (offlineRecord: any) => executeMutation(environment, network, offlineRecord),
+        onComplete: (options: any) => complete(environment, onComplete, options),
+        onDiscard: (options: any) => discard(environment, onDiscard, options),
+    };
+    if (onPublish) {
+        options.onPublish = onPublish;
+    }
+    if (finish) {
+        options.finish = finish;
+    }
+    environment.getStoreOffline().setOfflineOptions(options);
 }
 
 function complete(
     environment,
-    onComplete = (_o): boolean => true,
+    onComplete = (_o): Promise<boolean> => Promise.resolve(true),
     options: { offlineRecord: OfflineRecordCache<Payload>; response: any },
-): boolean {
+): Promise<boolean> {
     const { offlineRecord, response } = options;
     const {
         request: { payload },
@@ -64,31 +76,23 @@ function complete(
 }
 
 function discard(
-    environment,
-    onDiscard = (_o): boolean => true,
+    _environment,
+    onDiscard = (_o): Promise<boolean> => Promise.resolve(true),
     options: { offlineRecord: OfflineRecordCache<Payload>; error: any },
-): boolean {
+): Promise<boolean> {
     const { offlineRecord, error } = options;
     const { id } = offlineRecord;
-    if (onDiscard({ id, offlinePayload: offlineRecord, error })) {
-        const {
-            request: { backup },
-        } = offlineRecord;
-        environment.getStore().publish(backup);
-        environment.getStore().notify();
-        return true;
-    } else {
-        return false;
-    }
+    return onDiscard({ id, offlinePayload: offlineRecord, error });
 }
 
-async function executeMutation(environment, network = environment.getNetwork(), offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
+function executeMutation(environment, network = environment.getNetwork(), offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
     const {
         request: { payload },
     } = offlineRecord;
     const operation = payload.operation;
     const uploadables = payload.uploadables;
-    return network.execute(operation.node.params, operation.variables, { force: true, metadata: offlineRecord }, uploadables).toPromise();
+    const request = operation.request ? operation.request : operation;
+    return network.execute(request.node.params, request.variables, { force: true, metadata: offlineRecord }, uploadables).toPromise();
 }
 
 export function publish(environment, mutationOptions): any {
@@ -104,9 +108,7 @@ export function publish(environment, mutationOptions): any {
             };
         }
         const store = environment.getStore();
-        const originalNotify = store.notify;
         const originalPublish = store.publish;
-        store.notify = function() {};
         let backup;
         let sinkPublish;
 
@@ -122,7 +124,6 @@ export function publish(environment, mutationOptions): any {
                 sink.next({
                     data: optimisticResponse ? optimisticResponse : {},
                 });
-                store.notify = originalNotify;
                 store.publish = originalPublish;
 
                 const id = uuid();
@@ -139,8 +140,7 @@ export function publish(environment, mutationOptions): any {
                 environment
                     .getStoreOffline()
                     .publish({ id, request, serial: true })
-                    .then((offlineRecord) => {
-                        environment.getStore().notify();
+                    .then((_offlineRecord) => {
                         environment.getStoreOffline().notify();
                         sink.complete();
                     })

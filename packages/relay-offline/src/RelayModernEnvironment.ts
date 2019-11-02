@@ -7,17 +7,18 @@ import { CacheOptions } from '@wora/cache-persist';
 
 import { NormalizationSelector, Disposable } from 'relay-runtime';
 
-import StoreOffline, { OfflineOptions, Payload, publish } from './OfflineFirstRelay';
+import StoreOffline, { OfflineOptions, Payload, IRelayStoreOffline } from './OfflineFirstRelay';
 import OfflineFirst from '@wora/offline-first';
 
 class RelayModernEnvironment extends Environment {
-    private _isRestored: boolean;
-    private _storeOffline: OfflineFirst<Payload>;
+    private _rehydrated: boolean;
+    private _relayStoreOffline: IRelayStoreOffline;
 
-    constructor(config: EnvironmentConfig, offlineOptions: OfflineOptions<Payload> = {}, persistOfflineOptions: CacheOptions = {}) {
+    constructor(config: EnvironmentConfig, persistOfflineOptions: CacheOptions = {}) {
         super(config);
-        this._storeOffline = StoreOffline.create(this, persistOfflineOptions, offlineOptions);
-        (this as any)._store.setCheckGC(() => this.isOnline());
+        this._relayStoreOffline = StoreOffline.create(persistOfflineOptions);
+        this.setOfflineOptions();
+        (this as any)._store.setCheckGC(() => this.isOnline()); // todo refactor use listener & holdgc
     }
 
     public clearCache(): Promise<boolean> {
@@ -26,38 +27,38 @@ class RelayModernEnvironment extends Environment {
         });
     }
 
-    public restore(): Promise<boolean> {
-        if (this._isRestored) {
+    public setOfflineOptions(offlineOptions?: OfflineOptions<Payload>) {
+        this._relayStoreOffline.setOfflineOptions(this, offlineOptions);
+    }
+
+    public hydrate(): Promise<boolean> {
+        if (this._rehydrated) {
             return Promise.resolve(true);
         }
-        return Promise.all([this._storeOffline.restore(), ((this as any)._store as Store).hydrated()])
+        return Promise.all([this.getStoreOffline().hydrate(), ((this as any)._store as Store).hydrate()])
             .then((_result) => {
-                this._isRestored = true;
+                this._rehydrated = true;
                 const updateRecords = (this as any)._store.__getUpdatedRecordIDs();
                 Object.keys((this as any)._store.getSource().toJSON()).forEach((key) => (updateRecords[key] = true));
                 (this as any)._store.notify();
                 return true;
             })
             .catch((error) => {
-                this._isRestored = false;
+                this._rehydrated = false;
                 throw error;
             });
     }
 
-    public isRestored(): boolean {
-        return this._isRestored;
-    }
-
     public isRehydrated(): boolean {
-        return this._isRestored; // && this._storeOffline.getState()[NORMALIZED_REHYDRATED];
+        return this._rehydrated; // && this._storeOffline.getState()[NORMALIZED_REHYDRATED];
     }
 
     public isOnline(): boolean {
-        return this._storeOffline.isOnline();
+        return this.getStoreOffline().isOnline();
     }
 
     public getStoreOffline(): OfflineFirst<Payload> {
-        return this._storeOffline;
+        return this._relayStoreOffline.storeOffline;
     }
 
     public retain(selector: NormalizationSelector, configRetain): Disposable {
@@ -86,7 +87,7 @@ class RelayModernEnvironment extends Environment {
             return super.executeMutation(mutationOptions);
         } else {
             return RelayObservable.create((sink) => {
-                publish(this, mutationOptions).subscribe({
+                this._relayStoreOffline.publish(this, mutationOptions).subscribe({
                     complete: () => sink.complete(),
                     error: (error) => sink.error(error),
                     next: (response) => sink.next(response),

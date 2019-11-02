@@ -1,8 +1,8 @@
 import { InMemoryCache, InMemoryCacheConfig } from 'apollo-cache-inmemory';
-import Cache, { CacheOptions } from '@wora/cache-persist';
+import Cache, { ICache, CacheOptions } from '@wora/cache-persist';
 
 interface IPersistImpl {
-    hydrated(): Promise<Cache>;
+    hydrate(): Promise<ICache>;
 }
 
 class ApolloCache extends InMemoryCache implements IPersistImpl {
@@ -20,14 +20,12 @@ class ApolloCache extends InMemoryCache implements IPersistImpl {
             [key: string]: any;
         }> => this.cache.getState();
         (this.cache as any).clear = (): void => this.cache.purge();
+        (this as any).data = this.cache;
+        (this as any).optimisticData = this.cache;
     }
 
-    public hydrated(): Promise<Cache> {
-        return Promise.all([this.cache.restore()]).then((result) => {
-            (this as any).data = result[0];
-            (this as any).optimisticData = result[0];
-            return (this as any).data;
-        });
+    public hydrate(): Promise<ICache> {
+        return this.cache.restore();
     }
 }
 

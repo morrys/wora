@@ -40,7 +40,7 @@ export default class Store extends RelayModernStore {
         return Promise.all([this._cache.flush(), (this as any)._recordSource.purge()]);
     }
 
-    public hydrated(): Promise<Cache[]> {
+    public hydrate(): Promise<Cache[]> {
         return Promise.all([this._cache.restore(), (this as any)._recordSource.restore()]);
     }
 

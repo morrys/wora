@@ -1,5 +1,6 @@
 import Cache, { CacheOptions, ICache } from '@wora/cache-persist';
 import { NetInfo } from '@wora/netinfo';
+import ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
 
 export type Request<T> = {
     payload: T;
@@ -20,22 +21,37 @@ export type OfflineRecordCache<T> = {
 export type OfflineFirstOptions<T> = {
     manualExecution?: boolean;
     execute: (offlineRecord: OfflineRecordCache<T>) => Promise<any>;
-    finish?: (success: boolean, mutations: ReadonlyArray<OfflineRecordCache<T>>) => void;
-    onComplete?: (options: { offlineRecord: OfflineRecordCache<T>; response: any }) => boolean;
-    onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>; error: any }) => boolean;
-    onPublish?: (offlineRecord: OfflineRecordCache<T>) => OfflineRecordCache<T>;
+    start?: (mutations: ReadonlyArray<OfflineRecordCache<T>>) => Promise<void>;
+    onExecute?: (mutation: OfflineRecordCache<T>) => Promise<OfflineRecordCache<T>>;
+    finish?: (mutations: ReadonlyArray<OfflineRecordCache<T>>, error?: Error) => Promise<void>;
+    onComplete?: (options: { offlineRecord: OfflineRecordCache<T>; response: any }) => Promise<boolean>;
+    onDiscard?: (options: { offlineRecord: OfflineRecordCache<T>; error: any }) => Promise<boolean>;
+    onPublish?: (offlineRecord: OfflineRecordCache<T>) => Promise<OfflineRecordCache<T>>;
     compare?: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => number;
     // onDispatch?: (request: any) => any;
+};
+
+const defaultOfflineOptions = {
+    manualExecution: false,
+    start: (mutations) => Promise.resolve(undefined),
+    finish: (_mutations, _error) => Promise.resolve(undefined),
+    onExecute: (mutation) => Promise.resolve(mutation),
+    onComplete: (_options) => Promise.resolve(true),
+    onDiscard: (_options) => Promise.resolve(true),
+    compare: (v1, v2) => v1.fetchTime - v2.fetchTime,
+    onPublish: (offlineRecord) => Promise.resolve(offlineRecord),
+    execute: (_offlineRecord) => Promise.reject(new Error('set execute offline options')),
 };
 
 class OfflineFirst<T> {
     private offlineStore: ICache;
     private busy = false;
-    private offlineOptions: OfflineFirstOptions<T>;
-    private online = false;
-    private rehydrated = false;
+    private offlineOptions: OfflineFirstOptions<T> = defaultOfflineOptions;
+    private online = !ExecutionEnvironment.canUseDOM;
+    private rehydrated = !ExecutionEnvironment.canUseDOM;
+    private promisesRestore;
 
-    constructor(offlineOptions?: OfflineFirstOptions<T>, persistOptions: CacheOptions = {}) {
+    constructor(persistOptions: CacheOptions = {}) {
         const persistOptionsStoreOffline = {
             prefix: 'offline-first',
             serialize: true,
@@ -43,17 +59,11 @@ class OfflineFirst<T> {
         };
 
         this.offlineStore = new Cache(persistOptionsStoreOffline);
+    }
+
+    public setOfflineOptions(offlineOptions?: OfflineFirstOptions<T>) {
         this.offlineOptions = {
-            manualExecution: false,
-            finish: (_success, _mutations) => undefined,
-            onComplete: (_options: { offlineRecord: OfflineRecordCache<T>; response: any }) => {
-                return true;
-            },
-            onDiscard: (_options: { offlineRecord: OfflineRecordCache<T>; error: any }) => {
-                return true;
-            },
-            compare: (v1: OfflineRecordCache<T>, v2: OfflineRecordCache<T>) => v1.fetchTime - v2.fetchTime,
-            onPublish: (offlineRecord) => offlineRecord,
+            ...defaultOfflineOptions,
             ...offlineOptions,
             // onDispatch: (request: any) => undefined,
         } as OfflineFirstOptions<T>;
@@ -79,18 +89,21 @@ class OfflineFirst<T> {
         return NetInfo.addEventListener((netinfo: any) => callback(netinfo));
     }
 
-    public restore(): Promise<boolean> {
-        if (this.rehydrated) {
-            return Promise.resolve(true);
+    public hydrate(): Promise<boolean> {
+        if (this.promisesRestore) {
+            return this.promisesRestore;
         }
-        this.addNetInfoListener((isConnected: boolean) => {
-            this.online = isConnected;
-            if (isConnected && !this.isManualExecution()) {
-                this.process();
-            }
-        });
-        return Promise.all([NetInfo.isConnected.fetch(), this.offlineStore.restore()])
+        if (this.rehydrated) {
+            this.promisesRestore = Promise.resolve(true);
+        }
+        this.promisesRestore = Promise.all([NetInfo.isConnected.fetch(), this.offlineStore.restore()])
             .then((result) => {
+                this.addNetInfoListener((isConnected: boolean) => {
+                    this.online = isConnected;
+                    if (isConnected && !this.isManualExecution()) {
+                        this.process();
+                    }
+                });
                 const isConnected = result[0];
                 this.online = isConnected;
                 if (isConnected && !this.isManualExecution()) {
@@ -104,6 +117,7 @@ class OfflineFirst<T> {
                 this.rehydrated = false;
                 throw error;
             });
+        return this.promisesRestore;
     }
 
     public isOnline(): boolean {
@@ -125,7 +139,12 @@ class OfflineFirst<T> {
 
     public remove(id: string): Promise<void> {
         this.offlineStore.remove(id);
-        return this.offlineStore.flush();
+        return this.offlineStore.flush().then(() => this.notify());
+    }
+
+    public set(id: string, value: OfflineRecordCache<T>): Promise<void> {
+        this.offlineStore.set(id, value);
+        return this.offlineStore.flush().then(() => this.notify());
     }
 
     public getListMutation(): ReadonlyArray<OfflineRecordCache<T>> {
@@ -134,89 +153,85 @@ class OfflineFirst<T> {
         return Object.values<OfflineRecordCache<T>>(requests).sort(compare);
     }
 
-    public async process(): Promise<void> {
+    public process(): Promise<void> {
         if (!this.busy) {
             this.busy = true;
-            const { finish } = this.offlineOptions;
+            const { start, finish, onExecute } = this.offlineOptions;
             const listMutation: ReadonlyArray<OfflineRecordCache<T>> = this.getListMutation();
             let parallelPromises = [];
-            let isSuccess = true;
-            for (const mutation of listMutation) {
-                if (!mutation.state) {
-                    if (!mutation.serial) {
-                        parallelPromises.push(this.executeMutation(mutation));
-                    } else {
-                        isSuccess = await Promise.all(parallelPromises)
-                            .then(() =>
-                                this.executeMutation(mutation)
-                                    .then((result) => result)
-                                    .catch((_error) => false),
-                            )
-                            .catch(() => false);
-                        parallelPromises = [];
-                        if (!isSuccess) break;
+            return start(listMutation).then(async () => {
+                try {
+                    for (const mutation of listMutation) {
+                        const processMutation = await onExecute(mutation);
+                        if (!processMutation.state) {
+                            if (!processMutation.serial) {
+                                parallelPromises.push(this.executeMutation(processMutation));
+                            } else {
+                                await Promise.all(parallelPromises)
+                                    .then(() => this.executeMutation(processMutation))
+                                    .catch((error) => {
+                                        throw error;
+                                    });
+                                parallelPromises = [];
+                            }
+                        }
                     }
+                    if (parallelPromises.length > 0) {
+                        await Promise.all(parallelPromises);
+                    }
+                    return finish(this.getListMutation());
+                    // TODO verify the execution of all mutations to natively implement retry logics
+                } catch (error) {
+                    return finish(this.getListMutation(), error);
+                } finally {
+                    this.busy = false;
                 }
-            }
-            if (isSuccess && parallelPromises.length > 0) {
-                isSuccess = await Promise.all(parallelPromises)
-                    .then(() => true)
-                    .catch(() => false);
-            }
-            await finish(isSuccess, this.getListMutation());
-            // TODO verify the execution of all mutations to natively implement retry logics
-            this.busy = false;
+            });
         }
     }
 
-    public async executeMutation(offlineRecord: any): Promise<boolean> {
+    public executeMutation(offlineRecord: OfflineRecordCache<T>): Promise<void> {
         const { execute, onComplete, onDiscard } = this.offlineOptions;
         const { id } = offlineRecord;
         offlineRecord.state = 'start';
         offlineRecord.error = undefined;
         offlineRecord.retry = offlineRecord.retry ? offlineRecord.retry + 1 : 0;
-        await this.offlineStore.set(id, { ...offlineRecord });
-        this.notify();
-        return execute(offlineRecord)
-            .then(async (response) => {
-                offlineRecord.state = 'complete';
-                offlineRecord.error = undefined;
-                if (await onComplete({ offlineRecord, response })) {
-                    this.remove(id);
-                } else {
-                    this.offlineStore.set(id, { ...offlineRecord });
-                }
-                this.notify();
-                return true;
-            })
-            .catch(async (error) => {
-                offlineRecord.error = error;
-                if (await onDiscard({ offlineRecord, error })) {
-                    this.remove(id);
-                    this.notify();
-                    return true;
-                }
-                this.offlineStore.set(id, { ...offlineRecord });
-                this.notify();
-                throw error;
-            });
+        return this.set(id, { ...offlineRecord }).then(() => {
+            return execute(offlineRecord)
+                .then(async (response) => {
+                    offlineRecord.state = 'complete';
+                    offlineRecord.error = undefined;
+                    return onComplete({ offlineRecord, response }).then((complete) => {
+                        if (complete) {
+                            return this.remove(id);
+                        }
+                        return this.set(id, { ...offlineRecord });
+                    });
+                })
+                .catch((error) => {
+                    offlineRecord.error = error;
+                    return onDiscard({ offlineRecord, error }).then((discard) => {
+                        if (discard) {
+                            return this.remove(id);
+                        }
+                        return this.set(id, { ...offlineRecord });
+                    });
+                });
+        });
     }
 
-    public async publish(options: { id?: string; request: Request<T>; serial?: boolean }): Promise<OfflineRecordCache<T>> {
+    public publish(options: { id?: string; request: Request<T>; serial?: boolean }): Promise<OfflineRecordCache<T>> {
         const { onPublish } = this.offlineOptions;
         const id = options.id ? options.id : `${this.offlineStore.getAllKeys().length}`;
         const { request, serial } = options;
         const fetchTime = Date.now();
-        const offlineRecord: OfflineRecordCache<T> = onPublish({ id, request, fetchTime, serial });
-        this.offlineStore.set(offlineRecord.id, offlineRecord);
-        return this.offlineStore
-            .flush()
-            .then(() => {
-                return offlineRecord;
-            })
-            .catch((error) => {
-                throw error;
-            });
+        return onPublish({ id, request, fetchTime, serial }).then((offlineRecord) => {
+            return this.set(offlineRecord.id, offlineRecord)
+                .then(() => offlineRecord)
+                .catch((error) => {
+                    throw error;
+                });
+        });
     }
 }
 
