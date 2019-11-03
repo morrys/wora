@@ -1,10 +1,9 @@
 import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
 import IDBStorage, { IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
-import { EnvironmentConfig } from 'relay-runtime/lib/RelayModernEnvironment';
+import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironment';
 import { Store, RecordSource } from '@wora/relay-store';
-import { Scheduler, OperationLoader } from 'relay-runtime/lib/RelayStoreTypes';
+import { Scheduler, OperationLoader } from 'relay-runtime/lib/store/RelayStoreTypes';
 import RelayModernEnvironment from './RelayModernEnvironment';
-import { OfflineOptions, Payload } from './OfflineFirstRelay';
 import { CacheOptionsStore } from '@wora/relay-store/lib/Store';
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
@@ -13,7 +12,6 @@ type EnvironmentOfflineConfig = Omit<EnvironmentConfig, 'store'>; // Equivalent 
 class EnvironmentIDB {
     public static create(
         config: EnvironmentOfflineConfig,
-        offlineOptions: OfflineOptions<Payload>,
         idbOptions: {
             name?: string;
             onUpgrade?: IOnUpgrade;
@@ -64,7 +62,7 @@ class EnvironmentIDB {
         }
         const recordSource = new RecordSource(idbRecords);
         const store = new Store(recordSource, idbStore, gcScheduler, operationLoader, getDataID);
-        return new RelayModernEnvironment({ ...config, store }, offlineOptions, idbOffline);
+        return new RelayModernEnvironment({ ...config, store }, idbOffline);
     }
 }
 

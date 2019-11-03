@@ -109,47 +109,54 @@ const httpLinkOffline = new HttpLink({
   uri: "http://localhost:4000/graphql"
 });
 
-
-const offlineOptions = {
-  manualExecution: false, //optional
-  link: httpLinkOffline, //optional
-  finish: (isSuccess, mutations) => { //optional
-    console.log("finish offline", isSuccess, mutations)
-  },
-  onComplete: (options ) => { //optional
-    const { id, offlinePayload, response } = options;
-    return true;
-  },
-  onDiscard: ( options ) => { //optional
-    const { id, offlinePayload , error } = options;
-    return true;
-  },
-  onPublish: (offlinePayload) => { //optional
-    const rand = Math.floor(Math.random() * 4) + 1  
-    offlinePayload.serial = rand===1;
-    console.log("offlinePayload", offlinePayload.serial)
-    console.log("offlinePayload", offlinePayload)
-    return offlinePayload
-  }
-};
-
 const client = new ApolloClient({
   link: httpLink,
   cache: new ApolloCache({
     dataIdFromObject: o => o.id
   })
-}, offlineOptions);
+});
+client.setOfflineOptions({
+  manualExecution: false, //optional
+  link: httpLinkOffline, //optional
+  start: async (mutations) => { //optional
+    console.log("start offline", mutations)
+    return mutations;
+  },
+  finish: async (mutations, error) => { //optional
+    console.log("finish offline", error, mutations)
+  },
+  onExecute: async (mutation) => { //optional
+    console.log("onExecute offline", mutation)
+    return mutation;
+  },
+  onComplete: async (options ) => { //optional
+    console.log("onComplete offline", options)
+    return true;
+  },
+  onDiscard: async ( options ) => { //optional
+    console.log("onDiscard offline", options)
+    return true;
+  },
+  onPublish: async (offlinePayload) => { //optional
+    console.log("offlinePayload", offlinePayload)
+    return offlinePayload
+  }
+};)
 
 
 // await before instantiating Query, else queries might run before the cache is persisted, TODO ApolloProviderOffline
-await client.hydrated(): Promise<boolean>
+await client.hydrate(): Promise<boolean>
 
 ```
 * manualExecution: if set to true, mutations in the queue are no longer performed automatically as soon as you go back online. invoke manually: `client.getStoreOffline().process();`
 
 * link: it is possible to configure a different link for the execution of mutations in the queue
 
+* start: function that is called once the request queue has been started.
+
 * finish: function that is called once the request queue has been processed.
+
+* onExecute: function that is called before the request is sent to the network.
 
 * onPublish: function that is called before saving the mutation in the store
 
@@ -206,7 +213,7 @@ const client = new ApolloClient({
   cache: new ApolloCache({
     dataIdFromObject: o => o.id
   })
-}, {}, persistOfflineOptions);
+}, persistOfflineOptions);
 ```
 
 [CacheOptions](Caching-CachePersist.md#cache-options)

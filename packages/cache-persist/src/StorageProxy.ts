@@ -41,6 +41,7 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
     if (disable) {
         return NoStorageProxy;
     }
+    let restored = false;
     let timerId = null;
     let inExecution = false;
     let resolveFlush;
@@ -125,6 +126,7 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
                     const valueMutate = mutateValue.get(value);
                     result[keyMutate] = valueMutate;
                 }
+                restored = true;
                 return result;
             });
     }
@@ -134,7 +136,7 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
             start();
         }*/
         const newKey = mutateKey.set(key);
-        if (newKey) {
+        if (newKey && restored) {
             queue.push(`${key}${SPLIT}${newKey}`);
             debounced();
         }

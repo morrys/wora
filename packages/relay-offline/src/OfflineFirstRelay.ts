@@ -1,21 +1,9 @@
 import { CacheOptions } from '@wora/cache-persist';
 import { v4 as uuid } from 'uuid';
-import { Network } from 'relay-runtime/lib/RelayStoreTypes';
-import RelayModernEnvironment from './RelayModernEnvironment';
-import { ROOT_TYPE } from 'relay-runtime/lib/RelayStoreUtils';
-import RelayInMemoryRecordSource from 'relay-runtime/lib/RelayInMemoryRecordSource';
-import RelayModernRecord from 'relay-runtime/lib/RelayModernRecord';
-import RelayResponseNormalizer from 'relay-runtime/lib/RelayResponseNormalizer';
-import { GetDataID } from 'relay-runtime/lib/RelayResponseNormalizer';
-import ErrorUtils from 'fbjs/lib/ErrorUtils';
-import RelayRecordSourceMutator from 'relay-runtime/lib/RelayRecordSourceMutator';
-import RelayRecordSourceProxy from 'relay-runtime/lib/RelayRecordSourceProxy';
-import RelayReader from 'relay-runtime/lib/RelayReader';
-import normalizeRelayPayload from 'relay-runtime/lib/normalizeRelayPayload';
-import { GraphQLResponseWithData } from 'relay-runtime/lib/RelayNetworkTypes';
-import { NormalizationSelector, RelayResponsePayload } from 'relay-runtime/lib/RelayStoreTypes';
+import * as RelayModernQueryExecutor from 'relay-runtime/lib/store/RelayModernQueryExecutor';
+import resolveImmediate from 'relay-runtime/lib/util/resolveImmediate';
 
-import { Observable as RelayObservable } from 'relay-runtime';
+import { Network, Observable as RelayObservable } from 'relay-runtime';
 import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache, Request } from '@wora/offline-first';
 
 export type Payload = {
@@ -29,41 +17,48 @@ export type OfflineOptions<T> = Omit<OfflineFirstOptions<T>, 'execute'> & {
     network?: Network;
 };
 
+export interface IRelayStoreOffline {
+    storeOffline: OfflineFirst<Payload>;
+    publish: (environment, mutationOptions) => any;
+    setOfflineOptions: (environment, offlineOptions?: OfflineOptions<Payload>) => void;
+}
+
 class RelayStoreOffline {
-    public static create<Payload>(
-        environment: RelayModernEnvironment,
-        persistOptions: CacheOptions = {},
-        offlineOptions: OfflineOptions<Payload> = {},
-    ): OfflineFirst<Payload> {
-        const persistOptionsStoreOffline = {
-            prefix: 'relay-offline',
-            serialize: true,
-            ...persistOptions,
-        };
+    public static create(persistOptions: CacheOptions = {}): IRelayStoreOffline {
+        {
+            const persistOptionsStoreOffline = {
+                prefix: 'relay-offline',
+                serialize: true,
+                ...persistOptions,
+            };
 
-        const { onComplete, onDiscard, network, manualExecution, finish, onPublish } = offlineOptions;
-
-        const options: OfflineFirstOptions<Payload> = {
-            manualExecution,
-            execute: (offlineRecord: any) => executeMutation(environment, network, offlineRecord),
-            onComplete: (options: any) => complete(environment, onComplete, options),
-            onDiscard: (options: any) => discard(environment, onDiscard, options),
-        };
-        if (onPublish) {
-            options.onPublish = onPublish;
+            const storeOffline = new OfflineFirst<Payload>(persistOptionsStoreOffline);
+            return {
+                storeOffline,
+                publish,
+                setOfflineOptions,
+            };
         }
-        if (finish) {
-            options.finish = finish;
-        }
-        return new OfflineFirst(options, persistOptionsStoreOffline);
     }
+}
+
+function setOfflineOptions(environment, offlineOptions: OfflineOptions<Payload> = {}): void {
+    const { onComplete, onDiscard, network, ...others } = offlineOptions;
+
+    const options: OfflineFirstOptions<Payload> = {
+        execute: (offlineRecord: any) => executeMutation(environment, network, offlineRecord),
+        onComplete: (options: any) => complete(environment, onComplete, options),
+        onDiscard: (options: any) => discard(environment, onDiscard, options),
+        ...others,
+    };
+    environment.getStoreOffline().setOfflineOptions(options);
 }
 
 function complete(
     environment,
-    onComplete = (_o): boolean => true,
+    onComplete = (_o): Promise<boolean> => Promise.resolve(true),
     options: { offlineRecord: OfflineRecordCache<Payload>; response: any },
-): boolean {
+): Promise<boolean> {
     const { offlineRecord, response } = options;
     const {
         request: { payload },
@@ -75,144 +70,93 @@ function complete(
 }
 
 function discard(
-    environment,
-    onDiscard = (_o): boolean => true,
+    _environment,
+    onDiscard = (_o): Promise<boolean> => Promise.resolve(true),
     options: { offlineRecord: OfflineRecordCache<Payload>; error: any },
-): boolean {
+): Promise<boolean> {
     const { offlineRecord, error } = options;
     const { id } = offlineRecord;
-    if (onDiscard({ id, offlinePayload: offlineRecord, error })) {
-        const {
-            request: { backup },
-        } = offlineRecord;
-        environment.getStore().publish(backup);
-        environment.getStore().notify();
-        return true;
-    } else {
-        return false;
-    }
+    return onDiscard({ id, offlinePayload: offlineRecord, error });
 }
 
-async function executeMutation(environment, network = environment.getNetwork(), offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
+function executeMutation(environment, network = environment.getNetwork(), offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
     const {
         request: { payload },
     } = offlineRecord;
     const operation = payload.operation;
     const uploadables = payload.uploadables;
-    return network.execute(operation.node.params, operation.variables, { force: true, metadata: offlineRecord }, uploadables).toPromise();
+    const request = operation.request ? operation.request : operation;
+    return network.execute(request.node.params, request.variables, { force: true, metadata: offlineRecord }, uploadables).toPromise();
 }
 
 export function publish(environment, mutationOptions): any {
     // TODO type observable
     return RelayObservable.create((sink) => {
         const { operation, optimisticResponse, optimisticUpdater, updater, uploadables } = mutationOptions;
-
-        const backup = new RelayInMemoryRecordSource();
-
+        let optimisticConfig;
         if (optimisticResponse || optimisticUpdater) {
-            const sink = new RelayInMemoryRecordSource();
-            const mutator = new RelayRecordSourceMutator(environment.getStore().getSource(), sink, backup);
-            const store = new RelayRecordSourceProxy(mutator, environment._getDataID);
-            const response = optimisticResponse || null;
-            const selectorStoreUpdater = optimisticUpdater;
-            const selectorStore = store.commitPayload(operation, response);
-            // TODO: Fix commitPayload so we don't have to run normalize twice
-            let selectorData, source;
-            if (response) {
-                ({ source } = normalizeRelayPayload(operation.root, response, null, {
-                    getDataID: environment._getDataID,
-                }));
-                selectorData = RelayReader.read(source, operation.fragment, operation).data;
-            }
-            selectorStoreUpdater &&
-                ErrorUtils.applyWithGuard(
-                    selectorStoreUpdater,
-                    null,
-                    [selectorStore, selectorData],
-                    null,
-                    'RelayPublishQueue:applyUpdates',
-                );
-        }
-        let sinkPublish = new RelayInMemoryRecordSource();
-        if (optimisticResponse) {
-            const normalizePayload = normalizeResponse({ data: optimisticResponse }, operation.root, ROOT_TYPE, [], environment._getDataID);
-            const { fieldPayloads, source } = normalizePayload;
-            // updater only for configs
-            sinkPublish = environment._publishQueue._getSourceFromPayload({
-                fieldPayloads,
+            optimisticConfig = {
                 operation,
-                source,
-                updater,
-            });
-            //environment._publishQueue.commitPayload(operation, payload, configs ? updater : null);
-            //environment._publishQueue.run();
+                response: optimisticResponse,
+                updater: optimisticUpdater,
+            };
         }
-        /*
-        //environment.
-        //environment.applyUpdate(optimisticUpdate);*/
+        const source = RelayObservable.create((sink) => {
+            resolveImmediate(() => {
+                // come recuperare i dati che sono stati inseriti? override del publish? dello store?
+                const sinkPublish = environment
+                    .getStore()
+                    .getSource()
+                    ._sink.toJSON();
+                const backup = {};
+                Object.keys(sinkPublish).forEach(
+                    (key) =>
+                        (backup[key] = environment
+                            .getStore()
+                            .getSource()
+                            ._base.get(key)),
+                );
 
-        if (!optimisticResponse && optimisticUpdater) {
-            const mutator = new RelayRecordSourceMutator(environment.getStore().getSource(), sinkPublish);
-            const store = new RelayRecordSourceProxy(mutator, environment._getDataID);
-            ErrorUtils.applyWithGuard(optimisticUpdater, null, [store], null, 'RelayPublishQueue:commitUpdaters');
-            /*    
-            if (optimisticUpdater != null) {
-                optimisticUpdater(environment.getStore());
-            }
-            if (updater) {
-                updater(environment.getStore())
-            }*/
-        }
-        const id = uuid();
-        const payload: Payload = {
+                sink.next({
+                    data: optimisticResponse ? optimisticResponse : {},
+                });
+
+                const id = uuid();
+                const payload: Payload = {
+                    operation,
+                    optimisticResponse,
+                    uploadables,
+                };
+                const request: Request<Payload> = {
+                    payload,
+                    backup,
+                    sink: sinkPublish,
+                };
+                environment
+                    .getStoreOffline()
+                    .publish({ id, request, serial: true })
+                    .then((_offlineRecord) => {
+                        environment.getStoreOffline().notify();
+                        sink.complete();
+                    })
+                    .catch((error) => {
+                        sink.error(error, true);
+                    });
+            });
+        });
+        RelayModernQueryExecutor.execute({
             operation,
-            optimisticResponse,
-            uploadables,
-        };
-        const request: Request<Payload> = {
-            payload,
-            backup,
-            sink: sinkPublish,
-        };
-        environment
-            .getStoreOffline()
-            .publish({ id, request, serial: true })
-            .then((offlineRecord) => {
-                environment.getStore().publish(sinkPublish);
-                environment.getStore().notify();
-                environment.getStoreOffline().notify();
-                sink.next(offlineRecord);
-                sink.complete();
-            })
-            .catch((error) => {
-                sink.error(error, true);
-            });
+            operationLoader: environment._operationLoader,
+            optimisticConfig,
+            publishQueue: environment._publishQueue,
+            scheduler: environment._scheduler,
+            sink,
+            source,
+            updater: optimisticResponse ? updater : optimisticUpdater,
+            operationTracker: environment._operationTracker,
+            getDataID: environment._getDataID,
+        });
     });
-}
-
-function normalizeResponse(
-    response: GraphQLResponseWithData,
-    selector: NormalizationSelector,
-    typeName: string,
-    path: ReadonlyArray<string>,
-    getDataID: GetDataID,
-): RelayResponsePayload {
-    const { data, errors } = response;
-    const source = new RelayInMemoryRecordSource();
-    const record = RelayModernRecord.create(selector.dataID, typeName);
-    source.set(selector.dataID, record);
-    const normalizeResult = RelayResponseNormalizer.normalize(source, selector, data, {
-        handleStrippedNulls: true,
-        path,
-        getDataID,
-    });
-    return {
-        errors,
-        incrementalPlaceholders: normalizeResult.incrementalPlaceholders,
-        fieldPayloads: normalizeResult.fieldPayloads,
-        moduleImportPayloads: normalizeResult.moduleImportPayloads,
-        source,
-    };
 }
 
 export default RelayStoreOffline;

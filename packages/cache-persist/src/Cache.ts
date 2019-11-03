@@ -4,17 +4,18 @@ import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper, ICacheSt
 const hasOwn = Object.prototype.hasOwnProperty;
 
 class Cache implements ICache {
-    private data: DataCache = {};
+    private data: DataCache;
     private rehydrated = false;
     private subscriptions: Set<Subscription> = new Set();
     private storageProxy: IStorageHelper;
     private promisesRestore;
-    private mergeState: (restoredState: DataCache) => Promise<DataCache> | DataCache;
+    private mergeState: (restoredState: DataCache, initialState: DataCache) => Promise<DataCache> | DataCache;
 
     constructor(options?: CacheOptions) {
         this.storageProxy = StorageProxy(this, options);
         this.rehydrated = !this.storageProxy.getStorage();
-        this.mergeState = options && options.mergeState ? options.mergeState : (restoredState): DataCache => restoredState;
+        this.data = options && options.initialState ? options.initialState : {};
+        this.mergeState = options && options.mergeState ? options.mergeState : (restoredState, _initialState): DataCache => restoredState;
     }
 
     public getStorage(): ICacheStorage {
@@ -31,12 +32,10 @@ class Cache implements ICache {
         }
         this.promisesRestore = this.storageProxy
             .restore()
-            .then((restoredState) => {
-                this.data = restoredState;
-                return this.mergeState(restoredState);
-            })
-            .then((newState) => {
-                if (this.data !== newState) {
+            .then((restoredState) => Promise.all([restoredState, this.mergeState(restoredState, this.data)]))
+            .then(([restoredState, newState]) => {
+                this.data = newState;
+                if (restoredState !== newState) {
                     this.replace(newState);
                     return this.flush();
                 }
@@ -46,6 +45,7 @@ class Cache implements ICache {
                 return this;
             })
             .catch((e) => {
+                this.promisesRestore = null;
                 throw e;
             });
         return this.promisesRestore;

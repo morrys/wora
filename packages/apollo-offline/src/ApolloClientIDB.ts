@@ -1,7 +1,6 @@
 import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
 import IDBStorage, { IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
 import ApolloClientOffline, { OfflineApolloClientOptions } from './ApolloClientOffline';
-import { OfflineOptions, Payload } from './ApolloStoreOffline';
 import { InMemoryCacheConfig } from 'apollo-cache-inmemory';
 import ApolloCache from '@wora/apollo-cache';
 
@@ -12,7 +11,6 @@ class ApolloClientIDB {
     public static create(
         config: ApolloClientIDBOptions,
         cacheOptions: InMemoryCacheConfig = {},
-        offlineOptions: OfflineOptions<Payload> = {},
         persistOptions: CacheOptions = {},
         idbOptions: { onUpgrade?: IOnUpgrade; version?: number } = {},
     ): ApolloClientOffline {
@@ -42,7 +40,7 @@ class ApolloClientIDB {
         }
 
         const cache = new ApolloCache(cacheOptions, idbStore);
-        return new ApolloClientOffline({ ...config, cache }, offlineOptions, idbOffline);
+        return new ApolloClientOffline({ ...config, cache }, idbOffline);
     }
 }
 

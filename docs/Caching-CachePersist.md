@@ -113,7 +113,8 @@ yarn add @wora/cache-persist
 export type CacheOptions = {
     serialize?: boolean;
     prefix?: string | undefined | null;
-    mergeState?: (restoredState: DataCache) => Promise<DataCache> | DataCache;
+    initialState?: DataCache;
+    mergeState?: (restoredState?: DataCache, initialState?: DataCache) => Promise<DataCache> | DataCache;
     mutateKeys?: Array<IMutateKey>;
     mutateValues?: Array<IMutateValue>;
     storage?: ICacheStorage;

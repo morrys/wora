@@ -6,7 +6,6 @@ import { multiplex } from 'apollo-client/util/observables';
 import observableToPromise, { Options } from 'apollo-client/util/observableToPromise';
 import { getOperationName } from 'apollo-utilities';
 import { MutationOptions } from 'apollo-client/core/watchQueryOptions';
-import { OperationVariables } from 'apollo-client/core/types';
 
 export type Payload = {
     mutation: any;
@@ -20,33 +19,41 @@ export type OfflineOptions<T> = Omit<OfflineFirstOptions<T>, 'execute'> & {
     link?: ApolloLink;
 };
 
+export interface IApolloStoreOffline {
+    storeOffline: OfflineFirst<Payload>;
+    publish: (client, mutationOptions: MutationOptions) => Promise<any>;
+    setOfflineOptions: (environment, offlineOptions?: OfflineOptions<Payload>) => void;
+}
+
 class ApolloStoreOffline {
-    public static create(client: any, persistOptions: CacheOptions = {}, offlineOptions: OfflineOptions<Payload> = {}): OfflineFirst<any> {
+    public static create(persistOptions: CacheOptions = {}): IApolloStoreOffline {
         const persistOptionsStoreOffline = {
             prefix: 'apollo-offline',
             serialize: true,
             ...persistOptions,
         };
-
-        const { onComplete, onDiscard, link, manualExecution, finish, onPublish } = offlineOptions;
-
-        const options: OfflineFirstOptions<Payload> = {
-            manualExecution,
-            execute: (offlineRecord) => executeMutation(client, link, offlineRecord),
-            onComplete: (o) => complete(client, onComplete, o),
-            onDiscard: (o) => discard(client, onDiscard, o),
+        const storeOffline = new OfflineFirst<Payload>(persistOptionsStoreOffline);
+        return {
+            storeOffline,
+            publish,
+            setOfflineOptions,
         };
-        if (onPublish) {
-            options.onPublish = onPublish;
-        }
-        if (finish) {
-            options.finish = finish;
-        }
-        return new OfflineFirst(options, persistOptionsStoreOffline);
     }
 }
 
-function complete(client: any, onComplete = (_o: any): boolean => true, options: any): boolean {
+function setOfflineOptions(client, offlineOptions: OfflineOptions<Payload> = {}): void {
+    const { onComplete, onDiscard, link, ...others } = offlineOptions;
+
+    const options: OfflineFirstOptions<Payload> = {
+        execute: (offlineRecord) => executeMutation(client, link, offlineRecord),
+        onComplete: (o) => complete(client, onComplete, o),
+        onDiscard: (o) => discard(client, onDiscard, o),
+        ...others,
+    };
+    client.getStoreOffline().setOfflineOptions(options);
+}
+
+function complete(client: any, onComplete = (_o: any): Promise<boolean> => Promise.resolve(true), options: any): Promise<boolean> {
     const { offlineRecord, response } = options;
     const { id } = offlineRecord;
     return onComplete({
@@ -56,18 +63,14 @@ function complete(client: any, onComplete = (_o: any): boolean => true, options:
     });
 }
 
-function discard(client: any, onDiscard = (_o: any): boolean => true, options: any): boolean {
+function discard(client: any, onDiscard = (_o: any): Promise<boolean> => Promise.resolve(true), options: any): Promise<boolean> {
     const { offlineRecord, error } = options;
     const { id } = offlineRecord;
     // can i use here update query?
-    if (onDiscard({ id, error, offlinePayload: offlineRecord })) {
-        // const { request: { backup, sink } } = offlineRecord;
-        return true;
-    }
-    return false;
+    return onDiscard({ id, error, offlinePayload: offlineRecord });
 }
 
-async function executeMutation(client: any, link: ApolloLink = client.link, offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
+function executeMutation(client: any, link: ApolloLink = client.link, offlineRecord: OfflineRecordCache<Payload>): Promise<any> {
     const {
         request: {
             payload: { mutation, variables, context },
@@ -89,10 +92,7 @@ async function executeMutation(client: any, link: ApolloLink = client.link, offl
     return observableToPromise(options, (result) => result);
 }
 
-export function publish<T = any, TVariables = OperationVariables>(
-    client: any,
-    mutationOptions: MutationOptions,
-): Promise<OfflineRecordCache<T>> {
+export function publish(client: any, mutationOptions: MutationOptions): Promise<any> {
     const { context, optimisticResponse, update, fetchPolicy, variables, mutation, updateQueries } = mutationOptions;
 
     const result = { data: optimisticResponse };
@@ -117,10 +117,16 @@ export function publish<T = any, TVariables = OperationVariables>(
         context,
         optimisticResponse,
     };
+
+    const sink = client.cache.optimisticData.data;
+    const backup = {};
+    const state = client.cache.data.getState();
+    Object.keys(sink).forEach((key) => (backup[key] = state[key]));
+
     const request = {
         payload,
-        backup: { ...client.cache.data.getState() },
-        sink: { ...client.cache.optimisticData.data },
+        backup,
+        sink,
     };
 
     return client
