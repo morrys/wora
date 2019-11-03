@@ -50,7 +50,7 @@ export type DataCache = {
 };
 
 export interface IStorageHelper {
-    restore(): Promise<DataCache>;
+    restore(): Promise<DataCache | undefined>;
     push(key: string): void;
     flush(): Promise<void>;
     getStorage(): ICacheStorage;

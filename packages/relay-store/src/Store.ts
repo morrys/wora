@@ -81,15 +81,15 @@ export default class Store extends RelayModernStore {
         const connectionReferences = new Set();
         // Mark all records that are traversable from a root
         this._cache.getAllKeys().forEach((index) => {
-            const selRoot = this._cache.get(index);
-            const expired = !this.isCurrent(selRoot.retainTime, selRoot.ttl);
-            if (!selRoot.dispose || !expired) {
+            const { retainTime, ttl, dispose, selector } = this._cache.get(index);
+            const expired = !this.isCurrent(retainTime, ttl);
+            if (!dispose || !expired) {
                 if (RelayReferenceMarker.mark.length === 4) {
-                    RelayReferenceMarker.mark((this as any)._recordSource, selRoot, references, (this as any)._operationLoader);
+                    RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
                 } else {
                     RelayReferenceMarker.mark(
                         (this as any)._recordSource,
-                        selRoot,
+                        selector,
                         references,
                         connectionReferences,
                         (id) => (this as any).getConnectionEvents_UNSTABLE(id),

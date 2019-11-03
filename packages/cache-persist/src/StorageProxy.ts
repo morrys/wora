@@ -114,12 +114,12 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
         ...storage,
     } as ICacheStorage;
 
-    function restore(): Promise<DataCache> {
+    function restore(): Promise<DataCache | null> {
         return internalStorage
             .getAllKeys()
             .then((keys: Array<string>) => internalStorage.multiGet(keys.filter((key) => !!mutateKey.get(key))))
             .then((data) => {
-                const result: DataCache = {};
+                const result = undefined;
                 for (let i = 0, l = data.length; i < l; i++) {
                     const [key, value] = data[i];
                     const keyMutate = mutateKey.get(key);
