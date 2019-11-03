@@ -43,20 +43,14 @@ class RelayStoreOffline {
 }
 
 function setOfflineOptions(environment, offlineOptions: OfflineOptions<Payload> = {}): void {
-    const { onComplete, onDiscard, network, manualExecution, finish, onPublish } = offlineOptions;
+    const { onComplete, onDiscard, network, ...others } = offlineOptions;
 
     const options: OfflineFirstOptions<Payload> = {
-        manualExecution,
         execute: (offlineRecord: any) => executeMutation(environment, network, offlineRecord),
         onComplete: (options: any) => complete(environment, onComplete, options),
         onDiscard: (options: any) => discard(environment, onDiscard, options),
+        ...others,
     };
-    if (onPublish) {
-        options.onPublish = onPublish;
-    }
-    if (finish) {
-        options.finish = finish;
-    }
     environment.getStoreOffline().setOfflineOptions(options);
 }
 
@@ -107,24 +101,25 @@ export function publish(environment, mutationOptions): any {
                 updater: optimisticUpdater,
             };
         }
-        const store = environment.getStore();
-        const originalPublish = store.publish;
-        let backup;
-        let sinkPublish;
-
         const source = RelayObservable.create((sink) => {
-            store.publish = function(source): void {
-                sinkPublish = source;
-                store.publish = originalPublish;
-                store.publish(source);
-            };
             resolveImmediate(() => {
                 // come recuperare i dati che sono stati inseriti? override del publish? dello store?
-                backup = environment.getStore().getSource()._sink;
+                const sinkPublish = environment
+                    .getStore()
+                    .getSource()
+                    ._sink.toJSON();
+                const backup = {};
+                Object.keys(sinkPublish).forEach(
+                    (key) =>
+                        (backup[key] = environment
+                            .getStore()
+                            .getSource()
+                            ._base.get(key)),
+                );
+
                 sink.next({
                     data: optimisticResponse ? optimisticResponse : {},
                 });
-                store.publish = originalPublish;
 
                 const id = uuid();
                 const payload: Payload = {

@@ -70,7 +70,7 @@ offlineFirst.publish({
 export type OfflineFirstOptions<T> = {
     manualExecution?: boolean;
     execute: (offlineRecord: OfflineRecordCache<T>) => Promise<any>;
-    start?: (mutations: ReadonlyArray<OfflineRecordCache<T>>) => Promise<void>;
+    start?: (mutations: Array<OfflineRecordCache<T>>) => Promise<Array<OfflineRecordCache<T>>>;
     onExecute?: (mutation: OfflineRecordCache<T>) => Promise<OfflineRecordCache<T>>;
     finish?: (mutations: ReadonlyArray<OfflineRecordCache<T>>, error?: Error) => Promise<void>;
     onComplete?: (options: { offlineRecord: OfflineRecordCache<T>; response: any }) => Promise<boolean>;

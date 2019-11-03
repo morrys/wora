@@ -8,7 +8,6 @@ module.exports = {
     globals: {
         __DEV__: true,
         'ts-jest': {
-            babelConfig: 'babelrc.test.js',
             diagnostics: {
                 warnOnly: true,
             },

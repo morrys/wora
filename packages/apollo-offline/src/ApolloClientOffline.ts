@@ -17,20 +17,17 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
 
     constructor(apolloOptions: OfflineApolloClientOptions, persistOptions: CacheOptions = {}) {
         super(apolloOptions);
-        (this.queryManager as any).isOnline = typeof window === 'undefined';
+        (this.queryManager as any).isOnline = () => this.isOnline();
         this.apolloStoreOffline = ApolloStoreOffline.create(persistOptions);
         this.setOfflineOptions();
         if (this.rehydrated) {
             this.promisesRestore = Promise.resolve(true);
         }
-        this.getStoreOffline().addNetInfoListener((isConnected: boolean) => {
-            (this.queryManager as any).isOnline = isConnected;
-        });
 
         const originalFetchQuery = this.queryManager.fetchQuery;
         this.queryManager.fetchQuery = function(queryId, options, fetchType, fetchMoreForQueryId): any {
             const oldFetchPolicy = options.fetchPolicy;
-            if (!this.isOnline) {
+            if (!this.isOnline()) {
                 options.fetchPolicy = 'cache-only';
             }
             const result = originalFetchQuery.apply(this, [queryId, options, fetchType, fetchMoreForQueryId]);

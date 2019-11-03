@@ -103,19 +103,13 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
         mutateValues,
         initialState: preloadedState,
         mergeState: async (originalRestoredState = {}, initialState = {}) => {
-            const migrateReduxPersist = originalRestoredState[reduxPersistKey];
-            if (migrateReduxPersist) {
-                cache.replace(migrateReduxPersist);
-            }
-            const restoredState = migrateReduxPersist || originalRestoredState;
+            const restoredState = originalRestoredState[reduxPersistKey] || originalRestoredState;
 
             const haveStoredState = !!restoredState && !!restoredState._persist;
             const state = haveStoredState
-                ? await migrate(restoredState, version).then((mState: any) => {
-                      dispatch({ type: REHYDRATE });
-                      const reducedState = cache.getState();
-                      return stateReconciler(mState, initialState, reducedState, persistOptions);
-                  })
+                ? await migrate(restoredState, version).then((mState: any) =>
+                      stateReconciler(mState, initialState, initialState, persistOptions),
+                  )
                 : initialState;
             return { ...state, _persist: { version, rehydrated: true, wora: true } };
         },
@@ -304,7 +298,7 @@ function createStore(reducer: any, preloadedState?: any, enhancer?: any, persist
     dispatch({ type: ActionTypes.INIT });
 
     restore()
-        .then(() => undefined)
+        .then(() => dispatch({ type: REHYDRATE }))
         .catch((error) => dispatch({ type: REHYDRATE_ERROR, error }));
 
     return {

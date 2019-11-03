@@ -20,7 +20,7 @@ export type OfflineRecordCache<T> = {
 export type OfflineFirstOptions<T> = {
     manualExecution?: boolean;
     execute: (offlineRecord: OfflineRecordCache<T>) => Promise<any>;
-    start?: (mutations: ReadonlyArray<OfflineRecordCache<T>>) => Promise<void>;
+    start?: (mutations: Array<OfflineRecordCache<T>>) => Promise<Array<OfflineRecordCache<T>>>;
     onExecute?: (mutation: OfflineRecordCache<T>) => Promise<OfflineRecordCache<T>>;
     finish?: (mutations: ReadonlyArray<OfflineRecordCache<T>>, error?: Error) => Promise<void>;
     onComplete?: (options: { offlineRecord: OfflineRecordCache<T>; response: any }) => Promise<boolean>;
@@ -32,7 +32,7 @@ export type OfflineFirstOptions<T> = {
 
 const defaultOfflineOptions = {
     manualExecution: false,
-    start: (_mutations) => Promise.resolve(undefined),
+    start: (_mutations) => Promise.resolve(_mutations),
     finish: (_mutations, _error) => Promise.resolve(undefined),
     onExecute: (mutation) => Promise.resolve(mutation),
     onComplete: (_options) => Promise.resolve(true),
@@ -148,7 +148,7 @@ class OfflineFirst<T> {
         return this.offlineStore.flush().then(() => this.notify());
     }
 
-    public getListMutation(): ReadonlyArray<OfflineRecordCache<T>> {
+    public getListMutation(): Array<OfflineRecordCache<T>> {
         const { compare } = this.offlineOptions;
         const requests = Object.assign({}, this.getState());
         return Object.values<OfflineRecordCache<T>>(requests).sort(compare);
@@ -158,11 +158,11 @@ class OfflineFirst<T> {
         if (!this.busy) {
             this.busy = true;
             const { start, finish, onExecute } = this.offlineOptions;
-            const listMutation: ReadonlyArray<OfflineRecordCache<T>> = this.getListMutation();
+            const listMutation: Array<OfflineRecordCache<T>> = this.getListMutation();
             let parallelPromises = [];
-            return start(listMutation).then(async () => {
+            return start(listMutation).then(async (startMutations) => {
                 try {
-                    for (const mutation of listMutation) {
+                    for (const mutation of startMutations) {
                         const processMutation = await onExecute(mutation);
                         if (processMutation) {
                             if (!processMutation.serial) {

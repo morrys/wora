@@ -120,11 +120,12 @@ client.setOfflineOptions({
   link: httpLinkOffline, //optional
   start: async (mutations) => { //optional
     console.log("start offline", mutations)
+    return mutations;
   },
   finish: async (mutations, error) => { //optional
     console.log("finish offline", error, mutations)
   },
-  onExecute: async (mutation) => => { //optional
+  onExecute: async (mutation) => { //optional
     console.log("onExecute offline", mutation)
     return mutation;
   },
@@ -144,7 +145,7 @@ client.setOfflineOptions({
 
 
 // await before instantiating Query, else queries might run before the cache is persisted, TODO ApolloProviderOffline
-await client.hydrated(): Promise<boolean>
+await client.hydrate(): Promise<boolean>
 
 ```
 * manualExecution: if set to true, mutations in the queue are no longer performed automatically as soon as you go back online. invoke manually: `client.getStoreOffline().process();`

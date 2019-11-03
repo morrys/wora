@@ -2,7 +2,7 @@
 
 ## [Documentation](https://morrys.github.io/wora/)
 
-the github page contains all the documentation relating to the libraries distributed by this monorepo.
+**the github page contains all the documentation relating to the libraries distributed by this monorepo.**
 
 ## Community challenge
 
@@ -18,7 +18,7 @@ If anyone is interested in sharing their idea, contact me (link in bio).
 
 * **PRs are welcome**, but it is always **better to open the issue first** so as to **help** me and other people **evaluating it**
 
-* **Please sponsor me** and recommend me at [github sponsorship](https://docs.google.com/forms/d/e/1FAIpQLSdE8nL7U-d7CBTWp9X7XOoezQD06wCzCAS9VpoUW6lJ03KU7w/viewform), so that i can use it
+* **Please sponsor me**
 
 ### Sponsors
 

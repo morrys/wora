@@ -168,6 +168,52 @@ describe('Cache ssr initial data ', () => {
     });
 });
 
+describe('Cache ssr async initial data ', () => {
+    let cache: ICache;
+    const start = Date.now();
+    const ssrState = {
+        test1: 1,
+        test2: 2,
+        test3: 3,
+    };
+    beforeAll(() => {
+        cache = new Cache({
+            initialState: ssrState,
+            mergeState: async (restoredState, initialState) => initialState,
+        });
+    });
+
+    it('cache restored', async () => {
+        expect(cache.isRehydrated()).not.toBeTruthy();
+        cache.set('test4', 4);
+        await cache.restore();
+        expect(cache.isRehydrated()).toBeTruthy();
+        expect(cache.getState()).toEqual({ ...ssrState, test4: 4 });
+    });
+    it('cache set', async () => {
+        cache.set('prova', 1);
+        expect(cache.get('prova')).toBe(1);
+    });
+    it('cache remove', async () => {
+        cache.remove('prova');
+        expect(cache.get('prova')).toBeUndefined();
+    });
+    it('cache purge', async () => {
+        expect(cache.getState()).toEqual(ssrState);
+        cache.purge();
+        expect(cache.getState()).toEqual({});
+    });
+    it('cache remove', () => {
+        cache.set('prova', 2);
+    });
+    it('cache flush', () => {
+        cache.flush().then(() => {
+            expect(cache.get('prova')).toBe(2);
+            console.log('cache flush', Date.now() - start);
+        });
+    });
+});
+
 describe('Cache layers', () => {
     let cache: ICache;
     const storage: any = createStorage(null);

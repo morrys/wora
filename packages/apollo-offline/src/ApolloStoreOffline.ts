@@ -42,20 +42,14 @@ class ApolloStoreOffline {
 }
 
 function setOfflineOptions(client, offlineOptions: OfflineOptions<Payload> = {}): void {
-    const { onComplete, onDiscard, link, manualExecution, finish, onPublish } = offlineOptions;
+    const { onComplete, onDiscard, link, ...others } = offlineOptions;
 
     const options: OfflineFirstOptions<Payload> = {
-        manualExecution,
         execute: (offlineRecord) => executeMutation(client, link, offlineRecord),
         onComplete: (o) => complete(client, onComplete, o),
         onDiscard: (o) => discard(client, onDiscard, o),
+        ...others,
     };
-    if (onPublish) {
-        options.onPublish = onPublish;
-    }
-    if (finish) {
-        options.finish = finish;
-    }
     client.getStoreOffline().setOfflineOptions(options);
 }
 
@@ -123,10 +117,16 @@ export function publish(client: any, mutationOptions: MutationOptions): Promise<
         context,
         optimisticResponse,
     };
+
+    const sink = client.cache.optimisticData.data;
+    const backup = {};
+    const state = client.cache.data.getState();
+    Object.keys(sink).forEach((key) => (backup[key] = state[key]));
+
     const request = {
         payload,
-        backup: { ...client.cache.data.getState() },
-        sink: { ...client.cache.optimisticData.data },
+        backup,
+        sink,
     };
 
     return client
