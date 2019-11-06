@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "apollo-client": "^2.6.0",
-    "graphql": "14.4.2"
+    "graphql": "14.4.2",
+    "@apollo/react-hooks": "3.1.3"
   }
 }

@@ -44,6 +44,8 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
         if (!this.promisesRestore) {
             this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloStore).hydrate()])
                 .then((_result) => {
+                    (this.cache as any).broadcastWatches();
+                    this.queryManager.broadcastQueries();
                     this.rehydrated = true;
                     return true;
                 })
