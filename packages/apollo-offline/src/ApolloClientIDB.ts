@@ -5,38 +5,44 @@ import { InMemoryCacheConfig } from 'apollo-cache-inmemory';
 import ApolloCache from '@wora/apollo-cache';
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
-type ApolloClientIDBOptions = Omit<OfflineApolloClientOptions, 'cache'>; // Equivalent to: {b: number, c: boolean}
+type ApolloClientIDBOptions = Omit<OfflineApolloClientOptions, 'cache'>;
 
 class ApolloClientIDB {
     public static create(
         config: ApolloClientIDBOptions,
-        cacheOptions: InMemoryCacheConfig = {},
-        persistOptions: CacheOptions = {},
-        idbOptions: { onUpgrade?: IOnUpgrade; version?: number } = {},
+        options: {
+            cacheOptions?: InMemoryCacheConfig;
+            persistOptions?: CacheOptions;
+            offlineStoreOptions?: CacheOptions;
+            idbOptions?: {
+                name?: string;
+                onUpgrade?: IOnUpgrade;
+                version?: number;
+            };
+        } = {},
     ): ApolloClientOffline {
-        let idbStore: CacheOptions;
-        let idbOffline: CacheOptions;
-        const serialize: boolean = persistOptions.serialize;
-        const prefix: string = persistOptions.prefix;
+        const { cacheOptions, persistOptions = {}, offlineStoreOptions = {}, idbOptions = {} } = options;
+        const idbStore: CacheOptions = {
+            serialize: false,
+            prefix: null,
+            ...persistOptions,
+        };
+        const idbOffline: CacheOptions = {
+            serialize: false,
+            prefix: null,
+            ...offlineStoreOptions,
+        };
         if (typeof window !== 'undefined') {
+            const { name = 'apollo', onUpgrade, version } = idbOptions;
             const idbStorages: Array<ICacheStorage> = IDBStorage.create({
-                name: prefix || 'apollo',
+                name,
                 storeNames: ['store', 'offline'],
-                onUpgrade: idbOptions.onUpgrade,
-                version: idbOptions.version,
+                onUpgrade,
+                version,
             });
 
-            idbStore = {
-                storage: idbStorages[0],
-                serialize: serialize || false,
-                prefix: null,
-            };
-
-            idbOffline = {
-                storage: idbStorages[1],
-                serialize: serialize || false,
-                prefix: null,
-            };
+            idbStore.storage = idbStorages[0];
+            idbOffline.storage = idbStorages[1];
         }
 
         const cache = new ApolloCache(cacheOptions, idbStore);

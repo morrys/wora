@@ -17,7 +17,7 @@ const SPLIT = '####';
 const NoStorageProxy: IStorageHelper = {
     restore: () => {
         return promiseResult(() => {
-            return {};
+            return undefined;
         });
     },
     push: (_keys: string) => undefined,
