@@ -88,7 +88,8 @@ const client = new ApolloClient({
 });
 
 
-// await before instantiating Query, else queries might run before the cache is persisted, TODO ApolloProviderOffline
+// await before instantiating Query, else queries might run before the cache is persisted
+// or use apollo-offline useQuery
 await client.hydrated(): Promise<boolean>
 
 ```
@@ -186,7 +187,27 @@ const cacheOptions = {
     dataIdFromObject: o => o.id
   }
 
-const client = ApolloClientIDB.create({ link: httpLink }, cacheOptions);
+const client = ApolloClientIDB.create({ link: httpLink }, { 
+  cacheOptions
+});
+```
+
+**ApolloClientIDB.create function**
+
+```ts
+public static create(
+  config: ApolloClientIDBOptions,
+  options: {
+    cacheOptions?: InMemoryCacheConfig;
+    persistOptions?: CacheOptions;
+    offlineStoreOptions?: CacheOptions;
+    idbOptions?: {
+      name?: string;
+      onUpgrade?: IOnUpgrade;
+      version?: number;
+    };
+  },
+): ApolloClientOffline
 ```
 
 ## ApolloClient with PersistOfflineOptions
@@ -219,3 +240,16 @@ const client = new ApolloClient({
 [CacheOptions](Caching-CachePersist.md#cache-options)
 
 
+## useQuery
+
+the useQuery provides native management of client hydration.
+
+If the client is not hydrated, the hydration request is made and the application will have the same behavior as when it is offline and will be rendered with only the information present in the store if present.
+
+When the hydration promise is resolved, the useQuery is re-rendered.
+
+```ts
+
+import useQuery from '@wora/apollo-offline/lib/react/useQuery';
+
+```
