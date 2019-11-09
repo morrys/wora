@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState, useRef } from 'react';
 import { DocumentNode } from 'graphql';
 import { OperationVariables, QueryResult } from '@apollo/react-common';

@@ -17,7 +17,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
 
     constructor(apolloOptions: OfflineApolloClientOptions, persistOptions: CacheOptions = {}) {
         super(apolloOptions);
-        (this.queryManager as any).isOnline = () => this.isOnline();
+        (this.queryManager as any).isOnline = (): boolean => this.isOnline();
         this.apolloStoreOffline = ApolloStoreOffline.create(persistOptions);
         this.setOfflineOptions();
         if (this.rehydrated) {
