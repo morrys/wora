@@ -22,8 +22,16 @@ class ApolloClientIDB {
         } = {},
     ): ApolloClientOffline {
         const { cacheOptions, persistOptions = {}, offlineStoreOptions = {}, idbOptions = {} } = options;
-        let idbStore: CacheOptions;
-        let idbOffline: CacheOptions;
+        const idbStore: CacheOptions = {
+            serialize: false,
+            prefix: null,
+            ...persistOptions,
+        };
+        const idbOffline: CacheOptions = {
+            serialize: false,
+            prefix: null,
+            ...offlineStoreOptions,
+        };
         if (typeof window !== 'undefined') {
             const { name = 'apollo', onUpgrade, version } = idbOptions;
             const idbStorages: Array<ICacheStorage> = IDBStorage.create({
@@ -33,19 +41,8 @@ class ApolloClientIDB {
                 version,
             });
 
-            idbStore = {
-                storage: idbStorages[0],
-                serialize: false,
-                prefix: null,
-                ...persistOptions,
-            };
-
-            idbOffline = {
-                storage: idbStorages[1],
-                serialize: false,
-                prefix: null,
-                ...offlineStoreOptions,
-            };
+            idbStore.storage = idbStorages[0];
+            idbOffline.storage = idbStorages[1];
         }
 
         const cache = new ApolloCache(cacheOptions, idbStore);
