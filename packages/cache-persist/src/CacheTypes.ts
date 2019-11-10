@@ -29,7 +29,7 @@ export type CacheOptions = {
 
 export interface ICache {
     purge(): void;
-    restore(): Promise<DataCache>;
+    restore(): Promise<ICache>;
     replace(data: any): void;
     isRehydrated(): boolean;
     getState(): Readonly<{ [key: string]: any }>;

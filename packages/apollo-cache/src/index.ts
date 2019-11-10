@@ -1,31 +1,26 @@
-import { InMemoryCache, InMemoryCacheConfig } from 'apollo-cache-inmemory';
-import Cache, { ICache, CacheOptions } from '@wora/cache-persist';
+import { InMemoryCache, InMemoryCacheConfig } from '@apollo/client/cache/inmemory/inMemoryCache';
+import { ICache, CacheOptions } from '@wora/cache-persist';
+import EntityRoot from './EntityCache';
 
 interface IPersistImpl {
     hydrate(): Promise<ICache>;
 }
 
 class ApolloCache extends InMemoryCache implements IPersistImpl {
-    public cache: Cache;
+    public cache: EntityRoot;
 
     constructor(options: InMemoryCacheConfig = {}, persistOptions: CacheOptions = {}) {
         super(options);
-        const persistOptionsApollo = {
-            prefix: 'apollo-cache',
-            serialize: true,
-            ...persistOptions,
-        };
-        this.cache = new Cache(persistOptionsApollo);
-        (this.cache as any).toObject = (): Readonly<{
-            [key: string]: any;
-        }> => this.cache.getState();
-        (this.cache as any).clear = (): void => this.cache.purge();
+        this.cache = new EntityRoot({
+            resultCaching: this.config.resultCaching,
+            persistOptions,
+        });
         (this as any).data = this.cache;
         (this as any).optimisticData = this.cache;
     }
 
     public hydrate(): Promise<ICache> {
-        return this.cache.restore();
+        return this.cache.hydrate();
     }
 }
 

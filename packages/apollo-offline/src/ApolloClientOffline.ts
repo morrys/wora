@@ -1,9 +1,8 @@
-import { ApolloClient, ObservableQuery, OperationVariables, ApolloClientOptions } from 'apollo-client';
 import ApolloStoreOffline, { IApolloStoreOffline, OfflineOptions, Payload } from './ApolloStoreOffline';
 import { CacheOptions } from '@wora/cache-persist';
 import OfflineFirst from '@wora/offline-first';
 import ApolloStore from '@wora/apollo-cache';
-import { NormalizedCacheObject } from 'apollo-cache-inmemory';
+import { ApolloClient, NormalizedCacheObject, ApolloClientOptions, OperationVariables, ObservableQuery } from '@apollo/client';
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type OfflineApolloClientOptions = Omit<ApolloClientOptions<NormalizedCacheObject>, 'cache'> & {
@@ -17,15 +16,15 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
 
     constructor(apolloOptions: OfflineApolloClientOptions, persistOptions: CacheOptions = {}) {
         super(apolloOptions);
-        (this.queryManager as any).isOnline = (): boolean => this.isOnline();
+        (this as any).queryManager.isOnline = (): boolean => this.isOnline();
         this.apolloStoreOffline = ApolloStoreOffline.create(persistOptions);
         this.setOfflineOptions();
         if (this.rehydrated) {
             this.promisesRestore = Promise.resolve(true);
         }
 
-        const originalFetchQuery = this.queryManager.fetchQuery;
-        this.queryManager.fetchQuery = function(queryId, options, fetchType, fetchMoreForQueryId): any {
+        const originalFetchQuery = (this as any).queryManager.fetchQuery;
+        (this as any).queryManager.fetchQuery = function(queryId, options, fetchType, fetchMoreForQueryId): any {
             const oldFetchPolicy = options.fetchPolicy;
             if (!this.isOnline()) {
                 options.fetchPolicy = 'cache-only';
@@ -45,7 +44,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
             this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloStore).hydrate()])
                 .then((_result) => {
                     (this.cache as any).broadcastWatches();
-                    this.queryManager.broadcastQueries();
+                    (this as any).queryManager.broadcastQueries();
                     this.rehydrated = true;
                     return true;
                 })

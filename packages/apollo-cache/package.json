@@ -35,11 +35,11 @@
     "@wora/cache-persist": "file:../cache-persist"
   },
   "peerDependencies": {
-    "apollo-cache-inmemory": ">=1.6.2",
-    "graphql": "^0.11.3 || ^0.12.3 || ^0.13.0 || ^14.0.0"
+    "@apollo/client": ">=3.0.0-beta.7",
+    "graphql": "^14.5.4"
   },
   "devDependencies": {
-    "apollo-cache-inmemory": "^1.6.2",
-    "graphql": "14.4.2"
+    "@apollo/client": "3.0.0-beta.7",
+    "graphql": "14.5.4"
   }
 }
