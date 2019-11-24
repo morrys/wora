@@ -157,7 +157,6 @@ export function publish(client: any, mutationOptions: MutationOptions): Promise<
                 mutationId: id,
                 optimisticResponse: true,
             });
-                
             client.queryManager.broadcastQueries();
             throw error;
         });

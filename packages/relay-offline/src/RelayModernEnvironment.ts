@@ -88,7 +88,6 @@ class RelayModernEnvironment extends Environment {
     }
 
     public executeMutation(mutationOptions): RelayObservable<GraphQLResponse> {
-        console.log('execute', this.isOnline());
         if (this.isOnline()) {
             return super.executeMutation(mutationOptions);
         } else {
