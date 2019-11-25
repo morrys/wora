@@ -1,6 +1,7 @@
 import Cache, { CacheOptions, ICache } from '@wora/cache-persist';
 import { NetInfo } from '@wora/netinfo';
-import ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
+
+const isServer = typeof window === 'undefined';
 
 export type Request<T> = {
     payload: T;
@@ -46,8 +47,8 @@ class OfflineFirst<T> {
     private offlineStore: ICache;
     private busy = false;
     private offlineOptions: OfflineFirstOptions<T> = defaultOfflineOptions;
-    private online = !ExecutionEnvironment.canUseDOM;
-    private rehydrated = !ExecutionEnvironment.canUseDOM;
+    private online = isServer;
+    private rehydrated = isServer;
     private promisesRestore;
 
     constructor(persistOptions: CacheOptions = {}) {

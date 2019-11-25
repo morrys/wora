@@ -4,7 +4,6 @@ import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironmen
 
 import { Store } from '@wora/relay-store';
 import { CacheOptions } from '@wora/cache-persist';
-import ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
 
 import { NormalizationSelector, Disposable } from 'relay-runtime';
 
@@ -12,7 +11,7 @@ import StoreOffline, { OfflineOptions, Payload, IRelayStoreOffline } from './Off
 import OfflineFirst from '@wora/offline-first';
 
 class RelayModernEnvironment extends Environment {
-    private _rehydrated = !ExecutionEnvironment.canUseDOM;
+    private _rehydrated = typeof window === 'undefined';
     private _relayStoreOffline: IRelayStoreOffline;
     private promisesRestore;
 
