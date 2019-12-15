@@ -45,7 +45,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
         };
     }
 
-    public setOfflineOptions(offlineOptions?: OfflineOptions<Payload>): void {
+    public setOfflineOptions(offlineOptions: OfflineOptions<Payload> = {}): void {
         const { onComplete, onDiscard, link, ...others } = offlineOptions;
         const options: OfflineFirstOptions<Payload> = {
             execute: (offlineRecord) => this.executeOfflineMutation(link, offlineRecord),
