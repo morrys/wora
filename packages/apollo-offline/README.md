@@ -83,11 +83,22 @@ const client = new ApolloClient({
 });
 
 
-// await before instantiating Query, else queries might run before the cache is persisted, TODO ApolloProviderOffline
-await client.hydrated(): Promise<boolean>
+// await before instantiating Query, else queries might run before the cache is persisted
+// or use apollo-offline useQuery
+await client.hydrate(): Promise<boolean>
 
 ```
 
+## Apollo Client new functions
+
+```ts
+public hydrate(): Promise<boolean>
+public setOfflineOptions(offlineOptions: OfflineOptions<Payload> = {}): void;
+public getStoreOffline(): OfflineFirst<Payload>
+public isRehydrated(): boolean
+public isOnline(): boolean
+public mutateOffline<T>(mutationOptions: MutationOptions): Promise<FetchResult<T>>
+```
 
 ## Apollo Client with Offline Options
 
@@ -104,47 +115,54 @@ const httpLinkOffline = new HttpLink({
   uri: "http://localhost:4000/graphql"
 });
 
-
-const offlineOptions = {
-  manualExecution: false, //optional
-  link: httpLinkOffline, //optional
-  finish: (isSuccess, mutations) => { //optional
-    console.log("finish offline", isSuccess, mutations)
-  },
-  onComplete: (options ) => { //optional
-    const { id, offlinePayload, response } = options;
-    return true;
-  },
-  onDiscard: ( options ) => { //optional
-    const { id, offlinePayload , error } = options;
-    return true;
-  },
-  onPublish: (offlinePayload) => { //optional
-    const rand = Math.floor(Math.random() * 4) + 1  
-    offlinePayload.serial = rand===1;
-    console.log("offlinePayload", offlinePayload.serial)
-    console.log("offlinePayload", offlinePayload)
-    return offlinePayload
-  }
-};
-
 const client = new ApolloClient({
   link: httpLink,
   cache: new ApolloCache({
     dataIdFromObject: o => o.id
   })
-}, offlineOptions);
+});
+client.setOfflineOptions({
+  manualExecution: false, //optional
+  link: httpLinkOffline, //optional
+  start: async (mutations) => { //optional
+    console.log("start offline", mutations)
+    return mutations;
+  },
+  finish: async (mutations, error) => { //optional
+    console.log("finish offline", error, mutations)
+  },
+  onExecute: async (mutation) => { //optional
+    console.log("onExecute offline", mutation)
+    return mutation;
+  },
+  onComplete: async (options ) => { //optional
+    console.log("onComplete offline", options)
+    return true;
+  },
+  onDiscard: async ( options ) => { //optional
+    console.log("onDiscard offline", options)
+    return true;
+  },
+  onPublish: async (offlinePayload) => { //optional
+    console.log("offlinePayload", offlinePayload)
+    return offlinePayload
+  }
+};)
 
 
 // await before instantiating Query, else queries might run before the cache is persisted, TODO ApolloProviderOffline
-await client.hydrated(): Promise<boolean>
+await client.hydrate(): Promise<boolean>
 
 ```
 * manualExecution: if set to true, mutations in the queue are no longer performed automatically as soon as you go back online. invoke manually: `client.getStoreOffline().process();`
 
 * link: it is possible to configure a different link for the execution of mutations in the queue
 
+* start: function that is called once the request queue has been started.
+
 * finish: function that is called once the request queue has been processed.
+
+* onExecute: function that is called before the request is sent to the network.
 
 * onPublish: function that is called before saving the mutation in the store
 
@@ -174,7 +192,27 @@ const cacheOptions = {
     dataIdFromObject: o => o.id
   }
 
-const client = ApolloClientIDB.create({ link: httpLink }, cacheOptions);
+const client = ApolloClientIDB.create({ link: httpLink }, { 
+  cacheOptions
+});
+```
+
+**ApolloClientIDB.create function**
+
+```ts
+public static create(
+  config: ApolloClientIDBOptions,
+  options: {
+    cacheOptions?: InMemoryCacheConfig;
+    persistOptions?: CacheOptions;
+    offlineStoreOptions?: CacheOptions;
+    idbOptions?: {
+      name?: string;
+      onUpgrade?: IOnUpgrade;
+      version?: number;
+    };
+  },
+): ApolloClientOffline
 ```
 
 ## ApolloClient with PersistOfflineOptions
@@ -201,17 +239,22 @@ const client = new ApolloClient({
   cache: new ApolloCache({
     dataIdFromObject: o => o.id
   })
-}, {}, persistOfflineOptions);
+}, persistOfflineOptions);
 ```
 
-* storage?: CacheStorage;  custom storage
-* prefix?: string;  prefix key in storage 
-* serialize?: boolean;  if set to true, it performs JSON serialization
-* encryption?: boolean;  not yet implemented in @wora/cache-persist
+[CacheOptions](Caching-CachePersist.md#cache-options)
 
 
+## useQuery
 
-### Todo
+the useQuery provides native management of client hydration.
 
-* documentation
+If the client is not hydrated, the hydration request is made and the application will have the same behavior as when it is offline and will be rendered with only the information present in the store if present.
 
+When the hydration promise is resolved, the useQuery is re-rendered.
+
+```ts
+
+import useQuery from '@wora/apollo-offline/lib/react/useQuery';
+
+```
