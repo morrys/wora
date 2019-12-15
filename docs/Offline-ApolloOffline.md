@@ -90,10 +90,20 @@ const client = new ApolloClient({
 
 // await before instantiating Query, else queries might run before the cache is persisted
 // or use apollo-offline useQuery
-await client.hydrated(): Promise<boolean>
+await client.hydrate(): Promise<boolean>
 
 ```
 
+## Apollo Client new functions
+
+```ts
+public hydrate(): Promise<boolean>
+public setOfflineOptions(offlineOptions: OfflineOptions<Payload> = {}): void;
+public getStoreOffline(): OfflineFirst<Payload>
+public isRehydrated(): boolean
+public isOnline(): boolean
+public mutateOffline<T>(mutationOptions: MutationOptions): Promise<FetchResult<T>>
+```
 
 ## Apollo Client with Offline Options
 
