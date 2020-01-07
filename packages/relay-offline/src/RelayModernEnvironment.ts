@@ -18,6 +18,7 @@ import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache, Request } from '
 import resolveImmediate from 'relay-runtime/lib/util/resolveImmediate';
 import { v4 as uuid } from 'uuid';
 import { Payload, OfflineOptions } from './RelayOfflineTypes';
+import warning from 'fbjs/lib/warning';
 
 class RelayModernEnvironment extends Environment {
     private _rehydrated = typeof window === 'undefined';
@@ -117,7 +118,6 @@ class RelayModernEnvironment extends Environment {
         uploadables?: UploadableMap | null;
     }): RelayObservable<GraphQLResponse> {
         return RelayObservable.create((sink) => {
-            //const { operation, optimisticResponse, optimisticUpdater, updater, uploadables } = mutationOptions;
             let optimisticConfig;
             if (optimisticResponse || optimisticUpdater) {
                 optimisticConfig = {
@@ -126,13 +126,20 @@ class RelayModernEnvironment extends Environment {
                     updater: optimisticUpdater,
                 };
             }
+            warning(
+                !!optimisticConfig,
+                'commitMutation offline: no optimistic responses configured. the mutation will not perform any store updates.',
+            );
             const source = RelayObservable.create((sink) => {
                 resolveImmediate(() => {
-                    // come recuperare i dati che sono stati inseriti? override del publish? dello store?
-                    const sinkPublish = (this as any)
-                        .getStore()
-                        .getSource()
-                        ._sink.toJSON();
+                    /* eslint-disable indent */
+                    const sinkPublish = optimisticConfig
+                        ? (this as any)
+                              .getStore()
+                              .getSource()
+                              ._sink.toJSON()
+                        : {};
+                    /* eslint-enable indent */
                     const backup = {};
                     Object.keys(sinkPublish).forEach(
                         (key) =>
