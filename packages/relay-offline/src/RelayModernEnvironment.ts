@@ -7,6 +7,7 @@ import {
     SelectorStoreUpdater,
     OperationDescriptor,
     UploadableMap,
+    Snapshot,
 } from 'relay-runtime';
 
 import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironment';
@@ -45,9 +46,23 @@ class RelayModernEnvironment extends Environment {
         const { onComplete, onDiscard, network, ...others } = offlineOptions;
 
         const options: OfflineFirstOptions<Payload> = {
-            execute: (offlineRecord: any) => this.executeStoreOffline(network, offlineRecord),
-            onComplete: (options: any) => complete(this, onComplete, options),
-            onDiscard: (options: any) => discard(this, onDiscard, options),
+            execute: (offlineRecord: OfflineRecordCache<Payload>) => this.executeStoreOffline(network, offlineRecord),
+            onComplete: (options: { offlineRecord: OfflineRecordCache<Payload>; response: any }) => {
+                const { offlineRecord, response } = options;
+                const {
+                    request: {
+                        payload: { operation },
+                    },
+                    id,
+                } = offlineRecord;
+                const snapshot = (this as any).lookup(operation.fragment);
+                return onComplete({ id, offlinePayload: offlineRecord, snapshot: snapshot.data as Snapshot, response });
+            },
+            onDiscard: (options: { offlineRecord: OfflineRecordCache<Payload>; error: Error }) => {
+                const { offlineRecord, error } = options;
+                const { id } = offlineRecord;
+                return onDiscard({ id, offlinePayload: offlineRecord, error });
+            },
             ...others,
         };
         this._relayStoreOffline.setOfflineOptions(options);
@@ -200,41 +215,9 @@ class RelayModernEnvironment extends Environment {
         if (this.isOnline()) {
             return super.executeMutation(mutationOptions);
         } else {
-            return RelayObservable.create((sink) => {
-                this.executeMutationOffline(mutationOptions).subscribe({
-                    complete: () => sink.complete(),
-                    error: (error) => sink.error(error),
-                    next: (response) => sink.next(response),
-                });
-                return (): any => {};
-            });
+            return this.executeMutationOffline(mutationOptions);
         }
     }
-}
-
-function complete(
-    environment,
-    onComplete = (_o): Promise<boolean> => Promise.resolve(true),
-    options: { offlineRecord: OfflineRecordCache<Payload>; response: any },
-): Promise<boolean> {
-    const { offlineRecord, response } = options;
-    const {
-        request: { payload },
-        id,
-    } = offlineRecord;
-    const operation = payload.operation;
-    const snapshot = environment.lookup(operation.fragment);
-    return onComplete({ id, offlinePayload: offlineRecord, snapshot: snapshot.data as any, response });
-}
-
-function discard(
-    _environment,
-    onDiscard = (_o): Promise<boolean> => Promise.resolve(true),
-    options: { offlineRecord: OfflineRecordCache<Payload>; error: any },
-): Promise<boolean> {
-    const { offlineRecord, error } = options;
-    const { id } = offlineRecord;
-    return onDiscard({ id, offlinePayload: offlineRecord, error });
 }
 
 export default RelayModernEnvironment;
