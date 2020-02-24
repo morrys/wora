@@ -13,6 +13,7 @@
     "exclude": [
         "lib",
         "__tests__",
-        "examples"
+        "scripts",
+        "__mocks__"
     ]
 }
