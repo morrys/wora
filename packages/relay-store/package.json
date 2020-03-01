@@ -29,7 +29,8 @@
     "prebuild": "npm run clean",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
-    "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
+    "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@wora/cache-persist": "file:../cache-persist"
@@ -38,7 +39,8 @@
     "relay-runtime": ">=6.0.0"
   },
   "devDependencies": {
-    "relay-runtime": "^7.0.0"
+    "relay-runtime": "^7.0.0",
+    "relay-test-utils-internal" : "7.0.0"
   },
   "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"
 }
