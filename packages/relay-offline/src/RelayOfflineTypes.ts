@@ -9,7 +9,7 @@ export type Payload = {
 };
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
-export type OfflineOptions<T> = Omit<OfflineFirstOptions<T>, 'execute' | 'onComplete'> & {
+export type OfflineOptions<T> = Omit<OfflineFirstOptions<T>, 'execute' | 'onComplete' | 'onDiscard'> & {
     network?: Network;
     onComplete?: (options: { id: string; offlinePayload: OfflineRecordCache<T>; snapshot: Snapshot; response: any }) => Promise<boolean>;
     onDiscard?: (options: { id: string; offlinePayload: OfflineRecordCache<T>; error: Error }) => Promise<boolean>;
