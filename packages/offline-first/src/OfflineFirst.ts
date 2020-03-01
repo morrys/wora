@@ -86,18 +86,11 @@ class OfflineFirst<T> {
         return manualExecution;
     }
 
-    public addNetInfoListener(callback: (info: any) => void, onlyIsConnected = true): { remove: () => void } {
-        if (onlyIsConnected) {
-            return NetInfo.isConnected.addEventListener('connectionChange', (isConnected: boolean) => callback(isConnected));
-        }
-        return NetInfo.addEventListener((netinfo: any) => callback(netinfo));
-    }
-
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
             this.promisesRestore = Promise.all([NetInfo.isConnected.fetch(), this.offlineStore.restore()])
                 .then((result) => {
-                    this.addNetInfoListener((isConnected: boolean) => {
+                    NetInfo.isConnected.addEventListener('connectionChange', (isConnected: boolean) => {
                         this.online = isConnected;
                         if (isConnected && !this.isManualExecution()) {
                             this.process();
