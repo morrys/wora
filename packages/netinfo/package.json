@@ -1,6 +1,6 @@
 {
   "name": "@wora/netinfo",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "keywords": [
     "wora",
     "react-native",
@@ -29,7 +29,8 @@
     "clean-dep": "rimraf node_modules/*",
     "prepare": "npm run build",
     "prebuild": "npm run clean",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "jest --coverage"
   },
   "dependencies": {
     "array-find-index": "1.0.2",
