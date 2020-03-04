@@ -20,7 +20,8 @@ import { CacheOptions } from "@wora/cache-persist";
 const defaultTTL: number = 10 * 60 * 1000, // optional, default
 const persistOptions: CacheOptions = { defaultTTL }; // optional, default
 const persistOptionsRecords: CacheOptions = {}; // optional, default
-const store = new Store(persistOptions, persistOptionsRecords);
+const recordSource = new RecordSource(persistOptionsRecords);
+const store = new Store(recordSource, persistOptions);
 
 
 // ...
