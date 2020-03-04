@@ -16,17 +16,16 @@ yarn add @wora/relay-store
 ```ts
 import { RecordSource, Store } from '@wora/relay-store';
 import { CacheOptions } from "@wora/cache-persist";
+import { Environment } from 'relay-runtime';
 
 const defaultTTL: number = 10 * 60 * 1000, // optional, default
 const persistOptions: CacheOptions = { defaultTTL }; // optional, default
 const persistOptionsRecords: CacheOptions = {}; // optional, default
 const recordSource = new RecordSource(persistOptionsRecords);
 const store = new Store(recordSource, persistOptions);
-
+const environment = new Environment({network, store});
 
 // ...
-
-// await before instantiating RelayModernEnvironment, else queries might run before the cache is persisted
 
 await store.hydrate();
 
