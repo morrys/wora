@@ -14,7 +14,7 @@ yarn add @wora/relay-store
 ### Examples
 
 ```ts
-import { Store } from '@wora/relay-store';
+import { RecordSource, Store } from '@wora/relay-store';
 import { CacheOptions } from "@wora/cache-persist";
 
 const defaultTTL: number = 10 * 60 * 1000, // optional, default
