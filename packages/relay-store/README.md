@@ -18,16 +18,16 @@ import { Store } from '@wora/relay-store';
 import { CacheOptions } from "@wora/cache-persist";
 
 const defaultTTL: number = 10 * 60 * 1000, // optional, default
-const persistOptions: CacheOptions = {}; // optional, default
+const persistOptions: CacheOptions = { defaultTTL }; // optional, default
 const persistOptionsRecords: CacheOptions = {}; // optional, default
-const store = new Store(defaultTTL, persistOptions, persistOptionsRecords);
+const store = new Store(persistOptions, persistOptionsRecords);
 
 
 // ...
 
 // await before instantiating RelayModernEnvironment, else queries might run before the cache is persisted
 
-await store.restore();
+await store.hydrate();
 
 ```
 
