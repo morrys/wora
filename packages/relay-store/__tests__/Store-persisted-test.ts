@@ -1,8 +1,8 @@
 import * as RelayModernRecord from 'relay-runtime/lib/store/RelayModernRecord';
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
-import RelayRecordSourceObjectImpl from 'relay-runtime/lib/store/RelayRecordSourceObjectImpl';
+import RelayRecordSourceObjectImpl from 'relay-runtime/lib/store/RelayRecordSourceMapImpl';
 
-import { getRequest } from 'relay-runtime/lib/query/RelayModernGraphQLTag';
+import { getRequest } from 'relay-runtime/lib/query/GraphQLTag';
 import { createOperationDescriptor, createReaderSelector, createNormalizationSelector, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
 const { generateAndCompile, simpleClone } = require('relay-test-utils-internal');
 jest.useFakeTimers();
@@ -34,10 +34,11 @@ function createPersistedStorage(clientState = {}) {
     } as any;
 }
 
-const getRecordSourceImplementation = (data) => new WoraRecordSource({ storage: createPersistedStorage(data) });
+const getRecordSourceImplementation = (data) => new WoraRecordSource({ storage: createPersistedStorage({...data}), initialState: {...data} });
 const ImplementationName = 'Wora Persist';
 describe(`Relay Store with ${ImplementationName} Record Source`, () => {
     describe('retain()', () => {
+        let UserQuery;
         let UserFragment;
         let data;
         let initialData;
@@ -47,22 +48,28 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         beforeEach(async () => {
             data = {
                 '4': {
-                    __id: '4',
-                    id: '4',
-                    __typename: 'User',
-                    name: 'Zuck',
-                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
+                  __id: '4',
+                  id: '4',
+                  __typename: 'User',
+                  name: 'Zuck',
+                  'profilePicture(size:32)': {[REF_KEY]: 'client:1'},
                 },
                 'client:1': {
-                    __id: 'client:1',
-                    uri: 'https://photo1.jpg',
+                  __id: 'client:1',
+                  uri: 'https://photo1.jpg',
                 },
-            };
+                'client:root': {
+                  __id: 'client:root',
+                  __typename: '__Root',
+                  'node(id:"4")': {__ref: '4'},
+                },
+              };
             initialData = simpleClone(data);
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, { prefix: 't1', defaultTTL: -1 });
             await store.hydrate();
-            ({ UserFragment } = generateAndCompile(`
+            await store._cache.purge();
+            ({ UserFragment, UserQuery } = generateAndCompile(`
           query UserQuery($size: Int) {
             me {
               ...UserFragment
@@ -79,13 +86,15 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('prevents data from being collected', () => {
-            store.retain(createNormalizationSelector(UserFragment, '4', { size: 32 }));
+            store.retain(createOperationDescriptor(UserQuery, {id: '4', size: 32}));
             jest.runOnlyPendingTimers();
             expect(source.toJSON()).toEqual(initialData);
         });
 
         it('frees data when disposed', () => {
-            const { dispose } = store.retain(createNormalizationSelector(UserFragment, '4', { size: 32 }));
+            const {dispose} = store.retain(
+                createOperationDescriptor(UserQuery, {id: '4', size: 32}),
+              );
             dispose();
             expect(data).toEqual(initialData);
             jest.runOnlyPendingTimers();
@@ -93,32 +102,38 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('only collects unreferenced data', () => {
-            const { JoeFragment } = generateAndCompile(`
-          fragment JoeFragment on Query @argumentDefinitions(
-            id: {type: "ID"}
-          ) {
-            node(id: $id) {
-              ... on User {
-                name
-              }
+            const { JoeQuery } = generateAndCompile(`
+            fragment JoeFragment on Query @argumentDefinitions(
+                id: {type: "ID"}
+            ) {
+                node(id: $id) {
+                ... on User {
+                    name
+                }
+                }
             }
-          }
-        `);
+            query JoeQuery($id: ID!) {
+                ...JoeFragment @arguments(id: $id)
+            }
+            `);
             const nextSource = getRecordSourceImplementation({
                 '842472': {
-                    __id: '842472',
-                    __typename: 'User',
-                    name: 'Joe',
+                __id: '842472',
+                __typename: 'User',
+                name: 'Joe',
                 },
                 [ROOT_ID]: {
-                    __id: ROOT_ID,
-                    __typename: ROOT_TYPE,
-                    'node(id:"842472")': { [REF_KEY]: '842472' },
+                __id: ROOT_ID,
+                __typename: ROOT_TYPE,
+                'node(id:"842472")': {[REF_KEY]: '842472'},
+                'node(id:"4")': {[REF_KEY]: '4'},
                 },
             });
             store.publish(nextSource);
-            const { dispose } = store.retain(createNormalizationSelector(UserFragment, '4', { size: 32 }));
-            store.retain(createNormalizationSelector(JoeFragment, ROOT_ID, { id: '842472' }));
+            const {dispose} = store.retain(
+                createOperationDescriptor(UserQuery, {id: '4', size: 32}),
+              );
+              store.retain(createOperationDescriptor(JoeQuery, {id: '842472'}));
 
             dispose(); // release one of the holds but not the other
             jest.runOnlyPendingTimers();
@@ -148,8 +163,9 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                 },
             };
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, { prefix: 't2', defaultTTL: -1 });
             await store.hydrate();
+            await store._cache.purge();
             ({ UserFragment, UserQuery } = generateAndCompile(`
           fragment UserFragment on User {
             name
@@ -297,21 +313,28 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         beforeEach(async () => {
             data = {
                 '4': {
-                    __id: '4',
-                    id: '4',
-                    __typename: 'User',
-                    name: 'Zuck',
-                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
-                    emailAddresses: ['a@b.com'],
+                  __id: '4',
+                  id: '4',
+                  __typename: 'User',
+                  name: 'Zuck',
+                  'profilePicture(size:32)': {[REF_KEY]: 'client:1'},
+                  emailAddresses: ['a@b.com'],
                 },
                 'client:1': {
-                    __id: 'client:1',
-                    uri: 'https://photo1.jpg',
+                  __id: 'client:1',
+                  uri: 'https://photo1.jpg',
                 },
-            };
+                'client:root': {
+                  __id: 'client:root',
+                  __typename: '__Root',
+                  'node(id:"4")': {__ref: '4'},
+                  me: {__ref: '4'},
+                },
+              };
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, { prefix: 't3', defaultTTL: -1 });
             await store.hydrate();
+            await store._cache.purge();
             ({ UserFragment, UserQuery } = generateAndCompile(`
           fragment UserFragment on User {
             name
@@ -358,12 +381,19 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                     emailAddresses: ['a@b.com'],
                 },
                 seenRecords: {
-                    ...data,
-                    'client:1': {
-                        ...data['client:1'],
-                        uri: 'https://photo2.jpg',
+                    '4': {
+                      __id: '4',
+                      id: '4',
+                      __typename: 'User',
+                      name: 'Zuck',
+                      'profilePicture(size:32)': {[REF_KEY]: 'client:1'},
+                      emailAddresses: ['a@b.com'],
                     },
-                },
+                    'client:1': {
+                      ...data['client:1'],
+                      uri: 'https://photo2.jpg',
+                    },
+                  },
             });
         });
 
@@ -413,12 +443,19 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                     emailAddresses: ['a@b.com'],
                 },
                 seenRecords: {
-                    ...data,
-                    'client:1': {
-                        ...data['client:1'],
-                        uri: 'https://photo2.jpg',
+                    '4': {
+                      __id: '4',
+                      id: '4',
+                      __typename: 'User',
+                      name: 'Zuck',
+                      'profilePicture(size:32)': {[REF_KEY]: 'client:1'},
+                      emailAddresses: ['a@b.com'],
                     },
-                },
+                    'client:1': {
+                      ...data['client:1'],
+                      uri: 'https://photo2.jpg',
+                    },
+                  },
             });
             expect(callback.mock.calls[0][0].selector).toBe(selector);
         });
@@ -514,8 +551,9 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                 },
             };
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, { prefix: 't4', defaultTTL: -1 });
             await store.hydrate();
+            await store._cache.purge();
             const owner = createOperationDescriptor(UserQuery, {});
             const selector = createReaderSelector(UserFragment, '4', { size: 32 }, owner.request);
             const snapshot = store.lookup(selector);
@@ -719,6 +757,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
     });
 
     describe('check()', () => {
+        let UserQuery;
         let UserFragment;
         let data;
         let source;
@@ -727,39 +766,55 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         beforeEach(async () => {
             data = {
                 '4': {
-                    __id: '4',
-                    id: '4',
-                    __typename: 'User',
-                    name: 'Zuck',
-                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
+                  __id: '4',
+                  id: '4',
+                  __typename: 'User',
+                  name: 'Zuck',
+                  'profilePicture(size:32)': {[REF_KEY]: 'client:1'},
                 },
                 'client:1': {
-                    __id: 'client:1',
-                    uri: 'https://photo1.jpg',
+                  __id: 'client:1',
+                  uri: 'https://photo1.jpg',
                 },
-            };
+                'client:root': {
+                  __id: 'client:root',
+                  __typename: '__Root',
+                  'node(id:"4")': {__ref: '4'},
+                },
+              };
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, { prefix: 't5', defaultTTL: -1 });
             await store.hydrate();
-            ({ UserFragment } = generateAndCompile(`
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
+            await store._cache.purge();
+            ({ UserQuery } = generateAndCompile(`
+            fragment UserFragment on User {
+                name
+                profilePicture(size: $size) {
+                  uri
+                }
+              }
+          query UserQuery($id: ID!, $size: [Int]) {
+            node(id: $id) {
+              ...UserFragment
             }
           }
         `));
         });
 
-        it('returns true if all data exists in the cache', () => {
-            const selector = createNormalizationSelector(UserFragment, '4', {
+        it('returns available if all data exists in the cache', () => {
+            const operation = createOperationDescriptor(UserQuery, {
+                id: '4',
                 size: 32,
             });
-            expect(store.check(selector)).toBe(true);
+            expect(store.check(operation)).toEqual({
+                status: 'available',
+                fetchTime: null,
+              });
         });
 
-        it('returns false if a scalar field is missing', () => {
-            const selector = createNormalizationSelector(UserFragment, '4', {
+        it('returns missing if a scalar field is missing', () => {
+            const operation = createOperationDescriptor(UserQuery, {
+                id: '4',
                 size: 32,
             });
             store.publish(
@@ -770,37 +825,42 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                     },
                 }),
             );
-            expect(store.check(selector)).toBe(false);
+            expect(store.check(operation)).toEqual({status: 'missing'});
         });
 
-        it('returns false if a linked field is missing', () => {
-            const selector = createNormalizationSelector(UserFragment, '4', {
+        it('returns missing if a linked field is missing', () => {
+            const operation = createOperationDescriptor(UserQuery, {
+                id: '4',
                 size: 64,
             });
-            expect(store.check(selector)).toBe(false);
+            expect(store.check(operation)).toEqual({status: 'missing'});
         });
 
-        it('returns false if a linked record is missing', async () => {
+        it('returns missing if a linked record is missing', async () => {
             // $FlowFixMe found deploying v0.109.0
             delete data['client:1']; // profile picture
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, { prefix: 't6', defaultTTL: -1 });
             await store.hydrate();
-            const selector = createNormalizationSelector(UserFragment, '4', {
+            await store._cache.purge();
+            const operation = createOperationDescriptor(UserQuery, {
+                id: '4',
                 size: 32,
             });
-            expect(store.check(selector)).toBe(false);
+            expect(store.check(operation)).toEqual({status: 'missing'});
         });
 
-        it('returns false if the root record is missing', () => {
-            const selector = createNormalizationSelector(UserFragment, '842472', {
+        it('returns missing if the root record is missing', () => {
+            const operation = createOperationDescriptor(UserQuery, {
+                id: '842472',
                 size: 32,
             });
-            expect(store.check(selector)).toBe(false);
+            expect(store.check(operation)).toEqual({status: 'missing'});
         });
     });
 
     describe('GC Scheduler', () => {
+        let UserQuery;
         let UserFragment;
         let data;
         let initialData;
@@ -812,35 +872,48 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         beforeEach(async () => {
             data = {
                 '4': {
-                    __id: '4',
-                    id: '4',
-                    __typename: 'User',
-                    name: 'Zuck',
-                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
+                  __id: '4',
+                  id: '4',
+                  __typename: 'User',
+                  name: 'Zuck',
+                  'profilePicture(size:32)': {[REF_KEY]: 'client:1'},
                 },
                 'client:1': {
-                    __id: 'client:1',
-                    uri: 'https://photo1.jpg',
+                  __id: 'client:1',
+                  uri: 'https://photo1.jpg',
                 },
-            };
+                'client:root': {
+                  __id: 'client:root',
+                  __typename: '__Root',
+                  'node(id:"4")': {__ref: '4'},
+                },
+              };
             initialData = simpleClone(data);
             callbacks = [];
             scheduler = jest.fn(callbacks.push.bind(callbacks));
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 }, { gcScheduler: scheduler });
+            store = new RelayModernStore(source, { prefix: 't7', defaultTTL: -1 }, { gcScheduler: scheduler });
             await store.hydrate();
-            ({ UserFragment } = generateAndCompile(`
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-          }
-        `));
+            await store._cache.purge();
+            ({ UserQuery, UserFragment } = generateAndCompile(`
+                fragment UserFragment on User {
+                    name
+                    profilePicture(size: $size) {
+                    uri
+                    }
+                }
+                query UserQuery($id: ID!, $size: [Int]) {
+                    node(id: $id) {
+                    ...UserFragment
+                    }
+                }
+                `));
         });
 
         it('calls the gc scheduler function when GC should run', () => {
-            const { dispose } = store.retain(createNormalizationSelector(UserFragment, '4', { size: 32 }));
+            const {dispose} = store.retain(
+                createOperationDescriptor(UserQuery, {id: '4', size: 32}),
+              );
             expect(scheduler).not.toBeCalled();
             dispose();
             expect(scheduler).toBeCalled();
@@ -848,7 +921,9 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('Runs GC when the GC scheduler executes the task', () => {
-            const { dispose } = store.retain(createNormalizationSelector(UserFragment, '4', { size: 32 }));
+            const {dispose} = store.retain(
+                createOperationDescriptor(UserQuery, {id: '4', size: 32}),
+              );
             dispose();
             expect(source.toJSON()).toEqual(initialData);
             callbacks[0](); // run gc
@@ -857,6 +932,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
     });
 
     describe('holdGC()', () => {
+        let UserQuery;
         let UserFragment;
         let data;
         let initialData;
@@ -866,34 +942,46 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         beforeEach(async () => {
             data = {
                 '4': {
-                    __id: '4',
-                    id: '4',
-                    __typename: 'User',
-                    name: 'Zuck',
-                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
+                  __id: '4',
+                  id: '4',
+                  __typename: 'User',
+                  name: 'Zuck',
+                  'profilePicture(size:32)': {[REF_KEY]: 'client:1'},
                 },
                 'client:1': {
-                    __id: 'client:1',
-                    uri: 'https://photo1.jpg',
+                  __id: 'client:1',
+                  uri: 'https://photo1.jpg',
                 },
-            };
+                'client:root': {
+                  __id: 'client:root',
+                  __typename: '__Root',
+                  'node(id:"4")': {__ref: '4'},
+                },
+              };
             initialData = simpleClone(data);
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, { prefix: 't8', defaultTTL: -1 });
             await store.hydrate();
-            ({ UserFragment } = generateAndCompile(`
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-          }
-        `));
-        });
+            await store._cache.purge();
+            ({ UserQuery, UserFragment } = generateAndCompile(`
+                    fragment UserFragment on User {
+                        name
+                        profilePicture(size: $size) {
+                        uri
+                        }
+                    }
+                    query UserQuery($id: ID!, $size: [Int]) {
+                        node(id: $id) {
+                        ...UserFragment
+                        }
+                    }
+            `));
 
         it('prevents data from being collected with disabled GC, and reruns GC when it is enabled', () => {
             const gcHold = store.holdGC();
-            const { dispose } = store.retain(createNormalizationSelector(UserFragment, '4', { size: 32 }));
+            const {dispose} = store.retain(
+                createOperationDescriptor(UserQuery, {id: '4', size: 32}),
+              );
             dispose();
             expect(data).toEqual(initialData);
             jest.runOnlyPendingTimers();
