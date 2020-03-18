@@ -26,9 +26,9 @@
   "scripts": {
     "clean": "rimraf lib/*",
     "clean-dep": "rimraf node_modules/*",
-    "prepare": "npm run build",
-    "prebuild": "npm run clean",
-    "build": "tsc",
+    "precompile": "npm run clean",
+    "compile": "tsc",
+    "prepublishOnly": "npm run build",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "test": "jest --coverage"
