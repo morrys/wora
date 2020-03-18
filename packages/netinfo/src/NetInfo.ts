@@ -8,7 +8,7 @@
  * @flow
  */
 import ExecutionEnvironment from 'fbjs/lib/ExecutionEnvironment';
-import * as findIndex from 'array-find-index';
+import findIndex from 'array-find-index';
 
 const connection =
     ExecutionEnvironment.canUseDOM &&
@@ -42,7 +42,7 @@ const connectionListeners = [];
  * Network Connection API: https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation
  */
 const NetInfo = {
-    addEventListener(handler: Function): { remove: () => void } {
+    addEventListener(type: string, handler: Function): { remove: () => void } {
         if (!connection) {
             console.error('Network Connection API is not supported. Not listening for connection type changes.');
             return {
@@ -54,11 +54,11 @@ const NetInfo = {
         netInfoListeners.push([handler, wrappedHandler]);
         connection.addEventListener('change', wrappedHandler);
         return {
-            remove: () => NetInfo.removeEventListener(handler),
+            remove: () => NetInfo.removeEventListener('change', handler),
         };
     },
 
-    removeEventListener(handler: Function): void {
+    removeEventListener(type: string, handler: Function): void {
         const listenerIndex = findIndex(netInfoListeners, (pair) => pair[0] === handler);
         const [, wrappedHandler] = netInfoListeners[listenerIndex];
         connection.removeEventListener('change', wrappedHandler);
