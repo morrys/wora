@@ -8,7 +8,7 @@ export function useNetInfo(NetInfo): any {
     });
 
     useEffect((): (() => void) => {
-        const dispose = NetInfo.addEventListener(setNetInfo);
+        const dispose = NetInfo.addEventListener('connectionChange', setNetInfo);
         return (): any => dispose.remove();
     }, []);
 
