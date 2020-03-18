@@ -45,9 +45,9 @@
     "relay-runtime": ">=6.0.0"
   },
   "devDependencies": {
-    "relay-runtime": "7.0.0",
-    "relay-test-utils": "7.0.0",
-    "babel-plugin-relay": "7.0.0"
+    "relay-runtime": "9.0.0",
+    "relay-test-utils": "9.0.0",
+    "babel-plugin-relay": "9.0.0"
   },
   "gitHead": "0ceaff4e89ec8a1a5b5547b803f67bcb9166c5af"
 }
