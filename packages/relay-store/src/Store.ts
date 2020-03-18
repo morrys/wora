@@ -3,12 +3,11 @@ import { Disposable, OperationDescriptor, RequestDescriptor, OperationAvailabili
 
 import * as RelayReferenceMarker from 'relay-runtime/lib/store/RelayReferenceMarker';
 
-import {Availability} from 'relay-runtime/lib/store/DataChecker';
-import {CheckOptions} from 'relay-runtime/lib/store/RelayStoreTypes';
+import { Availability } from 'relay-runtime/lib/store/DataChecker';
+import { CheckOptions } from 'relay-runtime/lib/store/RelayStoreTypes';
 import Cache, { CacheOptions } from '@wora/cache-persist';
 import RecordSource from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
-
 
 export type CacheOptionsStore = CacheOptions & {
     defaultTTL?: number;
@@ -48,13 +47,13 @@ export default class Store extends RelayModernStore {
         return Promise.all([this._cache.restore(), (this as any)._recordSource.restore()]);
     }
 
-    public getID(operation: OperationDescriptor) {
+    public getID(operation: OperationDescriptor): string {
         return operation.root.node.name + '.' + JSON.stringify(operation.root.variables);
     }
 
     public retain(operation: OperationDescriptor, retainConfig: { ttl?: number } = {}): Disposable {
         const { ttl = this._defaultTTL } = retainConfig;
-        
+
         const id = this.getID(operation);
 
         const dispose = (): void => {
@@ -95,136 +94,113 @@ export default class Store extends RelayModernStore {
         }
         // Don't run GC while there are optimistic updates applied
         if ((this as any)._optimisticSource != null) {
-          return;
+            return;
         }
         const references = new Set();
         // Mark all records that are traversable from a root
         this._cache.getAllKeys().forEach((id) => {
             const { operation } = this._cache.get(id);
-          const selector = operation.root;
-          RelayReferenceMarker.mark(
-            (this as any)._recordSource,
-            selector,
-            references,
-            (this as any)._operationLoader,
-          );
+            const selector = operation.root;
+            RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
         });
         if (references.size === 0) {
-          // Short-circuit if *nothing* is referenced
-          (this as any)._recordSource.clear();
+            // Short-circuit if *nothing* is referenced
+            (this as any)._recordSource.clear();
         } else {
-          // Evict any unreferenced nodes
-          const storeIDs = (this as any)._recordSource.getRecordIDs();
-          for (let ii = 0; ii < storeIDs.length; ii++) {
-            const dataID = storeIDs[ii];
-            if (!references.has(dataID)) {
-                (this as any)._recordSource.remove(dataID);
+            // Evict any unreferenced nodes
+            const storeIDs = (this as any)._recordSource.getRecordIDs();
+            for (let ii = 0; ii < storeIDs.length; ii++) {
+                const dataID = storeIDs[ii];
+                if (!references.has(dataID)) {
+                    (this as any)._recordSource.remove(dataID);
+                }
             }
-          }
         }
-      }
+    }
 
     private isCurrent(fetchTime: number, ttl: number): boolean {
         return fetchTime + ttl >= Date.now();
     }
 
-    check(
-        operation: OperationDescriptor,
-        options?: CheckOptions,
-      ): OperationAvailability {
+    check(operation: OperationDescriptor, options?: CheckOptions): OperationAvailability {
         const selector = operation.root;
         const source = (this as any)._optimisticSource ? (this as any)._optimisticSource : (this as any)._recordSource;
         const globalInvalidationEpoch = (this as any)._globalInvalidationEpoch;
-    
+
         const id = this.getID(operation);
         const rootEntry = this._cache.get(id);
         const operationLastWrittenAt = rootEntry != null ? rootEntry.epoch : null;
-    
+
         // Check if store has been globally invalidated
         if (globalInvalidationEpoch != null) {
-          // If so, check if the operation we're checking was last written
-          // before or after invalidation occured.
-          if (
-            operationLastWrittenAt == null ||
-            operationLastWrittenAt <= globalInvalidationEpoch
-          ) {
-            // If the operation was written /before/ global invalidation ocurred,
-            // or if this operation has never been written to the store before,
-            // we will consider the data for this operation to be stale
-            //  (i.e. not resolvable from the store).
-            return {status: 'stale'};
-          }
+            // If so, check if the operation we're checking was last written
+            // before or after invalidation occured.
+            if (operationLastWrittenAt == null || operationLastWrittenAt <= globalInvalidationEpoch) {
+                // If the operation was written /before/ global invalidation ocurred,
+                // or if this operation has never been written to the store before,
+                // we will consider the data for this operation to be stale
+                //  (i.e. not resolvable from the store).
+                return { status: 'stale' };
+            }
         }
-    
+
         const target = options && options.target ? options.target : source;
         const handlers = options && options.handlers ? options.handlers : [];
         const operationAvailability = DataChecker.check(
-          source,
-          target,
-          selector,
-          handlers,
-          (this as any)._operationLoader,
-          (this as any)._getDataID,
+            source,
+            target,
+            selector,
+            handlers,
+            (this as any)._operationLoader,
+            (this as any)._getDataID,
         );
-    
-        return getAvailablityStatus(
-          operationAvailability,
-          operationLastWrittenAt,
-          rootEntry ? rootEntry.fetchTime : undefined,
-        );
-      }
 
-    
+        return getAvailablityStatus(operationAvailability, operationLastWrittenAt, rootEntry ? rootEntry.fetchTime : undefined);
+    }
 
-    public notify(
-        sourceOperation?: OperationDescriptor,
-        invalidateStore?: boolean,
-      ): ReadonlyArray<RequestDescriptor> {
+    public notify(sourceOperation?: OperationDescriptor, invalidateStore?: boolean): ReadonlyArray<RequestDescriptor> {
         // Increment the current write when notifying after executing
         // a set of changes to the store.
-        (this as any)._currentWriteEpoch++;
-    
+        (this as any)._currentWriteEpoch = (this as any)._currentWriteEpoch + 1;
+
         if (invalidateStore === true) {
             (this as any)._globalInvalidationEpoch = (this as any)._currentWriteEpoch;
         }
-    
+
         const source = (this as any).getSource();
         const updatedOwners = [];
-        (this as any)._subscriptions.forEach(subscription => {
-          const owner = (this as any)._updateSubscription(source, subscription);
-          if (owner != null) {
-            updatedOwners.push(owner);
-          }
+        (this as any)._subscriptions.forEach((subscription) => {
+            const owner = (this as any)._updateSubscription(source, subscription);
+            if (owner != null) {
+                updatedOwners.push(owner);
+            }
         });
-        (this as any)._invalidationSubscriptions.forEach(subscription => {
-            (this as any)._updateInvalidationSubscription(
-            subscription,
-            invalidateStore === true,
-          );
+        (this as any)._invalidationSubscriptions.forEach((subscription) => {
+            (this as any)._updateInvalidationSubscription(subscription, invalidateStore === true);
         });
         (this as any)._updatedRecordIDs = {};
         (this as any)._invalidatedRecordIDs.clear();
-    
+
         // If a source operation was provided (indicating the operation
         // that produced this update to the store), record the current epoch
         // at which this operation was written.
         if (sourceOperation != null) {
-          // We only track the epoch at which the operation was written if
-          // it was previously retained, to keep the size of our operation
-          // epoch map bounded. If a query wasn't retained, we assume it can
-          // may be deleted at any moment and thus is not relevant for us to track
-          // for the purposes of invalidation.
-          //const id = sourceOperation.request.identifier;
-          const id = this.getID(sourceOperation);
-          const rootEntry = this._cache.get(id); // wora
-          if (rootEntry != null) {
-            rootEntry.epoch = (this as any)._currentWriteEpoch;
-            rootEntry.fetchTime = rootEntry.fetchTime ? rootEntry.fetchTime : Date.now();
-          }
+            // We only track the epoch at which the operation was written if
+            // it was previously retained, to keep the size of our operation
+            // epoch map bounded. If a query wasn't retained, we assume it can
+            // may be deleted at any moment and thus is not relevant for us to track
+            // for the purposes of invalidation.
+            //const id = sourceOperation.request.identifier;
+            const id = this.getID(sourceOperation);
+            const rootEntry = this._cache.get(id); // wora
+            if (rootEntry != null) {
+                rootEntry.epoch = (this as any)._currentWriteEpoch;
+                rootEntry.fetchTime = rootEntry.fetchTime ? rootEntry.fetchTime : Date.now();
+            }
         }
-    
+
         return updatedOwners;
-      }
+    }
 }
 
 /**
@@ -240,27 +216,25 @@ function getAvailablityStatus(
     opearionAvailability: Availability,
     operationLastWrittenAt: number,
     operationFetchTime: number,
-  ): OperationAvailability {
-    const {mostRecentlyInvalidatedAt, status} = opearionAvailability;
+): OperationAvailability {
+    const { mostRecentlyInvalidatedAt, status } = opearionAvailability;
     if (typeof mostRecentlyInvalidatedAt === 'number') {
-      // If some record referenced by this operation is stale, then the operation itself is stale
-      // if either the operation itself was never written *or* the operation was last written
-      // before the most recent invalidation of its reachable records.
-      if (
-        operationLastWrittenAt == null ||
-        mostRecentlyInvalidatedAt > operationLastWrittenAt
-      ) {
-        return {status: 'stale'};
-      }
+        // If some record referenced by this operation is stale, then the operation itself is stale
+        // if either the operation itself was never written *or* the operation was last written
+        // before the most recent invalidation of its reachable records.
+        if (operationLastWrittenAt == null || mostRecentlyInvalidatedAt > operationLastWrittenAt) {
+            return { status: 'stale' };
+        }
     }
-  
 
     // There were no invalidations of any reachable records *or* the operation is known to have
     // been fetched after the most recent record invalidation.
+    /* eslint-disable indent */
     return status === 'missing'
-      ? {status: 'missing'}
-      : {
-          status: 'available',
-          fetchTime: operationFetchTime ? operationFetchTime : null,
-        };
-  }
+        ? { status: 'missing' }
+        : {
+              status: 'available',
+              fetchTime: operationFetchTime ? operationFetchTime : null,
+          };
+    /* eslint-enable indent */
+}
