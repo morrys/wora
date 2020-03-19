@@ -34,7 +34,7 @@
         "eslint-plugin-react-hooks": "1.7.0",
         "lerna": "^3.16.4",
         "prettier": "1.18.2",
-        "typescript": "3.5.2",
+        "typescript": "3.8.3",
         "@types/react": "16.8.14",
         "@types/react-dom": "16.8.4",
         "react-native": "0.59.8",

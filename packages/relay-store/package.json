@@ -36,7 +36,7 @@
     "@wora/cache-persist": "file:../cache-persist"
   },
   "peerDependencies": {
-    "relay-runtime": ">=9.0.0"
+    "relay-runtime": ">=8.0.0"
   },
   "devDependencies": {
     "relay-runtime": "^9.0.0",
