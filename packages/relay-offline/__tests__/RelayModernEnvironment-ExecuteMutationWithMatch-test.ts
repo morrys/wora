@@ -180,7 +180,7 @@ describe('executeMutation() with @match', () => {
     operationCallback = jest.fn();
     environment.subscribe(operationSnapshot, operationCallback);
   });
-/*
+
   it('executes the optimistic updater immediately, does not mark the mutation as being in flight in the operation tracker', () => {
     environment
       .executeMutation({
@@ -241,7 +241,7 @@ describe('executeMutation() with @match', () => {
       },
     };
     dataSource.next(payload);
-    jest.runOnlyPendingTimers();
+    jest.runAllTimers();
 
     expect(next.mock.calls.length).toBe(1);
     expect(complete).not.toBeCalled();
@@ -334,7 +334,7 @@ describe('executeMutation() with @match', () => {
       },
     };
     dataSource.next(payload);
-    jest.runOnlyPendingTimers();
+    jest.runAllTimers();
     next.mockClear();
 
     expect(operationLoader.load).toBeCalledTimes(1);
@@ -360,7 +360,7 @@ describe('executeMutation() with @match', () => {
     environment.subscribe(initialMatchSnapshot, matchCallback);
 
     resolveFragment(markdownRendererNormalizationFragment);
-    jest.runOnlyPendingTimers();
+    jest.runAllTimers();
     // next() should not be called when @match resolves, no new GraphQLResponse
     // was received for this case
     expect(next).toBeCalledTimes(0);
@@ -415,7 +415,7 @@ describe('executeMutation() with @match', () => {
     };
     dataSource.next(payload);
     dataSource.complete();
-    jest.runOnlyPendingTimers();
+    jest.runAllTimers();
     expect(complete).toBeCalledTimes(0);
     expect(error).toBeCalledTimes(0);
     expect(next).toBeCalledTimes(1);
@@ -433,7 +433,7 @@ describe('executeMutation() with @match', () => {
       'MarkdownUserNameRenderer_name$normalization.graphql',
     );
     resolveFragment(markdownRendererNormalizationFragment);
-    jest.runOnlyPendingTimers();
+    jest.runAllTimers();
 
     expect(complete).toBeCalledTimes(1);
     expect(error).toBeCalledTimes(0);
@@ -475,14 +475,14 @@ describe('executeMutation() with @match', () => {
       },
     };
     dataSource.next(payload);
-    jest.runOnlyPendingTimers();
+    jest.runAllTimers();
 
     expect(operationLoader.load).toBeCalledTimes(1);
     expect(operationLoader.load.mock.calls[0][0]).toEqual(
       'MarkdownUserNameRenderer_name$normalization.graphql',
     );
     resolveFragment(markdownRendererNormalizationFragment);
-    jest.runOnlyPendingTimers();
+    jest.runAllTimers();
 
     // The mutation affecting the query should still be in flight
     // since the network hasn't completed
@@ -507,7 +507,7 @@ describe('executeMutation() with @match', () => {
         .getOperationTracker()
         .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
     ).toBe(null);
-  });*/
+  });
 
   describe('optimistic updates', () => {
     const optimisticResponse = {
@@ -541,7 +541,7 @@ describe('executeMutation() with @match', () => {
       environment
         .executeMutation({operation, optimisticResponse})
         .subscribe(callbacks);
-      jest.runOnlyPendingTimers();
+      jest.runAllTimers();
 
       expect(next.mock.calls.length).toBe(0);
       expect(complete).not.toBeCalled();
@@ -601,7 +601,6 @@ describe('executeMutation() with @match', () => {
       environment
         .executeMutation({operation, optimisticResponse})
         .subscribe(callbacks);
-      jest.runAllImmediates();
       jest.runAllTimers();
       expect(next.mock.calls.length).toBe(0);
       expect(complete).not.toBeCalled();
@@ -649,7 +648,7 @@ describe('executeMutation() with @match', () => {
         markdown: 'markdown payload',
       });
     });
-/*
+
     it('does not apply aysnc 3D optimistic updates if the server response arrives first', () => {
       operationLoader.load.mockImplementationOnce(() => {
         return new Promise(resolve => {
@@ -689,7 +688,7 @@ describe('executeMutation() with @match', () => {
         },
       };
       dataSource.next(serverPayload);
-      jest.runOnlyPendingTimers();
+      jest.runAllTimers();
 
       expect(next.mock.calls.length).toBe(1);
       expect(complete).not.toBeCalled();
@@ -749,7 +748,7 @@ describe('executeMutation() with @match', () => {
       disposable.unsubscribe();
 
       jest.runAllImmediates();
-      jest.runOnlyPendingTimers();
+      jest.runAllTimers();
 
       expect(next).not.toBeCalled();
       expect(complete).not.toBeCalled();
@@ -778,9 +777,9 @@ describe('executeMutation() with @match', () => {
       environment
         .executeMutation({operation, optimisticResponse})
         .subscribe(callbacks);
-      jest.runOnlyPendingTimers();
+      jest.runAllTimers();
       expect(error.mock.calls.length).toBe(1);
       expect(error.mock.calls[0][0]).toEqual(new Error('<user-error>'));
-    });*/
+    });
   });
 });

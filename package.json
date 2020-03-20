@@ -40,6 +40,6 @@
         "react-native": "0.59.8",
         "react": "16.8.3",
         "rimraf": "2.6.3",
-        "es6-promise": "^4.2.8"
+        "promise-polyfill": "6.1.0"
     }
 }

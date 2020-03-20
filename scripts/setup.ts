@@ -1,1 +1,2 @@
-global.Promise = require('es6-promise').Promise;
+import Promise from 'promise-polyfill';
+global.Promise = Promise;
