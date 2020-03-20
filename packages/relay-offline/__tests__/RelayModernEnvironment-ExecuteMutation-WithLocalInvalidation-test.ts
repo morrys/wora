@@ -309,9 +309,7 @@ describe('executeMutation() with local invalidation', () => {
             body.setValue(bodyValue.toUpperCase(), 'text');
 
             // Invalidate record
-            console.log("invalidate record", comment);
             comment.invalidateRecord();
-            console.log("invalidate record", comment);
           },
         })
         .subscribe(callbacks);
@@ -332,7 +330,6 @@ describe('executeMutation() with local invalidation', () => {
       subject.complete();
       jest.runOnlyPendingTimers();
       // Results of execution are asserted in ExecuteMutation-test.js
-      console.log("expect", store.getSource().get(commentID))
       // Assert that query is currently stale
       expect(environment.check(queryOperation)).toEqual({status: 'stale'});
       // Assert that operation that was written during the same update as invalidation

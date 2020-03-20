@@ -30,4 +30,7 @@ module.exports = {
             statements: 0,
         },
     },
+    setupFiles: [
+        "../../scripts/setup.ts",
+      ],
 };
