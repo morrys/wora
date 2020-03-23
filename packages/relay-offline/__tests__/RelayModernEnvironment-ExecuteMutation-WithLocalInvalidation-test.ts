@@ -13,43 +13,39 @@
 
 'use strict';
 
-import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment} from '../src';
+import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor, createReaderSelector } from 'relay-runtime';
 import { createPersistedStorage } from './Utils';
 const { generateAndCompile } = require('relay-test-utils-internal');
 jest.useFakeTimers();
 
 const RelayRecordSource = {
-  create: (data) => new RecordSource({ storage: createPersistedStorage(), initialState: {...data}})
-}
+    create: (data) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
+};
 
 describe('executeMutation() with local invalidation', () => {
-  let callbacks;
-  let commentID;
-  let CommentFragment;
-  let CommentQuery;
-  let complete;
-  let CreateCommentMutation;
-  let environment;
-  let error;
-  let fetch;
-  let operation;
-  let queryOperation;
-  let source;
-  let store;
-  let subject;
-  let variables;
-  let queryVariables;
+    let callbacks;
+    let commentID;
+    let CommentFragment;
+    let CommentQuery;
+    let complete;
+    let CreateCommentMutation;
+    let environment;
+    let error;
+    let fetch;
+    let operation;
+    let queryOperation;
+    let source;
+    let store;
+    let subject;
+    let variables;
+    let queryVariables;
 
-  beforeEach(async () => {
-    jest.resetModules();
-    commentID = 'comment-id';
+    beforeEach(async () => {
+        jest.resetModules();
+        commentID = 'comment-id';
 
-    ({
-      CreateCommentMutation,
-      CommentFragment,
-      CommentQuery,
-    } = generateAndCompile(`
+        ({ CreateCommentMutation, CommentFragment, CommentQuery } = generateAndCompile(`
         mutation CreateCommentMutation($input: CommentCreateInput!) {
           commentCreate(input: $input) {
             comment {
@@ -75,289 +71,269 @@ describe('executeMutation() with local invalidation', () => {
           }
         }
       `));
-    variables = {
-      input: {
-        clientMutationId: '0',
-        feedbackId: '1',
-      },
-    };
-    queryVariables = {
-      id: commentID,
-    };
-    operation = createOperationDescriptor(CreateCommentMutation, variables);
-    queryOperation = createOperationDescriptor(CommentQuery, queryVariables);
-
-    fetch = jest.fn((_query, _variables, _cacheConfig) =>
-      RelayObservable.create(sink => {
-        subject = sink;
-      }),
-    );
-    source = RelayRecordSource.create({
-      'client:root': {
-        __id: 'client:root',
-        __typename: '__Root',
-        'node(id:"comment-id")': {__ref: 'comment-id'},
-      },
-    });
-    store = new RelayModernStore(source, { storage: createPersistedStorage(), defaultTTL: -1});
-    environment = new RelayModernEnvironment({
-      network: RelayNetwork.create(fetch),
-      store,
-    });
-    await environment.hydrate();
-    complete = jest.fn();
-    error = jest.fn();
-    callbacks = {complete, error};
-  });
-
-  it('local invalidation is a no-op if called during optimistic update', () => {
-    const selector = createReaderSelector(
-      CommentFragment,
-      commentID,
-      {},
-      queryOperation.request,
-    );
-    const snapshot = environment.lookup(selector);
-    const callback = jest.fn();
-    environment.subscribe(snapshot, callback);
-
-    environment
-      .executeMutation({
-        operation,
-        optimisticUpdater: _store => {
-          const comment = _store.create(commentID, 'Comment');
-          comment.setValue(commentID, 'id');
-          const body = _store.create(commentID + '.text', 'Text');
-          comment.setLinkedRecord(body, 'body');
-          body.setValue('Give Relay', 'text');
-
-          // Invalidate record
-          comment.invalidateRecord();
-        },
-      })
-      .subscribe(callbacks);
-    // Results of execution are asserted in ExecuteMutation-test.js
-
-    // Assert that store invalidation during optimistic update
-    // was a no-op
-    expect(environment.check(queryOperation)).toEqual({
-      status: 'available',
-      fetchTime: null,
-    });
-  });
-
-  describe('when record invalidated inside updater after server payload', () => {
-    it('correctly invalidates the record when query has never been written before', () => {
-      const selector = createReaderSelector(
-        CommentFragment,
-        commentID,
-        {},
-        queryOperation.request,
-      );
-      const snapshot = environment.lookup(selector);
-      const callback = jest.fn();
-      environment.subscribe(snapshot, callback);
-
-      environment
-        .executeMutation({
-          operation,
-          updater: _store => {
-            const comment = _store.get(commentID);
-            if (!comment) {
-              throw new Error('Expected comment to be in the store');
-            }
-            const body = comment.getLinkedRecord('body');
-            if (!body) {
-              throw new Error('Expected comment to have a body');
-            }
-            const bodyValue: string | null = (body.getValue('text'));
-            if (bodyValue == null) {
-              throw new Error('Expected comment body to have text');
-            }
-            body.setValue(bodyValue.toUpperCase(), 'text');
-
-            // Invalidate record
-            comment.invalidateRecord();
-          },
-        })
-        .subscribe(callbacks);
-
-      callback.mockClear();
-      subject.next({
-        data: {
-          commentCreate: {
-            comment: {
-              id: commentID,
-              body: {
-                text: 'Gave Relay', // server data is lowercase
-              },
+        variables = {
+            input: {
+                clientMutationId: '0',
+                feedbackId: '1',
             },
-          },
-        },
-      });
-      subject.complete();
+        };
+        queryVariables = {
+            id: commentID,
+        };
+        operation = createOperationDescriptor(CreateCommentMutation, variables);
+        queryOperation = createOperationDescriptor(CommentQuery, queryVariables);
 
-      // Results of execution are asserted in ExecuteMutation-test.js
-
-      // Assert that store was correctly invalidated
-      expect(environment.check(queryOperation)).toEqual({status: 'stale'});
-      // Assert that operation that was written during the same update as invalidation
-      // is also stale
-      expect(environment.check(operation)).toEqual({status: 'stale'});
-    });
-
-    it('correctly invalidates the record when query was written before invalidation', () => {
-      // Write operation before running invalidation
-      environment.retain(queryOperation);
-      environment.commitPayload(queryOperation, {
-        node: {
-          __typename: 'Comment',
-          id: commentID,
-          body: {
-            text: 'Foo',
-          },
-        },
-      });
-      jest.runOnlyPendingTimers();
-
-      // Execute mutation
-      const selector = createReaderSelector(
-        CommentFragment,
-        commentID,
-        {},
-        queryOperation.request,
-      );
-      const snapshot = environment.lookup(selector);
-      const callback = jest.fn();
-      environment.subscribe(snapshot, callback);
-
-      environment
-        .executeMutation({
-          operation,
-          updater: _store => {
-            const comment = _store.get(commentID);
-            if (!comment) {
-              throw new Error('Expected comment to be in the store');
-            }
-            const body = comment.getLinkedRecord('body');
-            if (!body) {
-              throw new Error('Expected comment to have a body');
-            }
-            const bodyValue: string | null = (body.getValue('text'));
-            if (bodyValue == null) {
-              throw new Error('Expected comment body to have text');
-            }
-            body.setValue(bodyValue.toUpperCase(), 'text');
-
-            // Invalidate record
-            comment.invalidateRecord();
-          },
-        })
-        .subscribe(callbacks);
-
-      callback.mockClear();
-      subject.next({
-        data: {
-          commentCreate: {
-            comment: {
-              id: commentID,
-              body: {
-                text: 'Gave Relay', // server data is lowercase
-              },
+        fetch = jest.fn((_query, _variables, _cacheConfig) =>
+            RelayObservable.create((sink) => {
+                subject = sink;
+            }),
+        );
+        source = RelayRecordSource.create({
+            'client:root': {
+                __id: 'client:root',
+                __typename: '__Root',
+                'node(id:"comment-id")': { __ref: 'comment-id' },
             },
-          },
-        },
-      });
-      subject.complete();
-      // Results of execution are asserted in ExecuteMutation-test.js
-
-      // Assert that store was correctly invalidated
-      expect(environment.check(queryOperation)).toEqual({status: 'stale'});
-      // Assert that operation that was written during the same update as invalidation
-      // is also stale
-      expect(environment.check(operation)).toEqual({status: 'stale'});
+        });
+        store = new RelayModernStore(source, { storage: createPersistedStorage(), defaultTTL: -1 });
+        environment = new RelayModernEnvironment({
+            network: RelayNetwork.create(fetch),
+            store,
+        });
+        await environment.hydrate();
+        complete = jest.fn();
+        error = jest.fn();
+        callbacks = { complete, error };
     });
 
-    it('correctly invalidates the record when query is written after invalidation', async () => {
-      // Execute mutation
-      const selector = createReaderSelector(
-        CommentFragment,
-        commentID,
-        {},
-        queryOperation.request,
-      );
-      const snapshot = environment.lookup(selector);
-      const callback = jest.fn();
-      environment.subscribe(snapshot, callback);
+    it('local invalidation is a no-op if called during optimistic update', () => {
+        const selector = createReaderSelector(CommentFragment, commentID, {}, queryOperation.request);
+        const snapshot = environment.lookup(selector);
+        const callback = jest.fn();
+        environment.subscribe(snapshot, callback);
 
-      environment
-        .executeMutation({
-          operation,
-          updater: _store => {
-            const comment = _store.get(commentID);
-            if (!comment) {
-              throw new Error('Expected comment to be in the store');
-            }
-            const body = comment.getLinkedRecord('body');
-            if (!body) {
-              throw new Error('Expected comment to have a body');
-            }
-            const bodyValue: string | null = (body.getValue('text'));
-            if (bodyValue == null) {
-              throw new Error('Expected comment body to have text');
-            }
-            body.setValue(bodyValue.toUpperCase(), 'text');
+        environment
+            .executeMutation({
+                operation,
+                optimisticUpdater: (_store) => {
+                    const comment = _store.create(commentID, 'Comment');
+                    comment.setValue(commentID, 'id');
+                    const body = _store.create(commentID + '.text', 'Text');
+                    comment.setLinkedRecord(body, 'body');
+                    body.setValue('Give Relay', 'text');
 
-            // Invalidate record
-            comment.invalidateRecord();
-          },
-        })
-        .subscribe(callbacks);
+                    // Invalidate record
+                    comment.invalidateRecord();
+                },
+            })
+            .subscribe(callbacks);
+        // Results of execution are asserted in ExecuteMutation-test.js
 
-      callback.mockClear();
-      subject.next({
-        data: {
-          commentCreate: {
-            comment: {
-              id: commentID,
-              body: {
-                text: 'Gave Relay', // server data is lowercase
-              },
-            },
-          },
-        },
-      });
-      subject.complete();
-      jest.runOnlyPendingTimers();
-      // Results of execution are asserted in ExecuteMutation-test.js
-      // Assert that query is currently stale
-      expect(environment.check(queryOperation)).toEqual({status: 'stale'});
-      // Assert that operation that was written during the same update as invalidation
-      // is also stale
-      expect(environment.check(operation)).toEqual({status: 'stale'});
-
-      // Write operation after running invalidation
-      environment.retain(queryOperation);
-      const fetchTime = Date.now();
-      jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
-      environment.commitPayload(queryOperation, {
-        node: {
-          __typename: 'Comment',
-          id: commentID,
-          body: {
-            text: 'Foo',
-          },
-        },
-      });
-      jest.runOnlyPendingTimers();
-      // Assert that query is currently available
-      expect(environment.check(queryOperation)).toEqual({
-        status: 'available',
-        fetchTime,
-      });
-      // Assert that operation that was written during the same update as invalidation
-      // is still stale
-      expect(environment.check(operation)).toEqual({status: 'stale'});
+        // Assert that store invalidation during optimistic update
+        // was a no-op
+        expect(environment.check(queryOperation)).toEqual({
+            status: 'available',
+            fetchTime: null,
+        });
     });
-  });
+
+    describe('when record invalidated inside updater after server payload', () => {
+        it('correctly invalidates the record when query has never been written before', () => {
+            const selector = createReaderSelector(CommentFragment, commentID, {}, queryOperation.request);
+            const snapshot = environment.lookup(selector);
+            const callback = jest.fn();
+            environment.subscribe(snapshot, callback);
+
+            environment
+                .executeMutation({
+                    operation,
+                    updater: (_store) => {
+                        const comment = _store.get(commentID);
+                        if (!comment) {
+                            throw new Error('Expected comment to be in the store');
+                        }
+                        const body = comment.getLinkedRecord('body');
+                        if (!body) {
+                            throw new Error('Expected comment to have a body');
+                        }
+                        const bodyValue: string | null = body.getValue('text');
+                        if (bodyValue == null) {
+                            throw new Error('Expected comment body to have text');
+                        }
+                        body.setValue(bodyValue.toUpperCase(), 'text');
+
+                        // Invalidate record
+                        comment.invalidateRecord();
+                    },
+                })
+                .subscribe(callbacks);
+
+            callback.mockClear();
+            subject.next({
+                data: {
+                    commentCreate: {
+                        comment: {
+                            id: commentID,
+                            body: {
+                                text: 'Gave Relay', // server data is lowercase
+                            },
+                        },
+                    },
+                },
+            });
+            subject.complete();
+
+            // Results of execution are asserted in ExecuteMutation-test.js
+
+            // Assert that store was correctly invalidated
+            expect(environment.check(queryOperation)).toEqual({ status: 'stale' });
+            // Assert that operation that was written during the same update as invalidation
+            // is also stale
+            expect(environment.check(operation)).toEqual({ status: 'stale' });
+        });
+
+        it('correctly invalidates the record when query was written before invalidation', () => {
+            // Write operation before running invalidation
+            environment.retain(queryOperation);
+            environment.commitPayload(queryOperation, {
+                node: {
+                    __typename: 'Comment',
+                    id: commentID,
+                    body: {
+                        text: 'Foo',
+                    },
+                },
+            });
+            jest.runOnlyPendingTimers();
+
+            // Execute mutation
+            const selector = createReaderSelector(CommentFragment, commentID, {}, queryOperation.request);
+            const snapshot = environment.lookup(selector);
+            const callback = jest.fn();
+            environment.subscribe(snapshot, callback);
+
+            environment
+                .executeMutation({
+                    operation,
+                    updater: (_store) => {
+                        const comment = _store.get(commentID);
+                        if (!comment) {
+                            throw new Error('Expected comment to be in the store');
+                        }
+                        const body = comment.getLinkedRecord('body');
+                        if (!body) {
+                            throw new Error('Expected comment to have a body');
+                        }
+                        const bodyValue: string | null = body.getValue('text');
+                        if (bodyValue == null) {
+                            throw new Error('Expected comment body to have text');
+                        }
+                        body.setValue(bodyValue.toUpperCase(), 'text');
+
+                        // Invalidate record
+                        comment.invalidateRecord();
+                    },
+                })
+                .subscribe(callbacks);
+
+            callback.mockClear();
+            subject.next({
+                data: {
+                    commentCreate: {
+                        comment: {
+                            id: commentID,
+                            body: {
+                                text: 'Gave Relay', // server data is lowercase
+                            },
+                        },
+                    },
+                },
+            });
+            subject.complete();
+            // Results of execution are asserted in ExecuteMutation-test.js
+
+            // Assert that store was correctly invalidated
+            expect(environment.check(queryOperation)).toEqual({ status: 'stale' });
+            // Assert that operation that was written during the same update as invalidation
+            // is also stale
+            expect(environment.check(operation)).toEqual({ status: 'stale' });
+        });
+
+        it('correctly invalidates the record when query is written after invalidation', async () => {
+            // Execute mutation
+            const selector = createReaderSelector(CommentFragment, commentID, {}, queryOperation.request);
+            const snapshot = environment.lookup(selector);
+            const callback = jest.fn();
+            environment.subscribe(snapshot, callback);
+
+            environment
+                .executeMutation({
+                    operation,
+                    updater: (_store) => {
+                        const comment = _store.get(commentID);
+                        if (!comment) {
+                            throw new Error('Expected comment to be in the store');
+                        }
+                        const body = comment.getLinkedRecord('body');
+                        if (!body) {
+                            throw new Error('Expected comment to have a body');
+                        }
+                        const bodyValue: string | null = body.getValue('text');
+                        if (bodyValue == null) {
+                            throw new Error('Expected comment body to have text');
+                        }
+                        body.setValue(bodyValue.toUpperCase(), 'text');
+
+                        // Invalidate record
+                        comment.invalidateRecord();
+                    },
+                })
+                .subscribe(callbacks);
+
+            callback.mockClear();
+            subject.next({
+                data: {
+                    commentCreate: {
+                        comment: {
+                            id: commentID,
+                            body: {
+                                text: 'Gave Relay', // server data is lowercase
+                            },
+                        },
+                    },
+                },
+            });
+            subject.complete();
+            jest.runOnlyPendingTimers();
+            // Results of execution are asserted in ExecuteMutation-test.js
+            // Assert that query is currently stale
+            expect(environment.check(queryOperation)).toEqual({ status: 'stale' });
+            // Assert that operation that was written during the same update as invalidation
+            // is also stale
+            expect(environment.check(operation)).toEqual({ status: 'stale' });
+
+            // Write operation after running invalidation
+            environment.retain(queryOperation);
+            const fetchTime = Date.now();
+            jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
+            environment.commitPayload(queryOperation, {
+                node: {
+                    __typename: 'Comment',
+                    id: commentID,
+                    body: {
+                        text: 'Foo',
+                    },
+                },
+            });
+            jest.runOnlyPendingTimers();
+            // Assert that query is currently available
+            expect(environment.check(queryOperation)).toEqual({
+                status: 'available',
+                fetchTime,
+            });
+            // Assert that operation that was written during the same update as invalidation
+            // is still stale
+            expect(environment.check(operation)).toEqual({ status: 'stale' });
+        });
+    });
 });

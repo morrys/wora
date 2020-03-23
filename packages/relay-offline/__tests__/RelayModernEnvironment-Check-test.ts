@@ -13,25 +13,24 @@
 
 'use strict';
 
-import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment} from '../src';
+import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, createOperationDescriptor } from 'relay-runtime';
 import { createPersistedStorage } from './Utils';
 const { generateAndCompile } = require('relay-test-utils-internal');
 const RelayRecordSource = {
-  create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: {...data}})
-}
-
+    create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
+};
 
 describe('check()', () => {
-  let environment;
-  let operationDescriptor;
-  let ParentQuery;
-  let source;
-  let store;
+    let environment;
+    let operationDescriptor;
+    let ParentQuery;
+    let source;
+    let store;
 
-  beforeEach(async () => {
-    jest.resetModules();
-    ({ParentQuery} = generateAndCompile(`
+    beforeEach(async () => {
+        jest.resetModules();
+        ({ ParentQuery } = generateAndCompile(`
         query ParentQuery($size: [Int]!) {
           me {
             id
@@ -43,60 +42,60 @@ describe('check()', () => {
         }
       `));
 
-    source = RelayRecordSource.create();
-    store = new RelayModernStore(source);
-    environment = new RelayModernEnvironment({
-      network: RelayNetwork.create(jest.fn()),
-      store,
+        source = RelayRecordSource.create();
+        store = new RelayModernStore(source);
+        environment = new RelayModernEnvironment({
+            network: RelayNetwork.create(jest.fn()),
+            store,
+        });
+        operationDescriptor = createOperationDescriptor(ParentQuery, { size: 32 });
+        await environment.hydrate();
     });
-    operationDescriptor = createOperationDescriptor(ParentQuery, {size: 32});
-    await environment.hydrate();
-  });
 
-  it('returns available if all data exists in the environment', () => {
-    environment.commitPayload(operationDescriptor, {
-      me: {
-        id: '4',
-        name: 'Zuck',
-        profilePicture: {
-          uri: 'https://...',
-        },
-      },
+    it('returns available if all data exists in the environment', () => {
+        environment.commitPayload(operationDescriptor, {
+            me: {
+                id: '4',
+                name: 'Zuck',
+                profilePicture: {
+                    uri: 'https://...',
+                },
+            },
+        });
+        expect(environment.check(operationDescriptor)).toEqual({
+            status: 'available',
+            fetchTime: null,
+        });
     });
-    expect(environment.check(operationDescriptor)).toEqual({
-      status: 'available',
-      fetchTime: null,
-    });
-  });
 
-  it('returns available with fetchTime if all data exists in the environment and the query is retained', () => {
-    const fetchTime = Date.now();
-    jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
-    environment.retain(operationDescriptor);
-    environment.commitPayload(operationDescriptor, {
-      me: {
-        id: '4',
-        name: 'Zuck',
-        profilePicture: {
-          uri: 'https://...',
-        },
-      },
+    it('returns available with fetchTime if all data exists in the environment and the query is retained', () => {
+        const fetchTime = Date.now();
+        jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
+        environment.retain(operationDescriptor);
+        environment.commitPayload(operationDescriptor, {
+            me: {
+                id: '4',
+                name: 'Zuck',
+                profilePicture: {
+                    uri: 'https://...',
+                },
+            },
+        });
+        expect(environment.check(operationDescriptor)).toEqual({
+            status: 'available',
+            fetchTime,
+        });
     });
-    expect(environment.check(operationDescriptor)).toEqual({
-      status: 'available',
-      fetchTime,
+    it('returns missing if data is missing from the environment', () => {
+        environment.commitPayload(operationDescriptor, {
+            me: {
+                id: '4',
+                name: 'Zuck',
+                profilePicture: {
+                    uri: undefined,
+                },
+            },
+        });
+        expect(environment.check(operationDescriptor)).toEqual({ status: 'missing' });
     });
-  });
-  it('returns missing if data is missing from the environment', () => {
-    environment.commitPayload(operationDescriptor, {
-      me: {
-        id: '4',
-        name: 'Zuck',
-        profilePicture: {
-          uri: undefined,
-        },
-      },
-    });
-    expect(environment.check(operationDescriptor)).toEqual({status: 'missing'});
-  });
 });

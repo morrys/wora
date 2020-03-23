@@ -190,18 +190,21 @@ class RelayModernEnvironment extends Environment {
                         });
                 });
             });
-            RelayModernQueryExecutor.execute({
+            const executor = RelayModernQueryExecutor.execute({
                 operation,
+                operationExecutions: (this as any)._operationExecutions,
                 operationLoader: (this as any)._operationLoader,
                 optimisticConfig,
                 publishQueue: (this as any)._publishQueue,
                 scheduler: (this as any)._scheduler,
                 sink,
                 source,
+                store: (this as any)._store,
                 updater: optimisticResponse ? updater : optimisticUpdater,
                 operationTracker: (this as any)._operationTracker,
                 getDataID: (this as any)._getDataID,
             });
+            return () => executor.cancel();
         });
     }
 
