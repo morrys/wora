@@ -204,7 +204,7 @@ class RelayModernEnvironment extends Environment {
                 operationTracker: (this as any)._operationTracker,
                 getDataID: (this as any)._getDataID,
             });
-            return () => executor.cancel();
+            return (): void => executor.cancel();
         });
     }
 
