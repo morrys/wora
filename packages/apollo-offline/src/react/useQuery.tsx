@@ -4,7 +4,7 @@ import { DocumentNode } from 'graphql';
 import { OperationVariables, QueryResult } from '@apollo/react-common';
 import { useQuery as useQueryApollo, useApolloClient, QueryHookOptions } from '@apollo/react-hooks';
 
-const useQuery = function<TData = any, TVariables = OperationVariables>(
+const useQuery = function <TData = any, TVariables = OperationVariables>(
     query: DocumentNode,
     options?: QueryHookOptions<TData, TVariables>,
 ): QueryResult<TData, TVariables> {

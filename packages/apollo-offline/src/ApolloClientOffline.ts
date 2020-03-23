@@ -34,7 +34,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
         }
 
         const originalFetchQuery = this.queryManager.fetchQuery;
-        this.queryManager.fetchQuery = function(queryId, options, fetchType, fetchMoreForQueryId): any {
+        this.queryManager.fetchQuery = function (queryId, options, fetchType, fetchMoreForQueryId): any {
             const oldFetchPolicy = options.fetchPolicy;
             if (!this.isOnline()) {
                 options.fetchPolicy = 'cache-only';

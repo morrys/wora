@@ -198,7 +198,7 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
         resolveFlush = null;
         rejectFlush = null;
         promiseFlush = null;
-        const dispose = function(error?: Error): void {
+        const dispose = function (error?: Error): void {
             if (error) {
                 if (reject) {
                     reject();

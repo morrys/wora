@@ -147,22 +147,9 @@ class RelayModernEnvironment extends Environment {
             );
             const source = RelayObservable.create((sink) => {
                 resolveImmediate(() => {
-                    /* eslint-disable indent */
-                    const sinkPublish = optimisticConfig
-                        ? (this as any)
-                              .getStore()
-                              .getSource()
-                              ._sink.toJSON()
-                        : {};
-                    /* eslint-enable indent */
+                    const sinkPublish = optimisticConfig ? (this as any).getStore().getSource()._sink.toJSON() : {};
                     const backup = {};
-                    Object.keys(sinkPublish).forEach(
-                        (key) =>
-                            (backup[key] = (this as any)
-                                .getStore()
-                                .getSource()
-                                ._base.get(key)),
-                    );
+                    Object.keys(sinkPublish).forEach((key) => (backup[key] = (this as any).getStore().getSource()._base.get(key)));
 
                     sink.next({
                         data: optimisticResponse ? optimisticResponse : {},
