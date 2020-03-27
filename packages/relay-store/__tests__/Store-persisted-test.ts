@@ -964,17 +964,85 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                         }
                     }
             `));
+        });
 
-            it('prevents data from being collected with disabled GC, and reruns GC when it is enabled', () => {
-                const gcHold = store.holdGC();
-                const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: '4', size: 32 }));
-                dispose();
-                expect(data).toEqual(initialData);
-                jest.runOnlyPendingTimers();
-                expect(source.toJSON()).toEqual(initialData);
-                gcHold.dispose();
-                jest.runOnlyPendingTimers();
-                expect(source.toJSON()).toEqual({});
+        it('prevents data from being collected with disabled GC, and reruns GC when it is enabled', () => {
+            const gcHold = store.holdGC();
+            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: '4', size: 32 }));
+            dispose();
+            expect(data).toEqual(initialData);
+            jest.runOnlyPendingTimers();
+            expect(source.toJSON()).toEqual(initialData);
+            gcHold.dispose();
+            jest.runOnlyPendingTimers();
+            expect(source.toJSON()).toEqual({});
+        });
+    });
+
+    describe('purge()', () => {
+        let UserQuery;
+        let UserFragment;
+        let data;
+        let initialData;
+        let source;
+        let store;
+
+        beforeEach(async () => {
+            data = {
+                '4': {
+                    __id: '4',
+                    id: '4',
+                    __typename: 'User',
+                    name: 'Zuck',
+                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
+                },
+                'client:1': {
+                    __id: 'client:1',
+                    uri: 'https://photo1.jpg',
+                },
+                'client:root': {
+                    __id: 'client:root',
+                    __typename: '__Root',
+                    'node(id:"4")': { __ref: '4' },
+                },
+            };
+            initialData = simpleClone(data);
+            source = getRecordSourceImplementation(data);
+            store = new RelayModernStore(source, { storage: createPersistedStorage({}), defaultTTL: -1 });
+            await store.hydrate();
+
+            ({ UserQuery, UserFragment } = generateAndCompile(`
+                    fragment UserFragment on User {
+                        name
+                        profilePicture(size: $size) {
+                        uri
+                        }
+                    }
+                    query UserQuery($id: ID!, $size: [Int]) {
+                        node(id: $id) {
+                        ...UserFragment
+                        }
+                    }
+            `));
+        });
+
+        it('calls subscribers whose data has purged', async () => {
+            const owner = createOperationDescriptor(UserQuery, {});
+            const selector = createReaderSelector(UserFragment, '4', { size: 32 }, owner.request);
+            const snapshot = store.lookup(selector);
+            const callback = jest.fn();
+            store.subscribe(snapshot, callback);
+
+            expect(callback).not.toBeCalled();
+            await store.purge();
+            expect(callback.mock.calls.length).toBe(1);
+            expect(callback.mock.calls[0][0]).toEqual({
+                ...snapshot,
+                data: undefined,
+                isMissingData: true,
+                seenRecords: {
+                    '4': undefined,
+                },
             });
         });
     });
