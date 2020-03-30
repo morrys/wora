@@ -3,6 +3,5 @@ src/
 tsconfig.json
 examples
 jest.config.js
-examples
 coverage
 __tests__
