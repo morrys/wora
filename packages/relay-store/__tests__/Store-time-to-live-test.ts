@@ -97,6 +97,32 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             expect(source.toJSON()).toEqual({});
         });
 
+        it('fetchTime - prevents data when disposed before TTL', () => {
+            const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
+            let fetchTime = Date.now();
+            jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
+            const { dispose } = store.retain(operation);
+            fetchTime += 200;
+            store.notify(operation);
+            dispose();
+            expect(data).toEqual(initialData);
+            jest.runAllTimers();
+            expect(source.toJSON()).toEqual(initialData);
+        });
+
+        it('fetchTime - frees data when disposed after TTL', () => {
+            const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
+            let fetchTime = Date.now();
+            jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
+            const { dispose } = store.retain(operation);
+            store.notify(operation);
+            fetchTime += 200;
+            dispose();
+            expect(data).toEqual(initialData);
+            jest.runAllTimers();
+            expect(source.toJSON()).toEqual({});
+        });
+
         it('only collects unreferenced data after TTL', () => {
             const { JoeQuery } = generateAndCompile(`
               fragment JoeFragment on Query @argumentDefinitions(

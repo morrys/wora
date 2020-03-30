@@ -71,8 +71,9 @@ export default class Store extends RelayModernStore {
                 this._cache.set(id, newRoot);
             }
             this._cache.getAllKeys().forEach((idCache) => {
-                const { retainTime, ttl, dispose } = this._cache.get(idCache);
-                const expired = !this.isCurrent(retainTime, ttl);
+                const { fetchTime, retainTime, ttl, dispose } = this._cache.get(idCache);
+                const checkDate = fetchTime != null ? fetchTime : retainTime;
+                const expired = !this.isCurrent(checkDate, ttl);
                 if (dispose && expired) {
                     this._cache.remove(idCache);
                 }
@@ -80,14 +81,15 @@ export default class Store extends RelayModernStore {
             (this as any)._scheduleGC();
         };
         const root = this._cache.get(id);
+        const refCount = !root ? 1 : root.refCount + 1;
         const newRoot = {
             operation,
-            retainTime: !root ? Date.now() : root.retainTime,
             dispose: false,
+            refCount,
+            epoch: !root ? null : root.epoch,
             ttl: !root ? ttl : root.ttl,
-            refCount: 0,
-            epoch: null,
-            fetchTime: null,
+            retainTime: !root ? Date.now() : root.retainTime,
+            fetchTime: !root ? null : root.fetchTime,
         };
         this._cache.set(id, newRoot);
         return { dispose };
@@ -200,7 +202,8 @@ export default class Store extends RelayModernStore {
             const rootEntry = this._cache.get(id); // wora
             if (rootEntry != null) {
                 rootEntry.epoch = (this as any)._currentWriteEpoch;
-                rootEntry.fetchTime = rootEntry.fetchTime ? rootEntry.fetchTime : Date.now();
+                rootEntry.fetchTime = Date.now();
+                this._cache.set(id, rootEntry);
             }
         }
 
