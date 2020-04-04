@@ -8,7 +8,7 @@ export interface IMutableRecordSourceOffline extends MutableRecordSource {
     restore(): Promise<DataCache>;
 }
 
-export default class RecordSource implements IMutableRecordSourceOffline {
+export class RecordSource implements IMutableRecordSourceOffline {
     private _cache: ICache;
 
     constructor(persistOptions: CacheOptions = {}) {
