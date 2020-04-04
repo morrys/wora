@@ -6,7 +6,7 @@
         "build": "lerna run compile && lerna run test",
         "compile": "lerna run compile",
         "clean-dep": "lerna run clean-dep",
-        "deploy": "lerna run build && lerna publish from-package",
+        "deploy": "lerna run compile && lerna run test && lerna publish from-package",
         "eslint": "lerna run eslint",
         "format": "lerna run format",
         "test": "lerna run test"
