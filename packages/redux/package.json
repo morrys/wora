@@ -27,8 +27,7 @@
     "clean": "rimraf lib/*",
     "clean-dep": "rimraf node_modules/*",
     "precompile": "npm run clean",
-    "compile": "tsc",
-    "prepublishOnly": "npm run build"
+    "compile": "tsc"
   },
   "dependencies": {
     "@wora/cache-persist": "file:../cache-persist",

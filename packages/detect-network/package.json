@@ -28,7 +28,6 @@
     "clean-dep": "rimraf node_modules/*",
     "precompile": "npm run clean",
     "compile": "tsc",
-    "prepublishOnly": "npm run build",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },

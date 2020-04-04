@@ -29,7 +29,6 @@
     "clean-dep": "rimraf node_modules/*",
     "precompile": "npm run clean",
     "compile": "tsc",
-    "prepublishOnly": "npm run build",
     "test": "jest --coverage"
   },
   "dependencies": {
