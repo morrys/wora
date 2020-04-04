@@ -1,5 +1,5 @@
 import {
-    Environment,
+    Environment as RelayEnvironment,
     Observable as RelayObservable,
     GraphQLResponse,
     NormalizationSelector,
@@ -21,7 +21,7 @@ import { v4 as uuid } from 'uuid';
 import { Payload, OfflineOptions } from './RelayOfflineTypes';
 import warning from 'fbjs/lib/warning';
 
-class RelayModernEnvironment extends Environment {
+export class Environment extends RelayEnvironment {
     private _rehydrated = typeof window === 'undefined';
     private _relayStoreOffline: OfflineFirst<Payload>;
     private promisesRestore;
@@ -209,5 +209,3 @@ class RelayModernEnvironment extends Environment {
         }
     }
 }
-
-export default RelayModernEnvironment;

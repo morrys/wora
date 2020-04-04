@@ -6,14 +6,14 @@ import * as RelayReferenceMarker from 'relay-runtime/lib/store/RelayReferenceMar
 import { Availability } from 'relay-runtime/lib/store/DataChecker';
 import { CheckOptions } from 'relay-runtime/lib/store/RelayStoreTypes';
 import Cache, { CacheOptions } from '@wora/cache-persist';
-import RecordSource from './RecordSource';
+import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
 
 export type CacheOptionsStore = CacheOptions & {
     defaultTTL?: number;
 };
 
-export default class Store extends RelayModernStore {
+export class Store extends RelayModernStore {
     _cache: Cache;
     checkGC: () => boolean;
     _defaultTTL: number;

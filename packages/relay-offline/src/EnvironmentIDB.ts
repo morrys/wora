@@ -2,7 +2,7 @@ import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
 import IDBStorage, { IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
 import { Store, RecordSource } from '@wora/relay-store';
 import { Scheduler, OperationLoader } from 'relay-runtime/lib/store/RelayStoreTypes';
-import RelayModernEnvironment from './RelayModernEnvironment';
+import { Environment } from './Environment';
 import { CacheOptionsStore } from '@wora/relay-store/lib/Store';
 import { EnvironmentOfflineConfig } from './RelayOfflineTypes';
 
@@ -22,7 +22,7 @@ class EnvironmentIDB {
             getDataID?: any; // do not use
         } = {},
         offlineStoreOptions: CacheOptions = {},
-    ): RelayModernEnvironment {
+    ): Environment {
         const { gcScheduler, operationLoader, getDataID, persistOptions } = storeOptions;
         const idbStore: CacheOptions = {
             serialize: false,
@@ -54,7 +54,7 @@ class EnvironmentIDB {
         }
         const recordSource = new RecordSource(idbRecords);
         const store = new Store(recordSource, idbStore, gcScheduler, operationLoader, getDataID);
-        return new RelayModernEnvironment({ ...config, store }, idbOffline);
+        return new Environment({ ...config, store }, idbOffline);
     }
 }
 

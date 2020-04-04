@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-store",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "keywords": [
     "cache",
     "wora",
@@ -32,7 +32,8 @@
     "test": "jest --coverage"
   },
   "dependencies": {
-    "@wora/cache-persist": "file:../cache-persist"
+    "@wora/cache-persist": "file:../cache-persist",
+    "tslib": "^1.11.1"
   },
   "peerDependencies": {
     "relay-runtime": ">=8.0.0"
