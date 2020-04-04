@@ -147,22 +147,9 @@ class RelayModernEnvironment extends Environment {
             );
             const source = RelayObservable.create((sink) => {
                 resolveImmediate(() => {
-                    /* eslint-disable indent */
-                    const sinkPublish = optimisticConfig
-                        ? (this as any)
-                              .getStore()
-                              .getSource()
-                              ._sink.toJSON()
-                        : {};
-                    /* eslint-enable indent */
+                    const sinkPublish = optimisticConfig ? (this as any).getStore().getSource()._sink.toJSON() : {};
                     const backup = {};
-                    Object.keys(sinkPublish).forEach(
-                        (key) =>
-                            (backup[key] = (this as any)
-                                .getStore()
-                                .getSource()
-                                ._base.get(key)),
-                    );
+                    Object.keys(sinkPublish).forEach((key) => (backup[key] = (this as any).getStore().getSource()._base.get(key)));
 
                     sink.next({
                         data: optimisticResponse ? optimisticResponse : {},
@@ -190,18 +177,21 @@ class RelayModernEnvironment extends Environment {
                         });
                 });
             });
-            RelayModernQueryExecutor.execute({
+            const executor = RelayModernQueryExecutor.execute({
                 operation,
+                operationExecutions: (this as any)._operationExecutions,
                 operationLoader: (this as any)._operationLoader,
                 optimisticConfig,
                 publishQueue: (this as any)._publishQueue,
                 scheduler: (this as any)._scheduler,
                 sink,
                 source,
+                store: (this as any)._store,
                 updater: optimisticResponse ? updater : optimisticUpdater,
                 operationTracker: (this as any)._operationTracker,
                 getDataID: (this as any)._getDataID,
             });
+            return (): void => executor.cancel();
         });
     }
 

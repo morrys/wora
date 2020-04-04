@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-store",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "keywords": [
     "cache",
     "wora",
@@ -36,11 +36,12 @@
     "@wora/cache-persist": "file:../cache-persist"
   },
   "peerDependencies": {
-    "relay-runtime": ">=6.0.0"
+    "relay-runtime": ">=8.0.0"
   },
   "devDependencies": {
-    "relay-runtime": "^7.0.0",
-    "relay-test-utils-internal" : "7.0.0"
+    "relay-runtime": "^9.0.0",
+    "relay-test-utils-internal" : "9.0.0",
+    "relay-test-utils": "9.0.0"
   },
   "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"
 }
