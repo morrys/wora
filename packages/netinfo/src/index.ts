@@ -1,1 +1,1 @@
-export {default as NetInfo} from './NetInfo';
+export { NetInfo, NetInfoState, NetInfoChangeHandler, NetInfoConfiguration } from './NetInfo';

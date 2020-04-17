@@ -1,57 +1,73 @@
 import { NetInfo } from '../src/';
 
 describe(`netinfo`, () => {
-    let onlineGetter;
+    const onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
     let online;
-    const jestHandler = jest.fn((isOnline) => {
-        online = isOnline;
+    const jestHandler = jest.fn(({ isConnected }) => {
+        online = isConnected;
     });
-    const handler = (isOnline) => {
-        online = isOnline;
+    const handler = (props): any => {
+        online = props.isConnected;
     };
-    const connectionTrue = { effectiveType: 'unknown', type: 'unknown', isConnected: true };
-    const connectionFalse = { effectiveType: 'unknown', type: 'unknown', isConnected: false };
+    const connectionTrue = {
+        type: 'unknown',
+        isConnected: true,
+        isInternetReachable: true,
+        details: {
+            effectiveType: 'unknown',
+        },
+    };
+    const connectionFalse = {
+        type: 'unknown',
+        isConnected: false,
+        isInternetReachable: false,
+        details: {
+            effectiveType: 'unknown',
+        },
+    };
     describe('NetInfo.isConnected', () => {
         beforeEach(async () => {
             jest.resetAllMocks();
             online = undefined;
         });
         it('fetch online', async () => {
-            const isConnected = await NetInfo.isConnected.fetch();
+            onlineGetter.mockReturnValue(true);
+            const { isConnected } = await NetInfo.fetch();
             expect(isConnected).toBeTruthy();
         });
         it('fetch offline', async () => {
-            onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
-
             onlineGetter.mockReturnValue(false);
-            const isConnected = await NetInfo.isConnected.fetch();
+            const { isConnected } = await NetInfo.fetch();
             expect(isConnected).not.toBeTruthy();
         });
         it('event listener online', () => {
-            const dispose = NetInfo.isConnected.addEventListener('change', handler);
-            const disposeJest = NetInfo.isConnected.addEventListener('change', jestHandler);
+            const dispose = NetInfo.addEventListener(handler);
+            const disposeJest = NetInfo.addEventListener(jestHandler);
 
+            onlineGetter.mockReturnValue(true);
             window.dispatchEvent(new Event('online'));
             expect(jestHandler).toHaveBeenCalledTimes(1);
             expect(online).toBeTruthy();
             online = undefined;
-            dispose.remove();
-            disposeJest.remove();
+            dispose();
+            disposeJest();
+            onlineGetter.mockReturnValue(true);
             window.dispatchEvent(new Event('online'));
             expect(jestHandler).toHaveBeenCalledTimes(1);
             expect(online).toBeUndefined();
         });
 
         it('event listener offline', () => {
-            const dispose = NetInfo.isConnected.addEventListener('change', handler);
-            const disposeJest = NetInfo.isConnected.addEventListener('change', jestHandler);
+            const dispose = NetInfo.addEventListener(handler);
+            const disposeJest = NetInfo.addEventListener(jestHandler);
 
+            onlineGetter.mockReturnValue(false);
             window.dispatchEvent(new Event('offline'));
             expect(jestHandler).toHaveBeenCalledTimes(1);
             expect(online).not.toBeTruthy();
             online = undefined;
-            dispose.remove();
-            disposeJest.remove();
+            dispose();
+            disposeJest();
             window.dispatchEvent(new Event('offline'));
             expect(jestHandler).toHaveBeenCalledTimes(1);
             expect(online).toBeUndefined();
@@ -64,14 +80,11 @@ describe(`netinfo`, () => {
             online = undefined;
         });
         it('fetch online', async () => {
-            onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
             onlineGetter.mockReturnValue(true);
             const connInfo = await NetInfo.fetch();
             expect(connInfo).toEqual(connectionTrue);
         });
         it('fetch offline', async () => {
-            onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
-
             onlineGetter.mockReturnValue(false);
             const connInfo = await NetInfo.fetch();
             expect(connInfo).toEqual(connectionFalse);
