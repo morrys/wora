@@ -1898,10 +1898,10 @@
     xcode "^2.0.0"
     xmldoc "^0.4.0"
 
-"@react-native-community/netinfo@3.2.1":
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-3.2.1.tgz#cd073b81a4b978f7f55f1a960a0b56c462813e02"
-  integrity sha512-A2qANOnlRDVe+8kMbKMwy3/0bOlOA2+y8DyWg2Rv2KHICIfin+oxixbG0ewAOLQdLkSEyyumZXRmIVl7VI/KJg==
+"@react-native-community/netinfo@5.7.1":
+  version "5.7.1"
+  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-5.7.1.tgz#715a6061307055c6aa59c901bca313050695f75e"
+  integrity sha512-ddefrDUgJgeYevk1QQFWQD2n3fq9B7PfYZoBTXw8yYgV5AdXdolFtwt5DnfFHqqibgiQGCd9lNP6SvM6xktu9Q==
 
 "@types/babel__core@^7.1.0":
   version "7.1.3"
@@ -2122,7 +2122,7 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "2.1.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Library/Caches/Yarn/v4/npm-@wora-apollo-cache-2.1.0-e40e8db1-1898-4524-957a-ebf9911b5e9e-1586025329472/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.1.0-6f9838f5-f909-4cc8-92db-793b51e2cd35-1587136859979/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
   version "2.0.4"
@@ -2132,20 +2132,19 @@
 "@wora/netinfo@file:packages/netinfo":
   version "1.1.1"
   dependencies:
-    array-find-index "1.0.2"
     fbjs "^1.0.0"
 
 "@wora/offline-first@file:packages/offline-first":
   version "2.0.5"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Library/Caches/Yarn/v4/npm-@wora-offline-first-2.0.5-3def248f-bc09-4d4e-84bf-8fdf7581aa08-1586025329470/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../Library/Caches/Yarn/v4/npm-@wora-offline-first-2.0.5-3def248f-bc09-4d4e-84bf-8fdf7581aa08-1586025329470/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.0.5-e22b527b-f844-4aac-9709-e1fe30582c67-1587136859976/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.0.5-e22b527b-f844-4aac-9709-e1fe30582c67-1587136859976/node_modules/@wora/netinfo"
     fbjs "^1.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
   version "3.0.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../Library/Caches/Yarn/v4/npm-@wora-relay-store-3.0.1-5d660867-6e04-4088-a48b-6795fd7aef11-1586025329473/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-3.0.1-106d629f-03ed-4932-a8cd-11d3a3d3777c-1587136859980/node_modules/@wora/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -2516,7 +2515,7 @@ array-filter@~0.0.0:
   resolved "https://registry.yarnpkg.com/array-filter/-/array-filter-0.0.1.tgz#7da8cf2e26628ed732803581fd21f67cacd2eeec"
   integrity sha1-fajPLiZijtcygDWB/SH2fKzS7uw=
 
-array-find-index@1.0.2, array-find-index@^1.0.1:
+array-find-index@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/array-find-index/-/array-find-index-1.0.2.tgz#df010aa1287e164bbda6f9723b0a96a1ec4187a1"
   integrity sha1-3wEKoSh+Fku9pvlyOwqWoexBh6E=

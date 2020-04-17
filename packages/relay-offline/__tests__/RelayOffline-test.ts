@@ -215,6 +215,7 @@ describe(`Relay Offline`, () => {
                 expect(environment.getStoreOffline().getListMutation()[0].request.payload.operation).toEqual(operation);
                 expect(onExecute).toHaveBeenCalledTimes(0);
                 expect(onComplete).toHaveBeenCalledTimes(0);
+                onlineGetter.mockReturnValue(true);
                 window.dispatchEvent(new Event('online'));
                 expect(environment.isOnline()).toBeTruthy();
                 jest.runAllTimers();
@@ -257,6 +258,7 @@ describe(`Relay Offline`, () => {
                 expect(environment.getStoreOffline().getListMutation()[0].request.payload.operation).toEqual(operation);
                 expect(onExecute).toHaveBeenCalledTimes(0);
                 expect(onComplete).toHaveBeenCalledTimes(0);
+                onlineGetter.mockReturnValue(true);
                 window.dispatchEvent(new Event('online'));
                 expect(environment.isOnline()).toBeTruthy();
                 jest.runAllTimers();
