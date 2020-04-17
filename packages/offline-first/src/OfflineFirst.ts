@@ -90,7 +90,7 @@ class OfflineFirst<T> {
         if (!this.promisesRestore) {
             this.promisesRestore = Promise.all([NetInfo.fetch(), this.offlineStore.restore()])
                 .then((result) => {
-                    NetInfo.isConnected.addEventListener('connectionChange', (isConnected: boolean) => {
+                    NetInfo.addEventListener('connectionChange', (isConnected: boolean) => {
                         this.online = isConnected;
                         if (isConnected && !this.isManualExecution()) {
                             this.process();
