@@ -88,7 +88,7 @@ class OfflineFirst<T> {
 
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
-            this.promisesRestore = Promise.all([NetInfo.isConnected.fetch(), this.offlineStore.restore()])
+            this.promisesRestore = Promise.all([NetInfo.fetch(), this.offlineStore.restore()])
                 .then((result) => {
                     NetInfo.isConnected.addEventListener('connectionChange', (isConnected: boolean) => {
                         this.online = isConnected;
