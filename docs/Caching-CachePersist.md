@@ -158,8 +158,8 @@ cache.restore().then(() => {
 ## Usage indexedDB
 
 ```ts
-import Cache, { CacheStorage, CacheOptions } from "@wora/cache-persist";
-import IDBStorage from '@wora/cache-persist/lib/idbstorage';
+import {Cache, CacheStorage, CacheOptions } from "@wora/cache-persist";
+import { IDBStorage } from '@wora/cache-persist/lib/idbstorage';
 
 const idbStorages: CacheStorage[] = IDBStorage.create( {
     name: "cache", 
@@ -190,7 +190,7 @@ cacheidb1.restore().then(() => {
 ### Example use filterKeys Layer
 
 ```ts
-import filterKeys  from '@wora/cache-persist/lib/layers/filterKeys';
+import { filterKeys }  from '@wora/cache-persist/lib/layers/filterKeys';
 import { IMutateKey } from '@wora/cache-persist';
 
 const filterPersistAuth: IMutateKey = filterKeys(key => key.includes("auth"));

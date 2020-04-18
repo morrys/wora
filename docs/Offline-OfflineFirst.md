@@ -18,7 +18,7 @@ yarn add @wora/offline-first
 
 
 ```ts
-import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache, Request } from "@wora/offline-first";
+import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache, Request } from "@wora/offline-first";
 
 const persistOptionsStoreOffline = {
     prefix: 'example-offline',
