@@ -1,4 +1,5 @@
 /* eslint import/no-extraneous-dependencies:0 */
+/* eslint @typescript-eslint/no-var-requires:0 */
 
 import { ICacheStorage } from './CacheTypes';
 import { AsyncStorage as RNAsyncStorage } from 'react-native';
