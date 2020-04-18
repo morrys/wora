@@ -11,6 +11,7 @@ export function useNetInfo(netinfo: typeof NetInfo, configuration?: Partial<NetI
     });
 
     useEffect((): (() => void) => {
+        netinfo.fetch().then(setNetInfo);
         return netinfo.addEventListener(setNetInfo);
     }, []);
 

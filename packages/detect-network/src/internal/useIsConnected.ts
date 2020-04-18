@@ -11,6 +11,7 @@ export function useIsConnected(netinfo: typeof NetInfo): boolean {
                 setIsOnline(isConnected);
             }
         }
+        netinfo.fetch().then(changeState);
         return netinfo.addEventListener(changeState);
     }, []);
 
