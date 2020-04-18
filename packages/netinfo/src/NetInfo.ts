@@ -25,23 +25,26 @@ export type NetInfoChangeHandler = (state: NetInfoState) => void;
 
 export type NetInfoSubscription = () => void;
 
+const UNKNOWN = 'unknown';
+
 const getConnectionInfoObject = (): NetInfoState => {
     const isConnected = !ExecutionEnvironment.canUseDOM || window.navigator.onLine;
     const result = {
-        type: 'unknown',
+        type: UNKNOWN,
         isConnected,
         isInternetReachable: isConnected,
         details: {
-            effectiveType: 'unknown',
+            effectiveType: UNKNOWN,
         },
     };
     if (!connection) {
         return result;
     }
-    result.type = connection.type;
+    result.type = connection.type || UNKNOWN;
+
     for (const prop in connection) {
         const value = connection[prop];
-        if (typeof value !== 'function' && value != null && prop !== 'type') {
+        if (typeof value !== 'function' && value != null) {
             result.details[prop] = value;
         }
     }
