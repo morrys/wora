@@ -2,14 +2,16 @@
 
 import { ICacheStorage } from './CacheTypes';
 import { AsyncStorage as RNAsyncStorage } from 'react-native';
+const tslib = require('tslib');
+
 let storage = null;
 try {
-    storage = require('@react-native-community/async-storage');
+    storage = tslib.__importDefault(require('@react-native-community/async-storage')).default;
 } catch (e) {
     if (!RNAsyncStorage) {
         throw e;
     }
-    console.log('warning: must install @react-native-community/async-storage');
+    console.warn('Native AsyncStorage will be used', e);
     storage = RNAsyncStorage;
 }
 
