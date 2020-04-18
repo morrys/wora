@@ -9,7 +9,6 @@ yarn add @wora/detect-network
 ```
 
 ```ts
-import { NetInfo } from "@wora/detect-network";
 import { useIsConnected } from "@wora/detect-network";
 import { useNetInfo } from "@wora/detect-network";
 ```
@@ -29,25 +28,10 @@ You then need to link the native parts of the library for the platforms you are 
 
 
 ```ts
-import { NetInfo } from "@wora/detect-network";
 import { useIsConnected } from "@wora/detect-network";
 import { useNetInfo } from "@wora/detect-network";
 ```
 
-
-## React Native
-
-Install @wora/detect-network using yarn or npm:
-
-```
-yarn add @wora/detect-network react-native
-```
-
-```ts
-import { NetInfo } from "@wora/detect-network/lib/deprecated";
-import { useIsConnected } from "@wora/detect-network/lib/deprecated";
-import { useNetInfo } from "@wora/detect-network/lib/deprecated";
-```
 
 ## Example
 

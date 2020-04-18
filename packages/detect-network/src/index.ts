@@ -1,3 +1,2 @@
-export * from '@wora/netinfo';
-export { default as useNetInfo } from './useNetInfo';
-export { default as useIsConnected } from './useIsConnected';
+export { useNetInfo } from './useNetInfo';
+export { useIsConnected } from './useIsConnected';

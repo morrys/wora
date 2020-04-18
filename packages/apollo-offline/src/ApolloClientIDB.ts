@@ -1,11 +1,11 @@
 import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
-import IDBStorage, { IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
-import ApolloClientOffline from './ApolloClientOffline';
+import { IDBStorage, IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
+import { ApolloClientOffline } from './ApolloClientOffline';
 import { InMemoryCacheConfig } from 'apollo-cache-inmemory';
-import ApolloCache from '@wora/apollo-cache';
+import { ApolloCache } from '@wora/apollo-cache';
 import { ApolloClientIDBOptions } from './ApolloOfflineTypes';
 
-class ApolloClientIDB {
+export class ApolloClientIDB {
     public static create(
         config: ApolloClientIDBOptions,
         options: {

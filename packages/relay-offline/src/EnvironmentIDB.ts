@@ -1,5 +1,5 @@
 import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
-import IDBStorage, { IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
+import { IDBStorage, IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
 import { Store, RecordSource } from '@wora/relay-store';
 import { Scheduler, OperationLoader } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { Environment } from './Environment';

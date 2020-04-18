@@ -4,8 +4,8 @@ import { multiplex } from 'apollo-client/util/observables';
 import observableToPromise, { Options } from 'apollo-client/util/observableToPromise';
 import { getOperationName } from 'apollo-utilities';
 import { CacheOptions } from '@wora/cache-persist';
-import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache } from '@wora/offline-first';
-import ApolloStore from '@wora/apollo-cache';
+import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache } from '@wora/offline-first';
+import { ApolloCache } from '@wora/apollo-cache';
 import { NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { MutationOptions } from 'apollo-client/core/watchQueryOptions';
 import { v4 as uuid } from 'uuid';
@@ -14,7 +14,7 @@ import { Payload, OfflineApolloClientOptions, OfflineOptions } from './ApolloOff
 
 const { hasOwnProperty } = Object.prototype;
 
-class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
+export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
     private apolloStoreOffline: OfflineFirst<Payload>;
     private rehydrated = typeof window === 'undefined';
     private promisesRestore;
@@ -58,7 +58,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
 
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
-            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloStore).hydrate()])
+            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloCache).hydrate()])
                 .then((_result) => {
                     (this.cache as any).broadcastWatches();
                     this.queryManager.broadcastQueries();
@@ -196,7 +196,7 @@ class OfflineApolloClient extends ApolloClient<NormalizedCacheObject> {
             });
     }
 
-    public mutate<T>(options: MutationOptions): Promise<FetchResult<T>> {
+    public mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables>): Promise<FetchResult<T>> {
         if (!this.isOnline()) {
             return this.mutateOffline(options);
         }
@@ -242,5 +242,3 @@ function discard(client: any, onDiscard = (_o: any): Promise<boolean> => Promise
     // can i use here update query?
     return onDiscard({ id, error, offlinePayload: offlineRecord });
 }
-
-export default OfflineApolloClient;

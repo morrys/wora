@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
+import { NetInfo, NetInfoState } from '@wora/netinfo';
 
-export function useIsConnected(NetInfo): boolean {
-    const [isConnected, setIsConnected] = useState<boolean>(undefined);
-
-    function changeState(nextIsConnected): void {
-        if (isConnected !== nextIsConnected) {
-            setIsConnected(nextIsConnected);
-        }
-    }
+export function useIsConnected(netinfo: typeof NetInfo): boolean {
+    const [isOnline, setIsOnline] = useState<boolean>(undefined);
 
     useEffect((): (() => void) => {
-        const dispose = NetInfo.isConnected.addEventListener('connectionChange', changeState);
-        return (): any => dispose.remove();
+        function changeState(state: NetInfoState): void {
+            const { isConnected } = state;
+            if (isConnected !== isOnline) {
+                setIsOnline(isConnected);
+            }
+        }
+        netinfo.fetch().then(changeState);
+        return netinfo.addEventListener(changeState);
     }, []);
 
-    return isConnected;
+    return isOnline;
 }
-export default useIsConnected;

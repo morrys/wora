@@ -1,4 +1,4 @@
-function createStorage(type) {
+export function createStorage(type) {
     const state = { 'cache.restore': true, 'cache.data': 1 };
     return {
         getAllKeys: () => Promise.resolve(Object.keys(state)),
@@ -8,5 +8,3 @@ function createStorage(type) {
         getState: () => state,
     };
 }
-
-export default createStorage;

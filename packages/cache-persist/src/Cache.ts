@@ -1,9 +1,9 @@
-import StorageProxy from './StorageProxy';
+import { StorageProxy } from './StorageProxy';
 import { DataCache, ICache, Subscription, CacheOptions, IStorageHelper, ICacheStorage } from './CacheTypes';
 
 const hasOwn = Object.prototype.hasOwnProperty;
 
-class Cache implements ICache {
+export class Cache implements ICache {
     private data: DataCache;
     private rehydrated = false;
     private subscriptions: Set<Subscription> = new Set();
@@ -114,5 +114,3 @@ class Cache implements ICache {
         this.subscriptions.forEach((subscription) => subscription.callback(state, action));
     }
 }
-
-export default Cache;

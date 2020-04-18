@@ -74,7 +74,7 @@ The [offline-examples](https://github.com/morrys/offline-examples) repository co
 ```ts
 import { ApolloClient } from "@wora/apollo-offline";
 import { HttpLink } from "apollo-link-http";
-import ApolloCache from '@wora/apollo-cache';
+import { ApolloCache } from '@wora/apollo-cache';
 
 const httpLink = new HttpLink({
   uri: "http://localhost:4000/graphql"

@@ -1,2 +1,2 @@
-export { default as ApolloClient } from './ApolloClientOffline';
+export { ApolloClientOffline as ApolloClient } from './ApolloClientOffline';
 export * from './ApolloOfflineTypes';

@@ -1,4 +1,4 @@
-import OfflineFirst from '../src';
+import { OfflineFirst } from '../src';
 
 function createPersistedStorage(clientState = {}) {
     const state = {};
@@ -149,6 +149,7 @@ describe(`offline-first`, () => {
                 expect(storeOffline.getListMutation()[0].request).toEqual(request);
                 expect(onExecute).toHaveBeenCalledTimes(0);
                 expect(onComplete).toHaveBeenCalledTimes(0);
+                onlineGetter.mockReturnValue(true);
                 window.dispatchEvent(new Event('online'));
                 expect(storeOffline.isOnline()).toBeTruthy();
                 await sleep(100);
@@ -183,6 +184,7 @@ describe(`offline-first`, () => {
                 expect(storeOffline.getListMutation()[0].request).toEqual(request);
                 expect(onExecute).toHaveBeenCalledTimes(0);
                 expect(onDiscard).toHaveBeenCalledTimes(0);
+                onlineGetter.mockReturnValue(true);
                 window.dispatchEvent(new Event('online'));
                 expect(storeOffline.isOnline()).toBeTruthy();
                 await sleep(100);
