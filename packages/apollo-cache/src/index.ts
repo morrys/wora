@@ -1,11 +1,11 @@
 import { InMemoryCache, InMemoryCacheConfig } from 'apollo-cache-inmemory';
-import Cache, { ICache, CacheOptions } from '@wora/cache-persist';
+import { Cache, ICache, CacheOptions } from '@wora/cache-persist';
 
 interface IPersistImpl {
     hydrate(): Promise<ICache>;
 }
 
-class ApolloCache extends InMemoryCache implements IPersistImpl {
+export class ApolloCache extends InMemoryCache implements IPersistImpl {
     public cache: Cache;
 
     constructor(options: InMemoryCacheConfig = {}, persistOptions: CacheOptions = {}) {

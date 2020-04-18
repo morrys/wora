@@ -17,4 +17,3 @@ export function useIsConnected(netinfo: typeof NetInfo): boolean {
 
     return isOnline;
 }
-export default useIsConnected;

@@ -5,7 +5,7 @@ import * as RelayReferenceMarker from 'relay-runtime/lib/store/RelayReferenceMar
 
 import { Availability } from 'relay-runtime/lib/store/DataChecker';
 import { CheckOptions } from 'relay-runtime/lib/store/RelayStoreTypes';
-import Cache, { CacheOptions } from '@wora/cache-persist';
+import { Cache, CacheOptions } from '@wora/cache-persist';
 import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
 

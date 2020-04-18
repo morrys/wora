@@ -22,7 +22,7 @@ try {
  *
  */
 
-function createStorage(_type): ICacheStorage {
+export function createStorage(_type): ICacheStorage {
     return {
         multiRemove: (keys) => storage.multiRemove(keys),
         multiGet: (keys) => storage.multiGet(keys),
@@ -33,5 +33,3 @@ function createStorage(_type): ICacheStorage {
         getItem: (key) => storage.getItem(key),
     } as ICacheStorage;
 }
-
-export default createStorage;

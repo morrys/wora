@@ -1,4 +1,4 @@
-import OfflineFirst from '../src';
+import { OfflineFirst } from '../src';
 
 function createPersistedStorage(clientState = {}) {
     const state = {};

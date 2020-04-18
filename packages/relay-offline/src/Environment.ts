@@ -15,7 +15,7 @@ import * as RelayModernQueryExecutor from 'relay-runtime/lib/store/RelayModernQu
 
 import { Store } from '@wora/relay-store';
 import { CacheOptions } from '@wora/cache-persist';
-import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache, Request } from '@wora/offline-first';
+import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache, Request } from '@wora/offline-first';
 import resolveImmediate from 'relay-runtime/lib/util/resolveImmediate';
 import { v4 as uuid } from 'uuid';
 import { Payload, OfflineOptions } from './RelayOfflineTypes';

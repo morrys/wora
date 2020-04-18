@@ -17,5 +17,3 @@ export function useNetInfo(netinfo: typeof NetInfo, configuration?: Partial<NetI
 
     return netInfo;
 }
-
-export default useNetInfo;
