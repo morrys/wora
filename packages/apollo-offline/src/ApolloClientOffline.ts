@@ -195,6 +195,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
                 throw error;
             });
     }
+
     public mutate<T = any, TVariables = OperationVariables>(options: MutationOptions<T, TVariables>): Promise<FetchResult<T>> {
         if (!this.isOnline()) {
             return this.mutateOffline(options);
