@@ -104,12 +104,20 @@ export class Store extends RelayModernStore {
             return;
         }
         const references = new Set();
+        const legacyIds = [];
         // Mark all records that are traversable from a root
         this._cache.getAllKeys().forEach((id) => {
             const { operation } = this._cache.get(id);
-            const selector = operation.root;
-            RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
+            if (!operation) {
+                // If there's no operation in the record then it's a legacy entry and it should be removed
+                legacyIds.push(id);
+            } else {
+                const selector = operation.root;
+                RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
+            }
         });
+        // remove legacy entries from cache
+        legacyIds.forEach((id) => this._cache.remove(id));
         if (references.size === 0) {
             // Short-circuit if *nothing* is referenced
             (this as any)._recordSource.clear();
