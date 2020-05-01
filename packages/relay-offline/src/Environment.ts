@@ -2,7 +2,6 @@ import {
     Environment as RelayEnvironment,
     Observable as RelayObservable,
     GraphQLResponse,
-    NormalizationSelector,
     Disposable,
     SelectorStoreUpdater,
     OperationDescriptor,
@@ -115,8 +114,8 @@ export class Environment extends RelayEnvironment {
         return this._relayStoreOffline;
     }
 
-    public retain(selector: NormalizationSelector, configRetain): Disposable {
-        return (this as any)._store.retain(selector, configRetain);
+    public retain(operation: OperationDescriptor, configRetain?: { ttl?: number }): Disposable {
+        return (this as any)._store.retain(operation, configRetain);
     }
 
     public executeMutationOffline({
