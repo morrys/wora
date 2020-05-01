@@ -1,10 +1,10 @@
 import { Store as RelayModernStore } from 'relay-runtime';
-import { Disposable, OperationDescriptor, RequestDescriptor, OperationAvailability } from 'relay-runtime';
+import { Disposable, OperationDescriptor, RequestDescriptor, OperationAvailability, OperationLoader } from 'relay-runtime';
 
 import * as RelayReferenceMarker from 'relay-runtime/lib/store/RelayReferenceMarker';
 
 import { Availability } from 'relay-runtime/lib/store/DataChecker';
-import { CheckOptions } from 'relay-runtime/lib/store/RelayStoreTypes';
+import { CheckOptions, Scheduler } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { Cache, CacheOptions } from '@wora/cache-persist';
 import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
@@ -13,23 +13,31 @@ export type CacheOptionsStore = CacheOptions & {
     defaultTTL?: number;
 };
 
+export type StoreOptions = {
+    gcScheduler?: Scheduler | null | undefined;
+    operationLoader?: OperationLoader | null | undefined;
+    UNSTABLE_DO_NOT_USE_getDataID?: any | null | undefined;
+    gcReleaseBufferSize?: number | null | undefined;
+    queryCacheExpirationTime?: number | null | undefined;
+};
+
 export class Store extends RelayModernStore {
     _cache: Cache;
     checkGC: () => boolean;
     _defaultTTL: number;
 
-    constructor(recordSource: RecordSource, persistOptions: CacheOptionsStore = {}, ...args) {
+    constructor(recordSource: RecordSource, persistOptions: CacheOptionsStore = {}, options?: StoreOptions) {
         const { defaultTTL = 10 * 60 * 1000 } = persistOptions;
         const persistOptionsStore = {
             prefix: 'relay-store',
             serialize: true,
             ...persistOptions,
         };
-        super(recordSource, ...args);
+        super(recordSource, options);
 
         this.checkGC = (): boolean => true;
 
-        this._defaultTTL = defaultTTL;
+        this._defaultTTL = options && options.queryCacheExpirationTime ? options.queryCacheExpirationTime : defaultTTL;
 
         this._cache = new Cache(persistOptionsStore);
     }
@@ -60,16 +68,18 @@ export class Store extends RelayModernStore {
         const { ttl = this._defaultTTL } = retainConfig;
 
         const id = this.getID(operation);
-
+        let disposed = false;
         const dispose = (): void => {
+            // Ensure each retain can only dispose once
+
             const root = this._cache.get(id);
-            if (root) {
-                const newRoot = {
-                    ...root,
-                    dispose: true,
-                };
-                this._cache.set(id, newRoot);
+            if (disposed || !root) {
+                return;
             }
+            disposed = true;
+            root.refCount -= 1;
+            root.dispose = root.refCount === 0;
+            this._cache.set(id, root);
             this._cache.getAllKeys().forEach((idCache) => {
                 const { fetchTime, retainTime, ttl, dispose } = this._cache.get(idCache);
                 const checkDate = fetchTime != null ? fetchTime : retainTime;
@@ -106,8 +116,8 @@ export class Store extends RelayModernStore {
         const references = new Set();
         // Mark all records that are traversable from a root
         this._cache.getAllKeys().forEach((id) => {
-            const { operation } = this._cache.get(id);
-            const selector = operation.root;
+            const { operation, selector: oldSelector } = this._cache.get(id);
+            const selector = oldSelector || operation.root;
             RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
         });
         if (references.size === 0) {
