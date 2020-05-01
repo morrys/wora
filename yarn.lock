@@ -2120,31 +2120,31 @@
     tsutils "^3.17.1"
 
 "@wora/apollo-cache@file:packages/apollo-cache":
-  version "2.1.0"
+  version "2.2.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.1.0-6f9838f5-f909-4cc8-92db-793b51e2cd35-1587136859979/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.2.0-70a7a8fe-2252-47b0-9569-9ace49335492-1588329047487/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
-  version "2.0.4"
+  version "2.1.0"
   dependencies:
     idb "^4.0.0"
 
 "@wora/netinfo@file:packages/netinfo":
-  version "1.1.1"
+  version "2.0.0"
   dependencies:
     fbjs "^1.0.0"
 
 "@wora/offline-first@file:packages/offline-first":
-  version "2.0.5"
+  version "2.1.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.0.5-e22b527b-f844-4aac-9709-e1fe30582c67-1587136859976/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.0.5-e22b527b-f844-4aac-9709-e1fe30582c67-1587136859976/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.1.0-193324da-22c3-4c59-8953-50b31cae9738-1588329047488/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.1.0-193324da-22c3-4c59-8953-50b31cae9738-1588329047488/node_modules/@wora/netinfo"
     fbjs "^1.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
-  version "3.0.1"
+  version "3.2.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-3.0.1-106d629f-03ed-4932-a8cd-11d3a3d3777c-1587136859980/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-3.2.0-95fc5a0c-e056-445c-8d50-e769ee5f3555-1588329047490/node_modules/@wora/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -2719,10 +2719,10 @@ babel-plugin-macros@^2.0.0:
     cosmiconfig "^5.2.0"
     resolve "^1.10.0"
 
-babel-plugin-relay@9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/babel-plugin-relay/-/babel-plugin-relay-9.0.0.tgz#05b25bb7296151a9c7c91338a8e71f7d95a83b64"
-  integrity sha512-2v+7fPI8Iv/MKcutAma8iryVGkwe5Hfmb6rIo0B9USZpMnOYS3TamCq8SwaQLBR5R9RrkbHsx5vxz2cUvhSeOg==
+babel-plugin-relay@9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/babel-plugin-relay/-/babel-plugin-relay-9.1.0.tgz#e44573c6ea847951724cd3fea95219b36e759353"
+  integrity sha512-W0+VoCAmyUxxGrtIcsuZ4fr5oxSxoEcOK5qpGAwxczSSZSNN+ACWqqvDFmgyh5B/ZgK7tXWCarU9HekAkdFpZQ==
   dependencies:
     babel-plugin-macros "^2.0.0"
 
@@ -8720,10 +8720,18 @@ relay-compiler@9.0.0:
     signedsource "^1.0.0"
     yargs "^14.2.0"
 
-relay-runtime@9.0.0, relay-runtime@^9.0.0:
+relay-runtime@9.0.0:
   version "9.0.0"
   resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-9.0.0.tgz#03633be24dc3c8b56e472062de6f103954e3d296"
   integrity sha512-bBNeNmwMOnqtCvuPnWdgflFSVwuUbGV7m7os8qHCUCSJ52DT5B/m6K4wisVh3eZ0QWYr7hheRDfmR/3UEdUe5A==
+  dependencies:
+    "@babel/runtime" "^7.0.0"
+    fbjs "^1.0.0"
+
+relay-runtime@9.1.0, relay-runtime@^9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/relay-runtime/-/relay-runtime-9.1.0.tgz#d0534007d5c43e7b9653c6f5cc112ffac09c5020"
+  integrity sha512-6FE5YlZpR/b3R/HzGly85V+c4MdtLJhFY/outQARgxXonomrwqEik0Cr34LnPK4DmGS36cMLUliqhCs/DZyPVw==
   dependencies:
     "@babel/runtime" "^7.0.0"
     fbjs "^1.0.0"
@@ -8738,14 +8746,14 @@ relay-test-utils-internal@9.0.0:
     relay-compiler "9.0.0"
     relay-runtime "9.0.0"
 
-relay-test-utils@9.0.0:
-  version "9.0.0"
-  resolved "https://registry.yarnpkg.com/relay-test-utils/-/relay-test-utils-9.0.0.tgz#c21890650f82f5a8026459f79952caf43c653e95"
-  integrity sha512-ivOpAihkSb0fp9e+oOtHYE1LpDyXWBQK7ByopjSyMW0UTK/LD17Xw1RJfjC2OGys3fvcxlH3wdqawjdeSSCSdw==
+relay-test-utils@9.1.0:
+  version "9.1.0"
+  resolved "https://registry.yarnpkg.com/relay-test-utils/-/relay-test-utils-9.1.0.tgz#b516a96c47f905e73f5a577df24d0195f2a65ea6"
+  integrity sha512-fTgtLbV/7nXD9u/Ujevc9ohRaZpsQBtvJogh076bUB+Vcvv4G9TQ1oZLKLXxJTBcnQEEzrgzLHGjrxVGRb548A==
   dependencies:
     "@babel/runtime" "^7.0.0"
     fbjs "^1.0.0"
-    relay-runtime "9.0.0"
+    relay-runtime "9.1.0"
 
 remove-trailing-separator@^1.0.1:
   version "1.1.0"
