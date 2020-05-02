@@ -20,10 +20,9 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
         }
     }
 }
-
-function createPersistedStorage(clientState = {}) {
+function createPersistedStorage(clientState = {}, prefix = 'relay-records') {
     const state = {};
-    Object.keys(clientState).forEach((key) => (state['relay-records.' + key] = JSON.stringify(clientState[key])));
+    Object.keys(clientState).forEach((key) => (state[prefix + '.' + key] = JSON.stringify(clientState[key])));
     return {
         getAllKeys: () => Promise.resolve(Object.keys(state)),
         setItem: (key, value) => Promise.resolve((state[key] = value)),
@@ -33,10 +32,146 @@ function createPersistedStorage(clientState = {}) {
     } as any;
 }
 
+function getID(operation: any): string {
+    return operation.root.node.name + '.' + JSON.stringify(operation.root.variables);
+}
+
 const getRecordSourceImplementation = (data) =>
     new WoraRecordSource({ storage: createPersistedStorage({ ...data }), initialState: { ...data } });
 const ImplementationName = 'Wora Persist';
 describe(`Relay Store with ${ImplementationName} Record Source`, () => {
+    describe('backward compatibility persisted retain()', () => {
+        let UserQuery;
+        let data;
+        let initialData;
+        let source;
+        let store;
+
+        beforeEach(async () => {
+            ({ UserQuery } = generateAndCompile(`
+            query UserQuery($id: ID!, $size: Int) {
+                node(id: $id) {
+                  ...UserFragment
+                }
+              }
+
+      fragment UserFragment on User {
+        name
+        profilePicture(size: $size) {
+          uri
+        }
+      }
+        `));
+            data = {
+                '4': {
+                    __id: '4',
+                    id: '4',
+                    __typename: 'User',
+                    name: 'Zuck',
+                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
+                },
+                'client:1': {
+                    __id: 'client:1',
+                    uri: 'https://photo1.jpg',
+                },
+                'client:root': {
+                    __id: 'client:root',
+                    __typename: '__Root',
+                    'node(id:"4")': { __ref: '4' },
+                },
+            };
+            initialData = simpleClone(data);
+
+            const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
+            const id = getID(operation);
+            const storeData = {
+                [id]: {
+                    selector: operation.root,
+                    retainTime: Date.now(),
+                    dispose: true,
+                    ttl: 10000,
+                },
+            };
+            source = getRecordSourceImplementation(data);
+            store = new RelayModernStore(source, { storage: createPersistedStorage(storeData, 'relay-store'), defaultTTL: -1 });
+            await store.hydrate();
+        });
+
+        it('prevents data from being collected', () => {
+            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: 'fake', size: 32 }));
+            dispose();
+            jest.runOnlyPendingTimers();
+            expect(source.toJSON()).toEqual(initialData);
+        });
+    });
+
+    describe('persisted retain()', () => {
+        let UserQuery;
+        let data;
+        let initialData;
+        let source;
+        let store;
+
+        beforeEach(async () => {
+            ({ UserQuery } = generateAndCompile(`
+            query UserQuery($id: ID!, $size: Int) {
+                node(id: $id) {
+                  ...UserFragment
+                }
+              }
+
+      fragment UserFragment on User {
+        name
+        profilePicture(size: $size) {
+          uri
+        }
+      }
+        `));
+            data = {
+                '4': {
+                    __id: '4',
+                    id: '4',
+                    __typename: 'User',
+                    name: 'Zuck',
+                    'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
+                },
+                'client:1': {
+                    __id: 'client:1',
+                    uri: 'https://photo1.jpg',
+                },
+                'client:root': {
+                    __id: 'client:root',
+                    __typename: '__Root',
+                    'node(id:"4")': { __ref: '4' },
+                },
+            };
+            initialData = simpleClone(data);
+
+            const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
+            const id = getID(operation);
+            const storeData = {
+                [id]: {
+                    operation: operation,
+                    retainTime: Date.now(),
+                    dispose: true,
+                    ttl: 10000,
+                    refCount: 0,
+                    epoch: null,
+                },
+            };
+            source = getRecordSourceImplementation(data);
+            store = new RelayModernStore(source, { storage: createPersistedStorage(storeData, 'relay-store'), defaultTTL: -1 });
+            await store.hydrate();
+        });
+
+        it('prevents data from being collected', () => {
+            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: 'fake', size: 32 }));
+            dispose();
+            jest.runOnlyPendingTimers();
+            expect(source.toJSON()).toEqual(initialData);
+        });
+    });
+    /*
     describe('retain()', () => {
         let UserQuery;
         let data;
@@ -69,23 +204,25 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             await store.hydrate();
 
             ({ UserQuery } = generateAndCompile(`
-          query UserQuery($size: Int) {
-            me {
-              ...UserFragment
-            }
-          }
+            query UserQuery($id: ID!, $size: Int) {
+                node(id: $id) {
+                  ...UserFragment
+                }
+              }
 
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-          }
+      fragment UserFragment on User {
+        name
+        profilePicture(size: $size) {
+          uri
+        }
+      }
         `));
         });
 
         it('prevents data from being collected', () => {
             store.retain(createOperationDescriptor(UserQuery, { id: '4', size: 32 }));
+            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: 'fake', size: 32 }));
+            dispose();
             jest.runOnlyPendingTimers();
             expect(source.toJSON()).toEqual(initialData);
         });
@@ -98,7 +235,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             expect(source.toJSON()).toEqual({});
         });
 
-        it('only collects unreferenced data', () => {
+              it('only collects unreferenced data', () => {
             const { JoeQuery } = generateAndCompile(`
             fragment JoeFragment on Query @argumentDefinitions(
                 id: {type: "ID"}
@@ -702,17 +839,6 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             expect(callback).not.toBeCalled();
         });
 
-        /*
-        WORA: in development mode, when the data is recovered from the store, the records are not freeze
-        it('throws if source records are modified', () => {
-            const zuck = source.get('4');
-            expect(zuck).toBeTruthy();
-            expect(() => {
-                // $FlowFixMe
-                RelayModernRecord.setValue(zuck, 'pet', 'Beast');
-            }).toThrow(TypeError);
-        });
-        */
 
         it('throws if published records are modified', () => {
             // Create and publish a source with a new record
@@ -1044,6 +1170,6 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                     '4': undefined,
                 },
             });
-        });
+        });*/
     });
 });

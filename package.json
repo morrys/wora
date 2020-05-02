@@ -5,6 +5,7 @@
         "postinstall": "lerna exec -- yarn install",
         "build": "lerna run compile && lerna run test",
         "compile": "lerna run compile",
+        "clean": "lerna run clean",
         "clean-dep": "lerna run clean-dep",
         "deploy": "lerna run compile && lerna run test && lerna publish from-package",
         "eslint": "lerna run eslint",
