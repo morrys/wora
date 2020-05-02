@@ -91,7 +91,7 @@ export class Store extends RelayModernStore {
             (this as any)._scheduleGC();
         };
         const root = this._cache.get(id);
-        const refCount = !root ? 1 : root.refCount + 1;
+        const refCount = !root || !root.refCount ? 1 : root.refCount + 1;
         const newRoot = {
             operation,
             dispose: false,
