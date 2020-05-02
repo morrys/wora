@@ -1,4 +1,4 @@
-import { Network, OperationDescriptor, UploadableMap, Snapshot } from 'relay-runtime';
+import { Network, OperationDescriptor, UploadableMap, Snapshot, CacheConfig } from 'relay-runtime';
 import { OfflineFirstOptions, OfflineRecordCache } from '@wora/offline-first';
 import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironment';
 
@@ -6,6 +6,7 @@ export type Payload = {
     operation: OperationDescriptor;
     optimisticResponse?: { [key: string]: any };
     uploadables?: UploadableMap | null;
+    cacheConfig?: CacheConfig | null | undefined;
 };
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
