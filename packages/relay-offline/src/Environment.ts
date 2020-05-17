@@ -88,6 +88,10 @@ export class Environment extends RelayEnvironment {
         });
     }
 
+    public dispose(): void {
+        this.getStoreOffline().dispose();
+    }
+
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
             this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), ((this as any)._store as Store).hydrate()])
