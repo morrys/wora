@@ -56,6 +56,10 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
         this.apolloStoreOffline.setOfflineOptions(options);
     }
 
+    public dispose(): void {
+        this.getStoreOffline().dispose();
+    }
+
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
             this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloCache).hydrate()])
@@ -133,7 +137,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
         const result = { data: optimisticResponse };
         const id = uuid();
         // optimistic response is required
-        if (fetchPolicy !== 'no-cache') {
+        if (fetchPolicy !== 'no-cache' && optimisticResponse) {
             this.store.markMutationInit({
                 variables,
                 updateQueries: generateUpdateQueriesInfo(),
@@ -167,7 +171,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
         return this.getStoreOffline()
             .publish({ id, request, serial: true })
             .then((offlineRecord: OfflineRecordCache<Payload>) => {
-                if (fetchPolicy !== 'no-cache') {
+                if (fetchPolicy !== 'no-cache' && optimisticResponse) {
                     this.store.markMutationResult({
                         result,
                         variables,
@@ -179,7 +183,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
 
                     this.store.markMutationComplete({
                         mutationId: id,
-                        optimisticResponse: true,
+                        optimisticResponse,
                     });
 
                     this.queryManager.broadcastQueries();
@@ -189,7 +193,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
             .catch((error: Error) => {
                 this.store.markMutationComplete({
                     mutationId: id,
-                    optimisticResponse: true,
+                    optimisticResponse,
                 });
                 this.queryManager.broadcastQueries();
                 throw error;
