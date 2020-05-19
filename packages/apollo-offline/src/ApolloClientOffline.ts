@@ -102,15 +102,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
     }
 
     public mutateOffline<T>(mutationOptions: MutationOptions): Promise<FetchResult<T>> {
-        const {
-            context,
-            optimisticResponse,
-            update,
-            fetchPolicy,
-            variables,
-            mutation,
-            updateQueries: updateQueriesByName,
-        } = mutationOptions;
+        const { context, update, fetchPolicy, variables, mutation, updateQueries: updateQueriesByName } = mutationOptions;
 
         const generateUpdateQueriesInfo: () => {
             [queryId: string]: QueryWithUpdater;
@@ -133,6 +125,11 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
 
             return ret;
         };
+
+        const optimisticResponse =
+            typeof mutationOptions.optimisticResponse === 'function'
+                ? mutationOptions.optimisticResponse(variables)
+                : mutationOptions.optimisticResponse;
 
         const result = { data: optimisticResponse };
         const id = uuid();
