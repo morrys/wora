@@ -50,6 +50,7 @@ export class OfflineFirst<T> {
     private online = isServer;
     private rehydrated = isServer;
     private promisesRestore;
+    private disposeListener;
 
     constructor(persistOptions: CacheOptions = {}) {
         const persistOptionsStoreOffline = {
@@ -86,11 +87,17 @@ export class OfflineFirst<T> {
         return manualExecution;
     }
 
+    public dispose(): void {
+        this.disposeListener && this.disposeListener();
+        this.promisesRestore = null;
+        this.rehydrated = false;
+    }
+
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
             this.promisesRestore = Promise.all([NetInfo.fetch(), this.offlineStore.restore()])
                 .then((result) => {
-                    NetInfo.addEventListener((state) => {
+                    this.disposeListener = NetInfo.addEventListener((state) => {
                         const { isConnected } = state;
                         if (this.online !== isConnected && isConnected && !this.isManualExecution()) {
                             this.process();
