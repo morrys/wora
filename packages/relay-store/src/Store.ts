@@ -113,25 +113,51 @@ export class Store extends RelayModernStore {
         if ((this as any)._optimisticSource != null) {
             return;
         }
-        const references = new Set();
-        // Mark all records that are traversable from a root
-        this._cache.getAllKeys().forEach((id) => {
-            const { operation, selector: oldSelector } = this._cache.get(id);
-            const selector = oldSelector || operation.root;
-            RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
-        });
-        if (references.size === 0) {
-            // Short-circuit if *nothing* is referenced
-            (this as any)._recordSource.clear();
-        } else {
-            // Evict any unreferenced nodes
-            const storeIDs = (this as any)._recordSource.getRecordIDs();
-            for (let ii = 0; ii < storeIDs.length; ii++) {
-                const dataID = storeIDs[ii];
-                if (!references.has(dataID)) {
-                    (this as any)._recordSource.remove(dataID);
+        const gcRun = this._collect();
+        while (!gcRun.next().done) {}
+    }
+
+    *_collect(): Generator<void, void, void> {
+        /* eslint-disable no-labels */
+        top: while (true) {
+            const startEpoch = (this as any)._currentWriteEpoch;
+            const references = new Set();
+            // Mark all records that are traversable from a root
+            for (const id of this._cache.getAllKeys()) {
+                const { operation, selector: oldSelector } = this._cache.get(id);
+                const selector = oldSelector || operation.root;
+                RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
+                // Yield for other work after each operation
+                yield;
+
+                // If the store was updated, restart
+                if (startEpoch !== (this as any)._currentWriteEpoch) {
+                    continue top;
                 }
             }
+
+            const log = (this as any).__log;
+            if (log != null) {
+                log({
+                    name: 'store.gc',
+                    references,
+                });
+            }
+
+            if (references.size === 0) {
+                // Short-circuit if *nothing* is referenced
+                (this as any)._recordSource.clear();
+            } else {
+                // Evict any unreferenced nodes
+                const storeIDs = (this as any)._recordSource.getRecordIDs();
+                for (let ii = 0; ii < storeIDs.length; ii++) {
+                    const dataID = storeIDs[ii];
+                    if (!references.has(dataID)) {
+                        (this as any)._recordSource.remove(dataID);
+                    }
+                }
+            }
+            return;
         }
     }
 
