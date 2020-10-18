@@ -17,7 +17,7 @@ export function createIdbStorage(dbPromise: Promise<IDBPDatabase<any>>, storeNam
     } as ICacheStorage;
 }
 
-class IDBStorage {
+export class IDBStorage {
     public static create(options: {
         name?: string;
         storeNames?: Array<string>;
@@ -38,5 +38,3 @@ class IDBStorage {
         return storeNames.map((value) => createIdbStorage(dbPromise, value));
     }
 }
-
-export default IDBStorage;

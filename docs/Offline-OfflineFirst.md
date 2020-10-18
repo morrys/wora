@@ -18,7 +18,7 @@ yarn add @wora/offline-first
 
 
 ```ts
-import OfflineFirst, { OfflineFirstOptions, OfflineRecordCache, Request } from "@wora/offline-first";
+import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache, Request } from "@wora/offline-first";
 
 const persistOptionsStoreOffline = {
     prefix: 'example-offline',
@@ -114,24 +114,6 @@ publish(options: {
 `request` parameter is the only mandatory one and consists of the main information useful for managing the execution of the request.
 
 requests are executed in parallel, but with the `serial` parameter it is possible to specify whether you want to execute some or all of the requests sequentially.
-
-## addNetInfoListener
-
-* public addNetInfoListener(callback: Function, onlyIsConnected: boolean = true, )
-
-```ts
-
-const listener = addNetInfoListener(isConnected => console.log(isConnected));
-
-listener.remove();
-
-// all net informations
-
-const listener = addNetInfoListener(netinfo => console.log(netinfo), false);
-
-listener.remove();
-
-```
 
 ## Types
 

@@ -19,7 +19,7 @@ module.exports = {
     testURL: 'http://localhost',
     testEnvironment: 'jsdom',
 
-    testMatch: ['<rootDir>/__tests__/**/*.ts'],
+    testMatch: ['<rootDir>/__tests__/**/*-test.ts'],
     testPathIgnorePatterns: ['../../node_modules/', '/node_modules/', '/lib/', '<rootDir>/lib/', '<rootDir>/node_modules/'],
     transformIgnorePatterns: ['node_modules/(?!(@react-native-community|react-native))'],
     coverageThreshold: {
@@ -30,4 +30,5 @@ module.exports = {
             statements: 0,
         },
     },
+    setupFiles: ['../../scripts/setup.ts'],
 };

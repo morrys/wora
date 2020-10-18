@@ -3,7 +3,7 @@
 import { ICacheStorage } from './CacheTypes';
 import { promiseVoid, promiseResult } from './StorageProxy';
 
-function createStorage(type: string): ICacheStorage {
+export function createStorage(type: string): ICacheStorage {
     const storageType = `${type}Storage`;
     if (typeof self !== 'object' || !(storageType in self)) {
         return null;
@@ -16,5 +16,3 @@ function createStorage(type: string): ICacheStorage {
         getItem: (key) => promiseResult<string>(() => storage.getItem(key)),
     } as ICacheStorage;
 }
-
-export default createStorage;

@@ -1,6 +1,6 @@
 {
   "name": "@wora/cache-persist",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "keywords": [
     "cache",
     "react-native",
@@ -26,9 +26,8 @@
   "scripts": {
     "clean": "rimraf lib/*",
     "clean-dep": "rimraf node_modules/*",
-    "prepare": "npm run build",
-    "prebuild": "npm run clean",
-    "build": "tsc",
+    "precompile": "npm run clean",
+    "compile": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "test": "jest --coverage"
@@ -39,6 +38,7 @@
   "devDependencies": {
     "rimraf": "2.6.3",
     "typescript": "3.5.2",
-    "@react-native-community/async-storage": "^1.6.1"
+    "@react-native-community/async-storage": "^1.6.1",
+    "tslib": "^1.11.1"
   }
 }

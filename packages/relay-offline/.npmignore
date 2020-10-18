@@ -2,3 +2,6 @@ src/
 *.tgz
 tsconfig.json
 examples
+jest.config.js
+coverage
+__tests__

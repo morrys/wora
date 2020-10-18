@@ -1,13 +1,11 @@
-import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
-import IDBStorage, { IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
-import ApolloClientOffline, { OfflineApolloClientOptions } from './ApolloClientOffline';
-import ApolloCache from '@wora/apollo-cache';
 import { InMemoryCacheConfig } from '@apollo/client/cache/inmemory/inMemoryCache';
+import { ApolloClientIDBOptions } from './ApolloOfflineTypes';
+import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
+import { IDBStorage, IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
+import { ApolloClientOffline } from './ApolloClientOffline';
+import { ApolloCache } from '@wora/apollo-cache';
 
-type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
-type ApolloClientIDBOptions = Omit<OfflineApolloClientOptions, 'cache'>;
-
-class ApolloClientIDB {
+export class ApolloClientIDB {
     public static create(
         config: ApolloClientIDBOptions,
         options: {

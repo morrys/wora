@@ -2,7 +2,7 @@ import $$observable from 'symbol-observable';
 import Cache, { ICache, CacheOptions, mutateKeysLayer, prefixLayer, DataCache } from '@wora/cache-persist';
 import isPlainObject from './redux/utils/isPlainObject';
 import ActionTypes from './redux/utils/actionTypes';
-import filterKeys from '@wora/cache-persist/lib/layers/filterKeys';
+import { filterKeys } from '@wora/cache-persist/lib/layers/filterKeys';
 
 export const REHYDRATE = `@@redux/REHYDRATE`; // added
 export const REHYDRATE_ERROR = `@@redux/REHYDRATE_ERROR`; // added

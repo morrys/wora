@@ -1,3 +1,6 @@
 src/
 *.tgz
 tsconfig.json
+jest.config.js
+coverage
+__tests__

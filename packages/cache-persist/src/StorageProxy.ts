@@ -1,8 +1,8 @@
-import jsonSerialize from './layers/jsonSerialize';
-import prefixLayer from './layers/prefixLayer';
-import { ICache, IStorageHelper, DataCache, ICacheStorage, IMutateValue, IMutateKey, CacheOptions } from './CacheTypes';
-import compose from './utils/compose';
-import createStorage from './createStorage';
+import { jsonSerialize } from './layers/jsonSerialize';
+import { prefixLayer } from './layers/prefixLayer';
+import { ICache, IStorageHelper, DataCache, IMutateValue, IMutateKey, CacheOptions } from './CacheTypes';
+import { compose } from './utils/compose';
+import { createStorage } from './createStorage';
 
 export function promiseResult<T>(execute: () => T): Promise<T> {
     return Promise.resolve(execute());
@@ -25,7 +25,7 @@ const NoStorageProxy: IStorageHelper = {
     getStorage: () => undefined,
 };
 
-function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper {
+export function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper {
     const {
         prefix = 'cache',
         serialize = true,
@@ -72,8 +72,8 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
                 .map((mutate) => (key): string => (key != null ? mutate.get(key) : null)),
         ),
     };
-    const internalStorage = {
-        multiRemove: (keys): Promise<void> => {
+    if (!storage.multiRemove) {
+        storage.multiRemove = (keys): Promise<void> => {
             const promises: Array<Promise<void>> = [];
             for (let i = 0, l = keys.length; i < l; i++) {
                 promises.push(storage.removeItem(keys[i]));
@@ -83,8 +83,8 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
                 .catch((error) => {
                     throw error;
                 });
-        },
-        multiGet: (keys) => {
+        };
+        storage.multiGet = (keys): Promise<Array<Array<string>>> => {
             const promises: Array<Promise<Array<string>>> = [];
             for (let i = 0, l = keys.length; i < l; i++) {
                 const key: string = keys[i];
@@ -98,8 +98,8 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
                 );
             }
             return Promise.all(promises);
-        },
-        multiSet: (items: Array<Array<string>>) => {
+        };
+        storage.multiSet = (items: Array<Array<string>>): Promise<void> => {
             const promises: Array<Promise<void>> = [];
             for (let i = 0, l = items.length; i < l; i++) {
                 const [key, value] = items[i];
@@ -110,14 +110,13 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
                 .catch((error) => {
                     throw error;
                 });
-        },
-        ...storage,
-    } as ICacheStorage;
+        };
+    }
 
     function restore(): Promise<DataCache | null> {
-        return internalStorage
+        return storage
             .getAllKeys()
-            .then((keys: Array<string>) => internalStorage.multiGet(keys.filter((key) => !!mutateKey.get(key))))
+            .then((keys: Array<string>) => storage.multiGet(keys.filter((key) => !!mutateKey.get(key))))
             .then((data) => {
                 if (data.length === 0) {
                     restored = true;
@@ -198,7 +197,7 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
         resolveFlush = null;
         rejectFlush = null;
         promiseFlush = null;
-        const dispose = function(error?: Error): void {
+        const dispose = function (error?: Error): void {
             if (error) {
                 if (reject) {
                     reject();
@@ -230,11 +229,11 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
         const promises = [];
         if (removeKeys.length > 0) {
             // TODO length === 1 remove
-            promises.push(internalStorage.multiRemove(removeKeys));
+            promises.push(storage.multiRemove(removeKeys));
         }
         if (setValues.length > 0) {
             // TODO length === 1 set
-            promises.push(internalStorage.multiSet(setValues));
+            promises.push(storage.multiSet(setValues));
         }
         return Promise.all(promises)
             .then(() => dispose())
@@ -245,8 +244,6 @@ function StorageProxy(cache: ICache, options: CacheOptions = {}): IStorageHelper
         push,
         restore,
         flush,
-        getStorage: () => internalStorage,
+        getStorage: () => storage,
     } as IStorageHelper;
 }
-
-export default StorageProxy;

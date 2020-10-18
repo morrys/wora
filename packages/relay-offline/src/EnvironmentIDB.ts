@@ -1,13 +1,9 @@
 import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
-import IDBStorage, { IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
-import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironment';
-import { Store, RecordSource } from '@wora/relay-store';
-import { Scheduler, OperationLoader } from 'relay-runtime/lib/store/RelayStoreTypes';
-import RelayModernEnvironment from './RelayModernEnvironment';
+import { IDBStorage, IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
+import { Store, RecordSource, StoreOptions } from '@wora/relay-store';
+import { Environment } from './Environment';
 import { CacheOptionsStore } from '@wora/relay-store/lib/Store';
-
-type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
-type EnvironmentOfflineConfig = Omit<EnvironmentConfig, 'store'>; // Equivalent to: {b: number, c: boolean}
+import { EnvironmentOfflineConfig } from './RelayOfflineTypes';
 
 class EnvironmentIDB {
     public static create(
@@ -20,16 +16,26 @@ class EnvironmentIDB {
         recordSourceOptions: CacheOptions = {},
         storeOptions: {
             persistOptions?: CacheOptionsStore;
-            gcScheduler?: Scheduler;
-            operationLoader?: OperationLoader;
-            getDataID?: any; // do not use
+            options?: StoreOptions;
         } = {},
         offlineStoreOptions: CacheOptions = {},
-    ): RelayModernEnvironment {
-        let idbStore: CacheOptions;
-        let idbRecords: CacheOptions;
-        let idbOffline: CacheOptions;
-        const { gcScheduler, operationLoader, getDataID, persistOptions } = storeOptions;
+    ): Environment {
+        const { options, persistOptions } = storeOptions;
+        const idbStore: CacheOptions = {
+            serialize: false,
+            prefix: null,
+            ...persistOptions,
+        };
+        const idbRecords: CacheOptions = {
+            serialize: false,
+            prefix: null,
+            ...recordSourceOptions,
+        };
+        const idbOffline: CacheOptions = {
+            serialize: false,
+            prefix: null,
+            ...offlineStoreOptions,
+        };
         if (typeof window !== 'undefined') {
             const { name = 'relay', onUpgrade, version } = idbOptions;
             const idbStorages: ICacheStorage[] = IDBStorage.create({
@@ -39,30 +45,13 @@ class EnvironmentIDB {
                 version,
             });
 
-            idbStore = {
-                storage: idbStorages[0],
-                serialize: false,
-                prefix: null,
-                ...persistOptions,
-            };
-
-            idbRecords = {
-                storage: idbStorages[1],
-                serialize: false,
-                prefix: null,
-                ...recordSourceOptions,
-            };
-
-            idbOffline = {
-                storage: idbStorages[2],
-                serialize: false,
-                prefix: null,
-                ...offlineStoreOptions,
-            };
+            idbStore.storage = idbStorages[0];
+            idbRecords.storage = idbStorages[1];
+            idbOffline.storage = idbStorages[2];
         }
         const recordSource = new RecordSource(idbRecords);
-        const store = new Store(recordSource, idbStore, gcScheduler, operationLoader, getDataID);
-        return new RelayModernEnvironment({ ...config, store }, idbOffline);
+        const store = new Store(recordSource, idbStore, options);
+        return new Environment({ ...config, store }, idbOffline);
     }
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@wora/apollo-cache",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "keywords": [
     "cache",
     "wora",
@@ -25,9 +25,8 @@
   "scripts": {
     "clean": "rimraf lib/*",
     "clean-dep": "rimraf node_modules/*",
-    "prepare": "npm run build",
-    "prebuild": "npm run clean",
-    "build": "tsc",
+    "precompile": "npm run clean",
+    "compile": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },

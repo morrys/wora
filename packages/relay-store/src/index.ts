@@ -1,2 +1,2 @@
-export { default as Store } from './Store';
-export { default as RecordSource } from './RecordSource';
+export { Store, StoreOptions } from './Store';
+export { RecordSource } from './RecordSource';

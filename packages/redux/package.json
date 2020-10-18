@@ -1,6 +1,6 @@
 {
   "name": "@wora/redux",
-  "version": "2.0.0-rc.3",
+  "version": "2.0.0-rc.4",
   "keywords": [
     "cache",
     "wora",
@@ -26,9 +26,8 @@
   "scripts": {
     "clean": "rimraf lib/*",
     "clean-dep": "rimraf node_modules/*",
-    "prepare": "npm run build",
-    "prebuild": "npm run clean",
-    "build": "tsc"
+    "precompile": "npm run clean",
+    "compile": "tsc"
   },
   "dependencies": {
     "@wora/cache-persist": "file:../cache-persist",

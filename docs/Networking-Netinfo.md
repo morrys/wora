@@ -5,37 +5,16 @@ title: NetInfo
 
 # [@wora/netinfo](https://github.com/morrys/wora)
 
-## Overview
-
-simple library that implements the **react-native netinfo interface** to use it also in the **web**, thanks to the work of `Nicolas Gallagher`
 
 ### NetInfo.addEventListener
 
 Allows you to **subscribe** to the **connection change event**. The **callback** function passed as a parameter will be ****executed whenever the connection information changes**
 
-The return parameter is an object with the only **remove function** to be invoked when you want to **unsubscribe**
-
-### NetInfo.removeEventListener
-
-Allows you to unsubscribe to the connection change event.
+The return parameter **is function** to be invoked when you want to **unsubscribe**
 
 ### NetInfo.fetch
 
 Return a `Promise` with the connection information.
-
-### NetInfo.isConnected.addEventListener
-
-Allows you to **subscribe** to the **connection state (online or offline) change event**. The **callback** function passed as a parameter will be ****executed when the connection state change**
-
-The return parameter is an object with the only **remove function** to be invoked when you want to **unsubscribe**
-
-### NetInfo.isConnected.removeEventListener
-
-Allows you to unsubscribe to the connection state event.
-
-### NetInfo.isConnected.fetch
-
-Return a `promise` with the only information if the connection is connected (online or offline)
 
 
 ## React

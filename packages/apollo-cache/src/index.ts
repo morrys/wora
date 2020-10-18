@@ -6,7 +6,7 @@ interface IPersistImpl {
     hydrate(): Promise<ICache>;
 }
 
-class ApolloCache extends InMemoryCache implements IPersistImpl {
+export class ApolloCache extends InMemoryCache implements IPersistImpl {
     public cache: EntityRoot;
 
     constructor(options: InMemoryCacheConfig = {}, persistOptions: CacheOptions = {}) {

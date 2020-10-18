@@ -1,3 +1,1 @@
-import NetInfo from "@react-native-community/netinfo";
-
-export default NetInfo;
+export { default as NetInfo, NetInfoState, NetInfoChangeHandler, NetInfoConfiguration } from '@react-native-community/netinfo';

@@ -1,7 +1,19 @@
-import { NetInfo } from '@wora/netinfo';
-import useNetInfoInternal from './internal/useNetInfo';
+import { useState, useEffect } from 'react';
+import { NetInfo, NetInfoState, NetInfoConfiguration } from '@wora/netinfo';
 
-export function useNetInfo(): boolean {
-    return useNetInfoInternal(NetInfo);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useNetInfo(configuration?: Partial<NetInfoConfiguration>): any {
+    const [netInfo, setNetInfo] = useState<NetInfoState>({
+        type: 'unknown',
+        isInternetReachable: false,
+        isConnected: false,
+        details: null,
+    });
+
+    useEffect((): (() => void) => {
+        NetInfo.fetch().then(setNetInfo);
+        return NetInfo.addEventListener(setNetInfo);
+    }, []);
+
+    return netInfo;
 }
-export default useNetInfo;

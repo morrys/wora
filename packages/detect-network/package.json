@@ -1,6 +1,6 @@
 {
   "name": "@wora/detect-network",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "keywords": [
     "wora",
     "react-native",
@@ -26,9 +26,8 @@
   "scripts": {
     "clean": "rimraf lib/*",
     "clean-dep": "rimraf node_modules/*",
-    "prepare": "npm run build",
-    "prebuild": "npm run clean",
-    "build": "tsc",
+    "precompile": "npm run clean",
+    "compile": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx"
   },
@@ -39,6 +38,6 @@
     "react": ">=16.8.0"
   },
   "devDependencies": {
-    "@react-native-community/netinfo": "3.2.1"
+    "@react-native-community/netinfo": "5.7.1"
   }
 }
