@@ -2122,7 +2122,7 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "2.2.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.2.0-70a7a8fe-2252-47b0-9569-9ace49335492-1588329047487/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
   version "2.1.0"
@@ -2135,16 +2135,16 @@
     fbjs "^1.0.0"
 
 "@wora/offline-first@file:packages/offline-first":
-  version "2.1.0"
+  version "2.2.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.1.0-193324da-22c3-4c59-8953-50b31cae9738-1588329047488/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.1.0-193324da-22c3-4c59-8953-50b31cae9738-1588329047488/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:packages/cache-persist"
+    "@wora/netinfo" "file:packages/netinfo"
     fbjs "^1.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
   version "3.2.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-3.2.0-95fc5a0c-e056-445c-8d50-e769ee5f3555-1588329047490/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -5282,9 +5282,9 @@ inherits@2, inherits@2.0.4, inherits@^2.0.1, inherits@^2.0.3, inherits@~2.0.3:
   integrity sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==
 
 ini@^1.3.2, ini@^1.3.4, ini@~1.3.0:
-  version "1.3.5"
-  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.5.tgz#eee25f56db1c9ec6085e0c22778083f596abf927"
-  integrity sha512-RZY5huIKCMRWDUqZlEi72f/lmXKMvuszcMBduliQ3nnWbx9X/ZBQO7DijMEYS9EhHBb2qacRUMtC7svLwe0lcw==
+  version "1.3.7"
+  resolved "https://registry.yarnpkg.com/ini/-/ini-1.3.7.tgz#a09363e1911972ea16d7a8851005d84cf09a9a84"
+  integrity sha512-iKpRpXP+CrP2jyrxvg1kMUpXDyRUFDWurxbnVT1vQPx+Wz9uCYsMIqYuSBLV+PAaZG/d7kRLKRFc9oDMsH+mFQ==
 
 init-package-json@^1.10.3:
   version "1.10.3"
