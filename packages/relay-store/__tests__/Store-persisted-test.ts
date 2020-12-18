@@ -83,17 +83,42 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             initialData = simpleClone(data);
 
             const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
-            const id = getID(operation);
+            const id = operation.request.identifier;
             const storeData = {
                 [id]: {
                     selector: operation.root,
                     retainTime: Date.now(),
-                    dispose: true,
+                    dispose: false,
                     ttl: 10000,
                 },
             };
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { storage: createPersistedStorage(storeData, 'relay-store'), defaultTTL: -1 });
+            store = new RelayModernStore(
+                source,
+                {
+                    storage: createPersistedStorage(storeData, 'relay-store'),
+                    mergeState: (restoredState, initialState) => {
+                        return Object.keys(restoredState).reduce((acc, key) => {
+                            console.log('acc', acc, key);
+                            const previous = acc[key];
+                            if (previous.selector) {
+                                acc[key] = {
+                                    ...previous,
+                                    operation: {
+                                        root: previous.selector,
+                                    },
+                                    dispose: true,
+                                    refCount: 0,
+                                    fetchTime: previous.retainTime,
+                                };
+                            }
+
+                            return acc;
+                        }, restoredState);
+                    },
+                },
+                { queryCacheExpirationTime: -1 },
+            );
             await store.hydrate();
         });
 
@@ -148,7 +173,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             initialData = simpleClone(data);
 
             const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
-            const id = getID(operation);
+            const id = operation.request.identifier;
             const storeData = {
                 [id]: {
                     operation: operation,
@@ -160,7 +185,11 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                 },
             };
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { storage: createPersistedStorage(storeData, 'relay-store'), defaultTTL: -1 });
+            store = new RelayModernStore(
+                source,
+                { storage: createPersistedStorage(storeData, 'relay-store') },
+                { queryCacheExpirationTime: -1 },
+            );
             await store.hydrate();
         });
 
@@ -1171,5 +1200,4 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                 },
             });
         });*/
-    });
 });

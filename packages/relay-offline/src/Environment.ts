@@ -7,7 +7,6 @@ import {
     OperationDescriptor,
     UploadableMap,
     Snapshot,
-    CacheConfig,
 } from 'relay-runtime';
 
 import { EnvironmentConfig } from 'relay-runtime/lib/store/RelayModernEnvironment';
@@ -72,9 +71,9 @@ export class Environment extends RelayEnvironment {
         const {
             request: { payload },
         } = offline;
-        const { operation, uploadables, cacheConfig } = payload;
-        const request = operation.request ? operation.request : operation;
-        const netCacheConfig = cacheConfig || { force: true };
+        const { operation, uploadables } = payload;
+        const request = operation.request; // ? operation.request : operation;
+        const netCacheConfig = operation.request.cacheConfig || { force: true }; //|| cacheConfig
         netCacheConfig.metadata = {
             ...netCacheConfig.metadata,
             offline,
@@ -128,7 +127,6 @@ export class Environment extends RelayEnvironment {
     }
 
     public executeMutationOffline({
-        cacheConfig,
         operation,
         optimisticResponse,
         optimisticUpdater,
@@ -140,7 +138,6 @@ export class Environment extends RelayEnvironment {
         optimisticResponse?: { [key: string]: any } | null;
         updater?: SelectorStoreUpdater | null;
         uploadables?: UploadableMap | null;
-        cacheConfig?: CacheConfig | null | undefined;
     }): RelayObservable<GraphQLResponse> {
         return RelayObservable.create((sink) => {
             let optimisticConfig;
@@ -155,7 +152,7 @@ export class Environment extends RelayEnvironment {
                 !!optimisticConfig,
                 'commitMutation offline: no optimistic responses configured. the mutation will not perform any store updates.',
             );
-            const source = RelayObservable.create((sink) => {
+            const source = RelayObservable.create<any>((sink) => {
                 resolveImmediate(() => {
                     const sinkPublish = optimisticConfig ? (this as any).getStore().getSource()._sink.toJSON() : {};
                     const backup = {};
@@ -170,7 +167,6 @@ export class Environment extends RelayEnvironment {
                         operation,
                         optimisticResponse,
                         uploadables,
-                        cacheConfig,
                     };
                     const request: Request<Payload> = {
                         payload,
@@ -201,6 +197,8 @@ export class Environment extends RelayEnvironment {
                 updater: optimisticResponse ? updater : optimisticUpdater,
                 operationTracker: (this as any)._operationTracker,
                 getDataID: (this as any)._getDataID,
+                treatMissingFieldsAsNull: (this as any)._treatMissingFieldsAsNull,
+                reactFlightPayloadDeserializer: (this as any)._reactFlightPayloadDeserializer,
             });
             return (): void => executor.cancel();
         });
@@ -212,7 +210,6 @@ export class Environment extends RelayEnvironment {
         optimisticResponse?: { [key: string]: any } | null;
         updater?: SelectorStoreUpdater | null;
         uploadables?: UploadableMap | null;
-        cacheConfig?: CacheConfig | null | undefined;
     }): RelayObservable<GraphQLResponse> {
         if (this.isOnline()) {
             return super.executeMutation(mutationOptions);

@@ -36,7 +36,7 @@
   "dependencies": {
     "@wora/netinfo": "file:../netinfo",
     "@wora/cache-persist": "file:../cache-persist",
-    "fbjs": "^1.0.0"
+    "fbjs": "^3.0.0"
   },
   "devDependencies": {}
 }

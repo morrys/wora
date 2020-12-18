@@ -16,6 +16,7 @@
         "packages/*"
     ],
     "devDependencies": {
+        "@babel/runtime": "^7.7.2",
         "@types/jest": "24.0.18",
         "ts-jest": "24.1.0",
         "jest": "24.9.0",
@@ -41,6 +42,7 @@
         "react-native": "0.59.8",
         "react": "16.8.3",
         "rimraf": "2.6.3",
-        "promise-polyfill": "6.1.0"
+        "promise-polyfill": "6.1.0",
+        "fbjs": "^3.0.0"
     }
 }
