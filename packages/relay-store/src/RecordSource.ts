@@ -21,6 +21,10 @@ export class RecordSource implements IMutableRecordSourceOffline {
         this._cache = new Cache(persistOptionsRecordSource);
     }
 
+    public isRehydrated(): boolean {
+        return this._cache.isRehydrated();
+    }
+
     public purge(): Promise<void> {
         this._cache.purge();
         return this._cache.flush();

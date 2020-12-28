@@ -31,7 +31,7 @@ export class Store extends RelayModernStore {
         }
         super(recordSource, options);
 
-        this.checkGC = (): boolean => true;
+        this.checkGC = (): boolean => this.isRehydrated();
 
         this._cache = new Cache(persistOptionsStore);
         (this._cache as any).values = (): any => {
@@ -56,6 +56,10 @@ export class Store extends RelayModernStore {
 
     public hydrate(): Promise<Cache[]> {
         return Promise.all([this._cache.restore(), (this as any)._recordSource.restore()]);
+    }
+
+    public isRehydrated(): boolean {
+        return this._cache.isRehydrated() && (!(this as any)._recordSource.isRehydrated || (this as any)._recordSource.isRehydrated());
     }
 
     public getTTL(operation: OperationDescriptor): number {

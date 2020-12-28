@@ -99,7 +99,6 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                     storage: createPersistedStorage(storeData, 'relay-store'),
                     mergeState: (restoredState, initialState) => {
                         return Object.keys(restoredState).reduce((acc, key) => {
-                            console.log('acc', acc, key);
                             const previous = acc[key];
                             if (previous.selector) {
                                 acc[key] = {
@@ -110,6 +109,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                                     dispose: true,
                                     refCount: 0,
                                     fetchTime: previous.retainTime,
+                                    ttl: 1,
                                 };
                             }
 
@@ -119,7 +119,6 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
                 },
                 { queryCacheExpirationTime: -1 },
             );
-            await store.hydrate();
         });
 
         it('prevents data from being collected', () => {
@@ -127,6 +126,14 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             dispose();
             jest.runOnlyPendingTimers();
             expect(source.toJSON()).toEqual(initialData);
+        });
+
+        it('dispose old persisted query', async () => {
+            await store.hydrate();
+            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: 'fake', size: 32 }));
+            dispose();
+            jest.runOnlyPendingTimers();
+            expect(source.toJSON()).toEqual({});
         });
     });
 
