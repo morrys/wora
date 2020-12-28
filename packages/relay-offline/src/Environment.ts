@@ -71,9 +71,9 @@ export class Environment extends RelayEnvironment {
         const {
             request: { payload },
         } = offline;
-        const { operation, uploadables } = payload;
-        const request = operation.request; // ? operation.request : operation;
-        const netCacheConfig = operation.request.cacheConfig || { force: true }; //|| cacheConfig
+        const { operation, uploadables, cacheConfig } = payload as any;
+        const request: any = operation.request ? operation.request : operation;
+        const netCacheConfig = request.cacheConfig || cacheConfig || { force: true };
         netCacheConfig.metadata = {
             ...netCacheConfig.metadata,
             offline,

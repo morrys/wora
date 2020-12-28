@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "3.3.0",
+  "version": "4.0.0-rc.1",
   "keywords": [
     "wora",
     "cache-persist",
@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@babel/runtime": "^7.7.2",
-    "@types/relay-runtime": "^10.1.2",
+    "@types/relay-runtime": "^10.1.6",
     "babel-plugin-relay": "^10.0.0",
     "relay-runtime": "^10.1.0",
     "relay-test-utils-internal" : "^10.1.0",

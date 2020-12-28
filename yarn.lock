@@ -2054,10 +2054,10 @@
     "@types/prop-types" "*"
     csstype "^2.2.0"
 
-"@types/relay-runtime@^10.1.2":
-  version "10.1.5"
-  resolved "https://registry.yarnpkg.com/@types/relay-runtime/-/relay-runtime-10.1.5.tgz#723a730f165639282b427c95013e8308dec53904"
-  integrity sha512-Sjm1Z3WZsDY3CeS2ypq7bz8X4U7h7tup3Gh1zPFaF2n4nKW+zzH9YKu+GgYC/IxwOJcdv1g3GPKsRovRf+OdPw==
+"@types/relay-runtime@^10.1.6":
+  version "10.1.6"
+  resolved "https://registry.yarnpkg.com/@types/relay-runtime/-/relay-runtime-10.1.6.tgz#fba34fdb5ce836de6522d1502ff68657408bce74"
+  integrity sha512-B5REuBaGMlsXTAyX15D9NawGywVDzNAGPhsU74/gWNDzKEXRCO2rI0Pd1mtSpBVISHCe8SQlrO8qpXfLt3ZdXA==
 
 "@types/stack-utils@^1.0.1":
   version "1.0.1"
@@ -2134,7 +2134,7 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "2.2.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.2.0-72f91fa2-1b90-4800-b165-c324e7e340d8-1608229011062/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.2.0-20d00643-f7f1-4de6-acd6-0c2433715bda-1609154836384/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
   version "2.1.0"
@@ -2142,21 +2142,21 @@
     idb "^4.0.0"
 
 "@wora/netinfo@file:packages/netinfo":
-  version "2.0.0"
+  version "2.1.0"
   dependencies:
-    fbjs "^1.0.0"
+    fbjs "^3.0.0"
 
 "@wora/offline-first@file:packages/offline-first":
-  version "2.2.0"
+  version "2.3.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.2.0-eb481cdd-0f49-49e0-b6c2-22ad3f1bbceb-1608229011061/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.2.0-eb481cdd-0f49-49e0-b6c2-22ad3f1bbceb-1608229011061/node_modules/@wora/netinfo"
-    fbjs "^1.0.0"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.3.0-b2b92d5e-1fcb-4347-a5cc-287b563a219f-1609154836382/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.3.0-b2b92d5e-1fcb-4347-a5cc-287b563a219f-1609154836382/node_modules/@wora/netinfo"
+    fbjs "^3.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
-  version "3.2.0"
+  version "4.0.0-rc.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-3.2.0-deb14e56-339a-4696-91ce-1a037812eac6-1608229011064/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-4.0.0-rc.1-41542424-9eca-4187-b53b-2bdc2c43ceb8-1609154836384/node_modules/@wora/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
