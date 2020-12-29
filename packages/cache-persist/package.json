@@ -36,8 +36,6 @@
     "idb": "^4.0.0"
   },
   "devDependencies": {
-    "rimraf": "2.6.3",
-    "typescript": "3.5.2",
     "@react-native-community/async-storage": "^1.6.1",
     "tslib": "^1.11.1"
   }
