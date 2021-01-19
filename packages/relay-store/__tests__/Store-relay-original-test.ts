@@ -1693,7 +1693,6 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
             scheduler = jest.fn(callbacks.push.bind(callbacks));
             source = getRecordSourceImplementation(data);
             store = new RelayModernStore(source, undefined, { gcScheduler: scheduler, queryCacheExpirationTime: null });
-            console.log('store', store._cache.getState());
             ({ UserQuery } = generateAndCompile(`
                 fragment UserFragment on User {
                     name
