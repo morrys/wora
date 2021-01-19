@@ -107,7 +107,11 @@ export class OfflineFirst<T> {
                     const { isConnected } = result[0];
                     this.online = isConnected;
                     if (isConnected && !this.isManualExecution()) {
-                        this.process();
+                        return this.process().then(() => {
+                            this.notify();
+                            this.rehydrated = true;
+                            return true;
+                        });
                     }
                     this.notify();
                     this.rehydrated = true;

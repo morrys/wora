@@ -5,7 +5,6 @@ import observableToPromise, { Options } from 'apollo-client/util/observableToPro
 import { getOperationName } from 'apollo-utilities';
 import { CacheOptions } from '@wora/cache-persist';
 import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache } from '@wora/offline-first';
-import { ApolloCache } from '@wora/apollo-cache';
 import { NormalizedCacheObject } from 'apollo-cache-inmemory';
 import { MutationOptions } from 'apollo-client/core/watchQueryOptions';
 import { v4 as uuid } from 'uuid';
@@ -20,7 +19,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
     private promisesRestore;
 
     constructor(apolloOptions: OfflineApolloClientOptions, persistOptions: CacheOptions = {}) {
-        super(apolloOptions);
+        super(apolloOptions as any);
         (this.queryManager as any).isOnline = (): boolean => this.isOnline();
         const persistOptionsStoreOffline = {
             prefix: 'apollo-offline',
@@ -62,7 +61,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
 
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
-            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloCache).hydrate()])
+            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as any).hydrate()])
                 .then((_result) => {
                     (this.cache as any).broadcastWatches();
                     this.queryManager.broadcastQueries();

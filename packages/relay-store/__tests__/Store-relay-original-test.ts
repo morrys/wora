@@ -56,7 +56,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                 };
                 initialData = simpleClone(data);
                 source = getRecordSourceImplementation(data);
-                store = new RelayModernStore(source, { defaultTTL: -1 });
+                store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
                 ({ UserQuery } = generateAndCompile(`
                 query UserQuery($id: ID!, $size: Int) {
                     node(id: $id) {
@@ -147,7 +147,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                     },
                 };
                 source = getRecordSourceImplementation(data);
-                store = new RelayModernStore(source, { defaultTTL: -1 });
+                store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
                 ({ UserFragment, UserQuery } = generateAndCompile(`
                     fragment UserFragment on User {
                         name
@@ -180,6 +180,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         ...data,
                     },
                     isMissingData: false,
+                    missingRequiredFields: null,
                 });
                 for (const id in snapshot.seenRecords) {
                     if (snapshot.seenRecords.hasOwnProperty(id)) {
@@ -230,6 +231,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         ...data,
                     },
                     isMissingData: false,
+                    missingRequiredFields: null,
                 });
                 expect(snapshot.data.__fragmentOwner).toBe(owner.request); // expect(snapshot.data?.__fragmentOwner).toBe(owner.request);
                 for (const id in snapshot.seenRecords) {
@@ -281,6 +283,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         'client:2': nextData['client:2'],
                     },
                     isMissingData: false,
+                    missingRequiredFields: null,
                 });
             });
         });
@@ -314,7 +317,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                     },
                 };
                 source = getRecordSourceImplementation(data);
-                store = new RelayModernStore(source, { defaultTTL: -1 });
+                store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: 1 });
                 ({ UserFragment, UserQuery } = generateAndCompile(`
           fragment UserFragment on User {
             name
@@ -530,7 +533,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                     },
                 };
                 source = getRecordSourceImplementation(data);
-                store = new RelayModernStore(source, { defaultTTL: -1 });
+                store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
                 const owner = createOperationDescriptor(UserQuery, {});
                 const selector = createReaderSelector(UserFragment, '4', { size: 32 }, owner.request);
                 const snapshot = store.lookup(selector);
@@ -552,6 +555,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                 expect(callback.mock.calls[0][0]).toEqual({
                     ...snapshot,
                     isMissingData: false,
+                    missingRequiredFields: null,
                     data: {
                         name: 'Zuck',
                         profilePicture: {
@@ -757,7 +761,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                     },
                 };
                 source = getRecordSourceImplementation(data);
-                store = new RelayModernStore(source, { defaultTTL: -1 });
+                store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
                 environment = createMockEnvironment({ store });
                 ({ UserQuery } = generateAndCompile(`
           fragment UserFragment on User {
@@ -813,7 +817,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                 // $FlowFixMe found deploying v0.109.0
                 delete data['client:1']; // profile picture
                 source = getRecordSourceImplementation(data);
-                store = new RelayModernStore(source, { defaultTTL: -1 });
+                store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
                 const operation = createOperationDescriptor(UserQuery, {
                     id: '4',
                     size: 32,
@@ -1688,7 +1692,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
             callbacks = [];
             scheduler = jest.fn(callbacks.push.bind(callbacks));
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 }, { gcScheduler: scheduler });
+            store = new RelayModernStore(source, undefined, { gcScheduler: scheduler, queryCacheExpirationTime: null });
             ({ UserQuery } = generateAndCompile(`
                 fragment UserFragment on User {
                     name
@@ -1749,7 +1753,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
             };
             initialData = simpleClone(data);
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { defaultTTL: -1 });
+            store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
             ({ UserQuery } = generateAndCompile(`
                     fragment UserFragment on User {
                         name

@@ -1,17 +1,11 @@
 import { Store as RelayModernStore } from 'relay-runtime';
 import { Disposable, OperationDescriptor, RequestDescriptor, OperationAvailability, OperationLoader } from 'relay-runtime';
 
-import * as RelayReferenceMarker from 'relay-runtime/lib/store/RelayReferenceMarker';
-
 import { Availability } from 'relay-runtime/lib/store/DataChecker';
 import { CheckOptions, Scheduler } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { Cache, CacheOptions } from '@wora/cache-persist';
 import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
-
-export type CacheOptionsStore = CacheOptions & {
-    defaultTTL?: number;
-};
 
 export type StoreOptions = {
     gcScheduler?: Scheduler | null | undefined;
@@ -20,26 +14,30 @@ export type StoreOptions = {
     gcReleaseBufferSize?: number | null | undefined;
     queryCacheExpirationTime?: number | null | undefined;
 };
+const hasOwn = Object.prototype.hasOwnProperty;
 
 export class Store extends RelayModernStore {
     _cache: Cache;
     checkGC: () => boolean;
-    _defaultTTL: number;
 
-    constructor(recordSource: RecordSource, persistOptions: CacheOptionsStore = {}, options?: StoreOptions) {
-        const { defaultTTL = 10 * 60 * 1000 } = persistOptions;
+    constructor(recordSource: RecordSource, persistOptions: CacheOptions = {}, options: StoreOptions = {}) {
         const persistOptionsStore = {
             prefix: 'relay-store',
             serialize: true,
             ...persistOptions,
         };
+        if (!hasOwn.call(options, 'queryCacheExpirationTime')) {
+            options.queryCacheExpirationTime = 10 * 60 * 1000;
+        }
         super(recordSource, options);
 
-        this.checkGC = (): boolean => true;
-
-        this._defaultTTL = options && options.queryCacheExpirationTime ? options.queryCacheExpirationTime : defaultTTL;
+        this.checkGC = (): boolean => this.isRehydrated();
 
         this._cache = new Cache(persistOptionsStore);
+        (this._cache as any).values = (): any => {
+            return Object.values(this._cache.getState());
+        };
+        (this as any)._roots = this._cache;
     }
 
     public setCheckGC(checkGC = (): boolean => true): void {
@@ -60,18 +58,23 @@ export class Store extends RelayModernStore {
         return Promise.all([this._cache.restore(), (this as any)._recordSource.restore()]);
     }
 
-    public getID(operation: OperationDescriptor): string {
-        return operation.root.node.name + '.' + JSON.stringify(operation.root.variables);
+    public isRehydrated(): boolean {
+        return this._cache.isRehydrated() && (!(this as any)._recordSource.isRehydrated || (this as any)._recordSource.isRehydrated());
     }
 
-    public retain(operation: OperationDescriptor, retainConfig: { ttl?: number } = {}): Disposable {
-        const { ttl = this._defaultTTL } = retainConfig;
+    public getTTL(operation: OperationDescriptor): number {
+        return operation.request && operation.request.cacheConfig && (operation.request.cacheConfig as any).ttl
+            ? (operation.request.cacheConfig as any).ttl
+            : (this as any)._queryCacheExpirationTime;
+    }
 
-        const id = this.getID(operation);
+    public retain(operation: OperationDescriptor): Disposable {
+        const ttl = this.getTTL(operation);
+
+        const id = operation.request.identifier;
         let disposed = false;
         const dispose = (): void => {
             // Ensure each retain can only dispose once
-
             const root = this._cache.get(id);
             if (disposed || !root) {
                 return;
@@ -80,15 +83,18 @@ export class Store extends RelayModernStore {
             root.refCount -= 1;
             root.dispose = root.refCount === 0;
             this._cache.set(id, root);
+            let toSchedule = false;
             this._cache.getAllKeys().forEach((idCache) => {
                 const { fetchTime, retainTime, ttl, dispose } = this._cache.get(idCache);
                 const checkDate = fetchTime != null ? fetchTime : retainTime;
                 const expired = !this.isCurrent(checkDate, ttl);
+
                 if (dispose && expired) {
+                    toSchedule = true;
                     this._cache.remove(idCache);
                 }
             });
-            (this as any)._scheduleGC();
+            toSchedule && (this as any).scheduleGC();
         };
         const root = this._cache.get(id);
         const refCount = !root || !root.refCount ? 1 : root.refCount + 1;
@@ -105,47 +111,43 @@ export class Store extends RelayModernStore {
         return { dispose };
     }
 
+    /**
+     * Run a full GC synchronously.
+     */
     __gc(): void {
-        if (!this.checkGC()) {
-            return;
-        }
         // Don't run GC while there are optimistic updates applied
-        if ((this as any)._optimisticSource != null) {
+        if ((this as any)._optimisticSource != null || !this.checkGC()) {
             return;
         }
-        const references = new Set();
-        // Mark all records that are traversable from a root
-        this._cache.getAllKeys().forEach((id) => {
-            const { operation, selector: oldSelector } = this._cache.get(id);
-            const selector = oldSelector || operation.root;
-            RelayReferenceMarker.mark((this as any)._recordSource, selector, references, (this as any)._operationLoader);
-        });
-        if (references.size === 0) {
-            // Short-circuit if *nothing* is referenced
-            (this as any)._recordSource.clear();
-        } else {
-            // Evict any unreferenced nodes
-            const storeIDs = (this as any)._recordSource.getRecordIDs();
-            for (let ii = 0; ii < storeIDs.length; ii++) {
-                const dataID = storeIDs[ii];
-                if (!references.has(dataID)) {
-                    (this as any)._recordSource.remove(dataID);
-                }
-            }
+        const gcRun = (this as any)._collect();
+        while (!gcRun.next().done) {}
+    }
+
+    scheduleGC(): void {
+        if ((this as any)._optimisticSource != null || !this.checkGC()) {
+            return;
         }
+        if ((this as any)._gcHoldCounter > 0) {
+            (this as any)._shouldScheduleGC = true;
+            return;
+        }
+        if ((this as any)._gcRun) {
+            return;
+        }
+        (this as any)._gcRun = (this as any)._collect();
+        (this as any)._gcScheduler((this as any)._gcStep);
     }
 
     private isCurrent(fetchTime: number, ttl: number): boolean {
-        return fetchTime + ttl >= Date.now();
+        return ttl && fetchTime + ttl >= Date.now();
     }
 
     check(operation: OperationDescriptor, options?: CheckOptions): OperationAvailability {
         const selector = operation.root;
-        const source = (this as any)._optimisticSource ? (this as any)._optimisticSource : (this as any)._recordSource;
+        const source = (this as any)._optimisticSource ?? (this as any)._recordSource;
         const globalInvalidationEpoch = (this as any)._globalInvalidationEpoch;
 
-        const id = this.getID(operation);
-        const rootEntry = this._cache.get(id);
+        const rootEntry = this._cache.get(operation.request.identifier);
         const operationLastWrittenAt = rootEntry != null ? rootEntry.epoch : null;
 
         // Check if store has been globally invalidated
@@ -153,16 +155,16 @@ export class Store extends RelayModernStore {
             // If so, check if the operation we're checking was last written
             // before or after invalidation occured.
             if (operationLastWrittenAt == null || operationLastWrittenAt <= globalInvalidationEpoch) {
-                // If the operation was written /before/ global invalidation ocurred,
+                // If the operation was written /before/ global invalidation occurred,
                 // or if this operation has never been written to the store before,
                 // we will consider the data for this operation to be stale
-                //  (i.e. not resolvable from the store).
+                // (i.e. not resolvable from the store).
                 return { status: 'stale' };
             }
         }
 
-        const target = options && options.target ? options.target : source;
-        const handlers = options && options.handlers ? options.handlers : [];
+        const target = options?.target ?? source;
+        const handlers = options?.handlers ?? [];
         const operationAvailability = DataChecker.check(
             source,
             target,
@@ -172,52 +174,36 @@ export class Store extends RelayModernStore {
             (this as any)._getDataID,
         );
 
-        return getAvailablityStatus(operationAvailability, operationLastWrittenAt, rootEntry ? rootEntry.fetchTime : undefined);
+        return getAvailabilityStatus(
+            operationAvailability,
+            operationLastWrittenAt,
+            rootEntry?.fetchTime,
+            this.getTTL(operation),
+            this.checkGC(),
+        );
     }
 
     public notify(sourceOperation?: OperationDescriptor, invalidateStore?: boolean): ReadonlyArray<RequestDescriptor> {
         // Increment the current write when notifying after executing
         // a set of changes to the store.
-        (this as any)._currentWriteEpoch = (this as any)._currentWriteEpoch + 1;
 
-        if (invalidateStore === true) {
-            (this as any)._globalInvalidationEpoch = (this as any)._currentWriteEpoch;
-        }
-
-        const source = (this as any).getSource();
-        const updatedOwners = [];
-        (this as any)._subscriptions.forEach((subscription) => {
-            const owner = (this as any)._updateSubscription(source, subscription);
-            if (owner != null) {
-                updatedOwners.push(owner);
-            }
-        });
-        (this as any)._invalidationSubscriptions.forEach((subscription) => {
-            (this as any)._updateInvalidationSubscription(subscription, invalidateStore === true);
-        });
-        (this as any)._updatedRecordIDs = {};
-        (this as any)._invalidatedRecordIDs.clear();
-
-        // If a source operation was provided (indicating the operation
-        // that produced this update to the store), record the current epoch
-        // at which this operation was written.
+        const updateRoot = sourceOperation && this._cache.has(sourceOperation.request.identifier);
+        const result = super.notify(sourceOperation, invalidateStore);
         if (sourceOperation != null) {
             // We only track the epoch at which the operation was written if
             // it was previously retained, to keep the size of our operation
             // epoch map bounded. If a query wasn't retained, we assume it can
             // may be deleted at any moment and thus is not relevant for us to track
             // for the purposes of invalidation.
-            //const id = sourceOperation.request.identifier;
-            const id = this.getID(sourceOperation);
-            const rootEntry = this._cache.get(id); // wora
-            if (rootEntry != null) {
+            if (updateRoot) {
+                const id = sourceOperation.request.identifier;
+                const rootEntry = this._cache.get(id);
                 rootEntry.epoch = (this as any)._currentWriteEpoch;
                 rootEntry.fetchTime = Date.now();
                 this._cache.set(id, rootEntry);
             }
         }
-
-        return updatedOwners;
+        return result;
     }
 }
 
@@ -230,12 +216,23 @@ export class Store extends RelayModernStore {
  * written to the store, this function will return the overall
  * OperationAvailability for the operation.
  */
-function getAvailablityStatus(
-    opearionAvailability: Availability,
+/**
+ * Returns an OperationAvailability given the Availability returned
+ * by checking an operation, and when that operation was last written to the store.
+ * Specifically, the provided Availability of an operation will contain the
+ * value of when a record referenced by the operation was most recently
+ * invalidated; given that value, and given when this operation was last
+ * written to the store, this function will return the overall
+ * OperationAvailability for the operation.
+ */
+function getAvailabilityStatus(
+    operationAvailability: Availability,
     operationLastWrittenAt: number,
     operationFetchTime: number,
+    queryCacheExpirationTime: number,
+    staleForExpiration: boolean,
 ): OperationAvailability {
-    const { mostRecentlyInvalidatedAt, status } = opearionAvailability;
+    const { mostRecentlyInvalidatedAt, status } = operationAvailability;
     if (typeof mostRecentlyInvalidatedAt === 'number') {
         // If some record referenced by this operation is stale, then the operation itself is stale
         // if either the operation itself was never written *or* the operation was last written
@@ -245,14 +242,18 @@ function getAvailablityStatus(
         }
     }
 
+    if (status === 'missing') {
+        return { status: 'missing' };
+    }
+
+    if (operationFetchTime != null && queryCacheExpirationTime != null) {
+        const isStale = operationFetchTime <= Date.now() - queryCacheExpirationTime;
+        if (isStale && staleForExpiration) {
+            return { status: 'stale' };
+        }
+    }
+
     // There were no invalidations of any reachable records *or* the operation is known to have
     // been fetched after the most recent record invalidation.
-    /* eslint-disable indent */
-    return status === 'missing'
-        ? { status: 'missing' }
-        : {
-              status: 'available',
-              fetchTime: operationFetchTime ? operationFetchTime : null,
-          };
-    /* eslint-enable indent */
+    return { status: 'available', fetchTime: operationFetchTime ?? null };
 }

@@ -2,7 +2,6 @@ import { ICacheStorage, CacheOptions } from '@wora/cache-persist';
 import { IDBStorage, IOnUpgrade } from '@wora/cache-persist/lib/idbstorage';
 import { Store, RecordSource, StoreOptions } from '@wora/relay-store';
 import { Environment } from './Environment';
-import { CacheOptionsStore } from '@wora/relay-store/lib/Store';
 import { EnvironmentOfflineConfig } from './RelayOfflineTypes';
 
 class EnvironmentIDB {
@@ -15,7 +14,7 @@ class EnvironmentIDB {
         } = {},
         recordSourceOptions: CacheOptions = {},
         storeOptions: {
-            persistOptions?: CacheOptionsStore;
+            persistOptions?: CacheOptions;
             options?: StoreOptions;
         } = {},
         offlineStoreOptions: CacheOptions = {},

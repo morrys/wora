@@ -18,86 +18,6 @@ In this library the "RelayModernStore" has been extended and the "MutableRecordS
 * Define the condition to execute the garbage collector
 
 
-### RecordSource
-
-The relay-store RecordSource uses the **delegation pattern** to manage records via `wora/cache-persist` and adds the `restore` method to manage the cache restore from storage to the official interface. In this way we can manage the **persistence of records associated with queries**
-
-```ts
-export interface MutableRecordSourceOffline extends MutableRecordSource {
-    restore(): Promise<Cache>
-}
-
-export default class RecordSource implements MutableRecordSourceOffline {
-    private _cache: ICache;
-
-    constructor(persistOptions: CacheOptions = {}) {
-        const persistOptionsRecordSource = {
-            prefix: 'relay-records',
-            serialize: true,
-            ...persistOptions,
-        };
-        this._cache = new Cache(persistOptionsRecordSource);
-    }
-    
-    ///...
-
-}
-```
-
-### Store
-
-The extensions to the RelayModerStore object are listed below to add the features of **Query persistence**, **Time To Live management of queries in the store**, **Define the condition to execute the garbage collector**
-
-#### Costructor
-
-```ts
-export type CacheOptionsStore = CacheOptions & {
-    defaultTTL?: number;
-};
-
-
-export default class Store extends RelayModernStore {
-    constructor(recordSource: RecordSource, persistOptions: CacheOptionsStore = {}, ...args)
-```
-
-
-* Replaced the variable _roots: Map <number, NormalizationSelector> with _cache: Cache `wora/cache-persist`
-
-#### Retain Method
-
-Added the `retainConfig: { ttl?: number } ` parameter
-The **TTL value** is used to give the possibility to **specify a different TTL for each individual query**.
-
-Replaced the logic of saving queries in the store. First it was managed through the **Map roots** whose **key** was an **incremental numeric value**, **now** it is managed through the **Cache object of wora/cache-persist** and the **key** is the **composition of the name of the query and its variables**.
-This allows you to **avoid** having **multiple references of the same query**.
-
-
-#### __gc Method
-
-Added at the beginning of the method:
-
-```ts
-if (! this.checkGC ()) {
-    return;
-}
-```
-
-This is to **avoid executing the garbage collector**, we will see a **use case** in the **wora/relay-offline** library.
-
-
-**Changed the check to determine** which **query** had to be **cleaned** from the **store**.
-
-```ts
-//...
-const expired: boolean = !this.isCurrent(selRoot.retainTime, selRoot.ttl);
-            if (!selRoot.dispose || !expired) {
-                //...
-            }
-//...
-```
-
- **Before it was sufficient** that the query was in the **dispose state**, **now** to be eliminated from the store **it is required** that **also its TTL has expired**.
-
 #### add setCheckGC Method
 
 allows you to define a custom condition to execute the garbage collector
@@ -131,8 +51,8 @@ import { Environment } from 'relay-runtime';
 const defaultTTL: number = 10 * 60 * 1000; // optional, default
 const persistOptionsRecords: CacheOptions = {}; // optional, default
 const recordSource = new RecordSource(persistOptionsRecords);
-const persistOptions: CacheOptions = { defaultTTL }; // optional, default
-const store = new Store(recordSource, persistOptions);
+const persistOptions: CacheOptions = { }; // optional, default
+const store = new Store(recordSource, {}, { queryCacheExpirationTime: defaultTTL });
 const environment = new Environment({network, store});
 
 // ...

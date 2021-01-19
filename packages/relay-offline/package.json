@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "3.3.0",
+  "version": "4.0.0",
   "keywords": [
     "wora",
     "cache-persist",
@@ -32,24 +32,26 @@
     "compile": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
-    "test": "jest --coverage"
+    "test": "jest --coverage -t"
   },
   "dependencies": {
     "@wora/cache-persist": "file:../cache-persist",
     "@wora/offline-first": "file:../offline-first",
     "@wora/relay-store": "file:../relay-store",
-    "fbjs": "^1.0.0",
+    "fbjs": "^3.0.0",
     "uuid": "3.3.2",
     "tslib": "^1.11.1"
   },
   "peerDependencies": {
-    "relay-runtime": ">=8.0.0"
+    "relay-runtime": "^10.1.0"
   },
   "devDependencies": {
-    "babel-plugin-relay": "9.1.0",
-    "relay-runtime": "9.1.0",
-    "relay-test-utils": "9.1.0",
-    "relay-test-utils-internal": "9.0.0"
+    "@babel/runtime": "^7.7.2",
+    "@types/relay-runtime": "^10.1.6",
+    "babel-plugin-relay": "^10.0.0",
+    "relay-runtime": "^10.1.0",
+    "relay-test-utils-internal" : "^10.1.0",
+    "relay-test-utils": "^10.1.0"
   },
   "gitHead": "0ceaff4e89ec8a1a5b5547b803f67bcb9166c5af"
 }

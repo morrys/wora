@@ -1,6 +1,6 @@
 {
   "name": "@wora/netinfo",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "keywords": [
     "wora",
     "react-native",
@@ -32,7 +32,7 @@
     "test": "jest --coverage"
   },
   "dependencies": {
-    "fbjs": "^1.0.0"
+    "fbjs": "^3.0.0"
   },
   "devDependencies": {
     "@react-native-community/netinfo": "5.7.1"

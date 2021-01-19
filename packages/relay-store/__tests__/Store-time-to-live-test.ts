@@ -57,7 +57,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             };
             initialData = simpleClone(data);
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { storage: createPersistedStorage(), defaultTTL: 100 });
+            store = new RelayModernStore(source, { storage: createPersistedStorage() }, { queryCacheExpirationTime: 100 });
             await store.hydrate();
             ({ UserQuery } = generateAndCompile(`
             query UserQuery($id: ID!, $size: [Int]) {
