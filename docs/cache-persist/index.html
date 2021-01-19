@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Cache Persist · Morrys Repositories</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="## Architecture"/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Cache Persist · Morrys Repositories"/><meta property="og:type" content="website"/><meta property="og:url" content="https://morrys.github.io/wora/"/><meta property="og:description" content="## Architecture"/><meta property="og:image" content="https://morrys.github.io/wora/img/undraw_online.svg"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://morrys.github.io/wora/img/undraw_tweetstorm.svg"/><link rel="shortcut icon" href="/wora/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
+<!DOCTYPE html><html lang="en"><head><meta charSet="utf-8"/><meta http-equiv="X-UA-Compatible" content="IE=edge"/><title>Cache Persist · Morrys Repositories</title><meta name="viewport" content="width=device-width"/><meta name="generator" content="Docusaurus"/><meta name="description" content="**wora/cache-persist** allows you, with very little effort of work, to manage the state within your application and its persistence in storage."/><meta name="docsearch:language" content="en"/><meta property="og:title" content="Cache Persist · Morrys Repositories"/><meta property="og:type" content="website"/><meta property="og:url" content="https://morrys.github.io/wora/"/><meta property="og:description" content="**wora/cache-persist** allows you, with very little effort of work, to manage the state within your application and its persistence in storage."/><meta property="og:image" content="https://morrys.github.io/wora/img/undraw_online.svg"/><meta name="twitter:card" content="summary"/><meta name="twitter:image" content="https://morrys.github.io/wora/img/undraw_tweetstorm.svg"/><link rel="shortcut icon" href="/wora/img/favicon.ico"/><link rel="stylesheet" href="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.css"/><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css"/><script>
               (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
               (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
               m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -68,79 +68,89 @@
                 };
               }
             });
-        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Cache Persist</h1></header><article><div><span><h2><a class="anchor" aria-hidden="true" id="architecture"></a><a href="#architecture" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Architecture</h2>
-<p><img src="/wora/docs/assets/cache-persist-architecture.png" alt="alt-text"></p>
-<h3><a class="anchor" aria-hidden="true" id="cache"></a><a href="#cache" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Cache</h3>
-<p>The cache is the component that manages the local cache of the application and is the only component with which the application must interface.</p>
-<p><strong>Allows the use of any storage in synchronous mode.</strong>
-The only asynchronous methods they expose are:</p>
-<p><code>restore</code>, necessary to recover and initialize the state.</p>
-<p><code>flush</code>, forces data to be stored in the persistence queue</p>
+        </script></nav></div><div class="container mainContainer"><div class="wrapper"><div class="post"><header class="postHeader"><h1 class="postHeaderTitle">Cache Persist</h1></header><article><div><span><p><strong>wora/cache-persist</strong> allows you, with very little effort of work, to manage the state within your application and its persistence in storage.</p>
+<p>All you need to know to use it is the <strong>Cache class</strong> and the <strong>configurations</strong> it makes available to you.</p>
+<p>Let’s start right now by viewing the wora/cache-persist Cache:</p>
 <pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> ICache {
-    purge(): <span class="hljs-built_in">void</span>;
-    replace(data: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">void</span>;
-    isRehydrated(): <span class="hljs-built_in">boolean</span>;
-    getState(): Readonly&lt;{ [key: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">any</span> }&gt;;
+    <span class="hljs-comment">// functions to read</span>
     <span class="hljs-keyword">get</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">any</span>;
-    <span class="hljs-keyword">set</span>(key: <span class="hljs-built_in">string</span>, value: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">void</span>;
+    getState(): Readonly&lt;DataCache&gt;;
+    getAllKeys(): <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;;
     has(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">boolean</span>;
+    <span class="hljs-comment">// functions to write</span>
+    <span class="hljs-keyword">set</span>(key: <span class="hljs-built_in">string</span>, value: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">void</span>;
     <span class="hljs-keyword">delete</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span>;
     remove(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">void</span>;
-    getAllKeys(): <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;;
-    subscribe(callback: <span class="hljs-function">(<span class="hljs-params">state: <span class="hljs-built_in">any</span>, action: <span class="hljs-built_in">any</span></span>) =&gt;</span> <span class="hljs-built_in">void</span>): <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> <span class="hljs-built_in">void</span>;
-    notify(payload?: { state?: <span class="hljs-built_in">any</span>; action?: <span class="hljs-built_in">any</span> }): <span class="hljs-built_in">void</span>;
-    getStorage(): ICacheStorage;
+    purge(): <span class="hljs-built_in">void</span>;
+    replace(data: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">void</span>;
+    <span class="hljs-comment">// functions to manage persistence</span>
+    isRehydrated(): <span class="hljs-built_in">boolean</span>;
     restore(): <span class="hljs-built_in">Promise</span>&lt;DataCache&gt;;
     flush(): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
 }
-</code></pre>
-<h3><a class="anchor" aria-hidden="true" id="storage-proxy"></a><a href="#storage-proxy" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Storage Proxy</h3>
-<p>The proxy storage is the intermediary that connects the local cache to the storage.</p>
-<h3><a class="anchor" aria-hidden="true" id="middleware-layer"></a><a href="#middleware-layer" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Middleware Layer</h3>
-<p>In the middleware level there are all the transformation and verification logics that are performed during the communication between the cache and the storage.</p>
-<p>The layers currently available within the library are:</p>
-<ul>
-<li><p><strong>prefixLayer</strong>: layer that handles the key prefix (<prefix>. <originalkey>), is inserted as the first layer when the <strong>prefix option</strong> is different from null</p></li>
-<li><p><strong>jsonSerialize</strong>:  layer that handles JSON serialization and deserialization of values, is inserted as the last layer when the <strong>serialize option</strong> is true</p></li>
-<li><p><strong>filterKeys</strong>: this layer allows you to define a function to determine which keys persist.</p></li>
-</ul>
-<p>It is possible to implement any other layer component by implementing the interface described below:</p>
-<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> IMutateKey {
-    <span class="hljs-keyword">set</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">string</span> | <span class="hljs-literal">null</span>;
-    <span class="hljs-keyword">get</span>(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">string</span> | <span class="hljs-literal">null</span>;
-}
 
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> IMutateValue {
-    <span class="hljs-keyword">set</span>(value: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">any</span>;
-    <span class="hljs-keyword">get</span>(value: <span class="hljs-built_in">any</span>): <span class="hljs-built_in">any</span>;
-}
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> DataCache = {
+    [key: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">any</span>;
+};
 </code></pre>
-<h3><a class="anchor" aria-hidden="true" id="storage"></a><a href="#storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Storage</h3>
-<p>Inside the library there is the possibility to use the following storage:</p>
-<p><strong>localStorage (web default)</strong></p>
-<p><strong>AsyncStorage (default react-native)</strong></p>
-<p><strong>sessionStorage</strong></p>
-<p><strong>IndexedDB</strong></p>
-<p>If you need to use different storage than those currently provided, simply create a customized storage that implements the following interface:</p>
-<pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">interface</span> ICacheStorage {
-    multiRemove?(keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
-    multiGet?(keys: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;&gt;;
-    multiSet?(items: <span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
-    getAllKeys(): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">Array</span>&lt;<span class="hljs-built_in">string</span>&gt;&gt;;
-    getItem(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">string</span>&gt;;
-    setItem(key: <span class="hljs-built_in">string</span>, value: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
-    removeItem(key: <span class="hljs-built_in">string</span>): <span class="hljs-built_in">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;;
-}
-</code></pre>
-<h2><a class="anchor" aria-hidden="true" id="installation"></a><a href="#installation" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Installation</h2>
-<p>Install @wora/cache-persist using yarn or npm:</p>
+<p>As you can see from the interface above, there are 3 categories of functions:</p>
+<ul>
+<li><strong>to read:</strong> these functions, synchronous, allow you to read state data</li>
+<li><strong>to write:</strong> these functions, synchronous, allow you to write data in the state</li>
+<li><strong>to manage persistence:</strong> these functions allow you to manage the persistence of state within the storage</li>
+</ul>
+<p><strong>The read and write functions are very similar to those of the Map object, so I do not need to add anything</strong> else while the <strong>restore, isRehydrated and flush functions are described below</strong> so that you better understand when and how to use them.</p>
+<ul>
+<li><strong>restore: it is the most important function of all</strong>, in fact it must necessarily be used in order to connect the store to its reference storage and initialize the cache state. Apart from special situations, e.g. Server Side Rendering, this function is recommended to be called when starting the application.</li>
+<li><strong>flush:</strong> this function allows you to make sure that the storage is synchronized with state data.</li>
+<li><strong>isRehydrated:</strong> this function lets you know if the cache has been connected with the storage via the restore function</li>
+</ul>
+<p>Well, now we can see how to use the cache within our application.</p>
+<h3><a class="anchor" aria-hidden="true" id="first-lets-install-the-packages-we-need"></a><a href="#first-lets-install-the-packages-we-need" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>First, let’s install the packages we need:</h3>
+<ul>
+<li>wora/cache-persist using yarn or npm:</li>
+</ul>
 <pre><code class="hljs"><span class="hljs-selector-tag">yarn</span> <span class="hljs-selector-tag">add</span> @<span class="hljs-keyword">wora</span>/<span class="hljs-keyword">cache</span>-<span class="hljs-keyword">persist</span>
 </code></pre>
-<h2><a class="anchor" aria-hidden="true" id="cache-options"></a><a href="#cache-options" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Cache Options</h2>
+<h3><a class="anchor" aria-hidden="true" id="now-i-can-show-you-the-simplest-use-case"></a><a href="#now-i-can-show-you-the-simplest-use-case" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Now, I can show you the simplest use case:</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache();
+
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">await</span> cache.restore();
+<span class="hljs-comment">// ...</span>
+
+cache.set(<span class="hljs-string">'name'</span>, <span class="hljs-string">'lorenzo'</span>);
+<span class="hljs-keyword">const</span> name = cache.get(<span class="hljs-string">'name'</span>);
+</code></pre>
+<p>That’s all :)</p>
+<p>Obviously only in very rare cases are we lucky enough to have to manage such a simple case where we use the localStorage (or for ReactNative the AsyncStorage) without one of these problems:</p>
+<ul>
+<li>How can I initialize the cache with data?</li>
+<li>There is data in the storage that is not compatible with the new version of the application, how can I migrate it?</li>
+<li>How can I use the same storage to manage different states? (e.g. different state based on the logged in user)</li>
+<li>How can I use indexedDB?</li>
+<li>How can I use session storage?</li>
+<li>How can I prevent some state data from being saved within the storage?</li>
+<li>How can I encrypt the data before it is saved in the storage?</li>
+<li>How do I handle storage errors when saving data?</li>
+</ul>
+<p>The library gives an answer to these problems (and not only these) through its configurations.</p>
+<p>For this reason I will start by describing all its configurations and then I will show you how to use them to answer the problems indicated above</p>
+<h2><a class="anchor" aria-hidden="true" id="cache-options"></a><a href="#cache-options" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Cache Options:</h2>
+<p><code>prefix:</code> [Optional][Default: cache] when this option is defined, the prefixLayer mutation included in the library is used in order to add / remove the prefix to persisted keys.</p>
+<p><code>serialize:</code> [Optional][Default: true] when this option is true, the jsonSerialize mutation included in the library is used in order to handles JSON serialization and deserialization of values</p>
+<p><code>mutateKeys:</code> [Optional] with this option you can configure an array of mutation functions that will be executed in order to change the keys while writing / reading in the storage. The prefix option will insert the prefixLayer function as the first in the list.</p>
+<p><code>mutateValues:</code> [Optional] with this option you can configure an array of mutation functions that will be executed in order to change the values while writing / reading in the storage. The serialize option will insert the jsonSerialize function as the last in the list.</p>
+<p><code>webStorage:</code> [Optional][Default: local] with this option it is possible to decide to use the sessionStorage by enhancing the property with session</p>
+<p><code>storage:</code> [Optional][Default: localStorage/AsyncStorage] when you need to use custom storage or the indexedb, this property must be set.</p>
+<p><code>throttle:</code> [Optional][Default: 500] Defines the expiration interval of the debounce</p>
+<p><code>errorHandling:</code> [Optional] Allows you to define the callback function that is executed in case errors are raised during the write process to the storage.</p>
+<p><code>disablePersist:</code> [Optional][Default: false] Allows you to use the cache as an inmemory cache.</p>
 <pre><code class="hljs css language-ts"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> CacheOptions = {
+    initialState?: DataCache;
     serialize?: <span class="hljs-built_in">boolean</span>;
     prefix?: <span class="hljs-built_in">string</span> | <span class="hljs-literal">undefined</span> | <span class="hljs-literal">null</span>;
-    initialState?: DataCache;
     mergeState?: <span class="hljs-function">(<span class="hljs-params">restoredState?: DataCache, initialState?: DataCache</span>) =&gt;</span> <span class="hljs-built_in">Promise</span>&lt;DataCache&gt; | DataCache;
     mutateKeys?: <span class="hljs-built_in">Array</span>&lt;IMutateKey&gt;;
     mutateValues?: <span class="hljs-built_in">Array</span>&lt;IMutateValue&gt;;
@@ -151,92 +161,144 @@ The only asynchronous methods they expose are:</p>
     throttle?: <span class="hljs-built_in">number</span>;
 };
 </code></pre>
-<ul>
-<li><p><strong>storage:</strong> custom storage, localStorage is used as the default react web persistence, while AsyncStorage is used for react-native.</p></li>
-<li><p><strong>mergeState:</strong> callback called during the restore that allows to merge the data recovered from the store and the initial data.</p></li>
-<li><p><strong>prefix:</strong> prefix keys, default &quot;cache&quot; (use the prefixLayer as first mutateKeys)</p></li>
-<li><p><strong>serialize:</strong> if it is true, the data will be serialized and deserialized JSON (use the jsonSerialize as last mutateValues)</p></li>
-<li><p><strong>webStorage:</strong> local for localStorage, session for sessionStorage. default local</p></li>
-<li><p><strong>disablePersist:</strong> if it is true, nostorage is used</p></li>
-<li><p><strong>mutateKeys:</strong> it is possible to configure which functions will change the keys (eg filterKeys)</p></li>
-<li><p><strong>mutateValues:</strong> it is possible to configure which functions will change the values (eg filterKeys)</p></li>
-<li><p><strong>throttle:</strong> waiting time for data storage</p></li>
-<li><p><strong>errorHandling:</strong> callback performed in case of errors during store saving</p></li>
-</ul>
-<h2><a class="anchor" aria-hidden="true" id="usage-default"></a><a href="#usage-default" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage default</h2>
+<h3><a class="anchor" aria-hidden="true" id="how-can-i-initialize-the-cache-with-data"></a><a href="#how-can-i-initialize-the-cache-with-data" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How can I initialize the cache with data?</h3>
 <pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
-<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache();
-cache.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-    <span class="hljs-keyword">const</span> state = cache.getState();
+<span class="hljs-keyword">const</span> initialState = {
+  name: <span class="hljs-string">"lorenzo"</span>,
+}
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache({
+  initialState,
 });
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">await</span> cache.restore();
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">const</span> name = cache.get(<span class="hljs-string">'name'</span>);
 </code></pre>
-<h2><a class="anchor" aria-hidden="true" id="usage-indexeddb"></a><a href="#usage-indexeddb" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Usage indexedDB</h2>
+<h3><a class="anchor" aria-hidden="true" id="there-is-data-in-the-storage-that-is-not-compatible-with-the-new-version-of-the-application-how-can-i-migrate-it"></a><a href="#there-is-data-in-the-storage-that-is-not-compatible-with-the-new-version-of-the-application-how-can-i-migrate-it" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>There is data in the storage that is not compatible with the new version of the application, how can I migrate it?</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
+<span class="hljs-keyword">const</span> initialState = {
+  name: <span class="hljs-string">"lorenzo"</span>,
+};
+
+<span class="hljs-keyword">const</span>  mergeState = <span class="hljs-function">(<span class="hljs-params">restoredState, initialState</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> migrationState = <span class="hljs-comment">// your logic </span>
+  <span class="hljs-keyword">return</span> migrationState;
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache({
+  initialState,
+  mergeState
+});
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">await</span> cache.restore();
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">const</span> name = cache.get(<span class="hljs-string">'name'</span>);
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="how-can-i-use-the-same-storage-to-manage-different-states-eg-different-state-based-on-the-logged-in-user"></a><a href="#how-can-i-use-the-same-storage-to-manage-different-states-eg-different-state-based-on-the-logged-in-user" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How can I use the same storage to manage different states? (e.g. different state based on the logged in user)</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> cacheApp = <span class="hljs-keyword">new</span> Cache({
+   prefix: <span class="hljs-string">'app'</span>
+});
+
+<span class="hljs-keyword">export</span> getUserCache = <span class="hljs-keyword">async</span> (user: <span class="hljs-built_in">string</span>) =&gt; {
+  <span class="hljs-keyword">const</span> cacheUser = <span class="hljs-keyword">new</span> Cache({
+     prefix: user
+  });
+  <span class="hljs-keyword">await</span> cacheUser.restore();
+  <span class="hljs-keyword">return</span> cacheUser;
+}
+
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">await</span> cacheApp.restore();
+<span class="hljs-comment">// ...</span>
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="how-can-i-use-indexeddb"></a><a href="#how-can-i-use-indexeddb" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How can I use indexedDB?</h3>
 <pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> {Cache, CacheStorage, CacheOptions } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
 <span class="hljs-keyword">import</span> { IDBStorage } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist/lib/idbstorage'</span>;
 
 <span class="hljs-keyword">const</span> idbStorages: CacheStorage[] = IDBStorage.create( {
     name: <span class="hljs-string">"cache"</span>, 
-    storeNames: [<span class="hljs-string">"persist"</span>, <span class="hljs-string">"persist2"</span>]
+    storeNames: [<span class="hljs-string">"persist"</span>]
 });
 
 <span class="hljs-keyword">const</span> idb: CacheOptions = {
-        storage: idbStorages[<span class="hljs-number">0</span>],
-        serialize: <span class="hljs-literal">false</span>,
-    }
+    storage: idbStorages[<span class="hljs-number">0</span>],
+    serialize: <span class="hljs-literal">false</span>,
+}
 
-<span class="hljs-keyword">const</span> idb1: CacheOptions = {
-        storage: idbStorages[<span class="hljs-number">1</span>],
-        serialize: <span class="hljs-literal">false</span>,
-    }
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache(idb);
 
-<span class="hljs-keyword">const</span> cacheidb = <span class="hljs-keyword">new</span> Cache(idb);
-cacheidb.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-    <span class="hljs-keyword">const</span> state = cacheidb.getState();
-});
-
-<span class="hljs-keyword">const</span> cacheidb1 = <span class="hljs-keyword">new</span> Cache(idb1);
-cacheidb1.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-    <span class="hljs-keyword">const</span> state = cacheidb1.getState();
-});
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">await</span> cache.restore();
+cache.set(<span class="hljs-string">'name'</span>, <span class="hljs-string">'lorenzo'</span>);
+<span class="hljs-keyword">const</span> name = cache.get(<span class="hljs-string">'name'</span>)
 </code></pre>
-<h3><a class="anchor" aria-hidden="true" id="example-use-filterkeys-layer"></a><a href="#example-use-filterkeys-layer" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Example use filterKeys Layer</h3>
-<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { filterKeys }  <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist/lib/layers/filterKeys'</span>;
+<h3><a class="anchor" aria-hidden="true" id="how-can-i-use-session-storage"></a><a href="#how-can-i-use-session-storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How can I use session storage?</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">"@wora/cache-persist"</span>;
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache({
+  webStorage: <span class="hljs-string">'session'</span>,
+});
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">await</span> cache.restore();
+<span class="hljs-comment">// ...</span>
+<span class="hljs-keyword">const</span> name = cache.get(<span class="hljs-string">'name'</span>);
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="how-can-i-prevent-some-state-data-from-being-saved-within-the-storage"></a><a href="#how-can-i-prevent-some-state-data-from-being-saved-within-the-storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How can I prevent some state data from being saved within the storage?</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { filterKeys } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist/lib/layers/filterKeys'</span>;
 <span class="hljs-keyword">import</span> { IMutateKey } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist'</span>;
 
-<span class="hljs-keyword">const</span> filterPersistAuth: IMutateKey = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> key.includes(<span class="hljs-string">"auth"</span>));
+<span class="hljs-keyword">const</span> filterNoPersist: IMutateKey = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> !key.includes(<span class="hljs-string">"exclude"</span>));
 
-<span class="hljs-keyword">const</span> filterNoPersistAuth: IMutateKey = filterKeys(<span class="hljs-function"><span class="hljs-params">key</span> =&gt;</span> !key.includes(<span class="hljs-string">"auth"</span>));
-
-<span class="hljs-keyword">const</span> CacheLocal1 = <span class="hljs-keyword">new</span> Cache({
-    mutateKeys: [filterNoPersistAuth],
-    prefix: <span class="hljs-string">'cache1'</span>,
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache({
+    mutateKeys: [filterNoPersist],
 });
+<span class="hljs-comment">// ...</span>
 
-<span class="hljs-keyword">const</span> CacheLocal2 = <span class="hljs-keyword">new</span> Cache({
-    mutateKeys: [filterPersistAuth],
-    prefix: <span class="hljs-string">'cache2'</span>,
+<span class="hljs-keyword">await</span> cache.restore();
+
+cache.set(<span class="hljs-string">'include'</span>, <span class="hljs-string">'persist'</span>);
+cache.set(<span class="hljs-string">'exclude'</span>, <span class="hljs-string">'do not persist'</span>);
+</code></pre>
+<h3><a class="anchor" aria-hidden="true" id="how-can-i-encrypt-the-data-before-it-is-saved-in-the-storage"></a><a href="#how-can-i-encrypt-the-data-before-it-is-saved-in-the-storage" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How can I encrypt the data before it is saved in the storage?</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache, IMutateValue, mutateValuesLayer } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist'</span>;
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> encrypt: IMutateValue = mutateValues(
+    <span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> crypt(value),
+    <span class="hljs-function">(<span class="hljs-params">value</span>) =&gt;</span> decrypt(value),
+);
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache({
+    mutateValues: [encrypt],
 });
-</code></pre>
-<h2><a class="anchor" aria-hidden="true" id="subscribe-and-notify-example-with-hooks"></a><a href="#subscribe-and-notify-example-with-hooks" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Subscribe and notify example with hooks</h2>
-<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> React <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
-<span class="hljs-keyword">import</span> { useEffect, useState } <span class="hljs-keyword">from</span> <span class="hljs-string">'react'</span>;
-<span class="hljs-keyword">import</span> { DataCache } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist'</span>;
+<span class="hljs-comment">// ...</span>
 
-<span class="hljs-keyword">const</span> [result, setResult] = useState&lt;{loading: <span class="hljs-built_in">boolean</span>, data: DataCache}&gt;({loading: <span class="hljs-literal">true</span>, data: {}});
+<span class="hljs-keyword">await</span> cache.restore();
 
- useEffect(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-    <span class="hljs-keyword">const</span> dispose = cache.subscribe(<span class="hljs-function">(<span class="hljs-params">state, action</span>) =&gt;</span> {
-      setResult({loading: <span class="hljs-literal">false</span>, data: state});
-    });
-    cache.restore().then(<span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> {
-      cache.notify({ action: <span class="hljs-string">"restored"</span> });
-    })
-    <span class="hljs-keyword">return</span> <span class="hljs-function"><span class="hljs-params">()</span> =&gt;</span> dispose();
-    
-  },
-    []);
+cache.set(<span class="hljs-string">'name'</span>, <span class="hljs-string">'lorenzo'</span>);
 </code></pre>
-</span></div></article></div><div class="docLastUpdate"><em>Last updated on 2020-4-18 by morrys</em></div><div class="docs-prevnext"><a class="docs-prev button" href="/wora/docs/introduction"><span class="arrow-prev">← </span><span>wora</span></a><a class="docs-next button" href="/wora/docs/relay-store"><span>Relay Store</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#architecture">Architecture</a><ul class="toc-headings"><li><a href="#cache">Cache</a></li><li><a href="#storage-proxy">Storage Proxy</a></li><li><a href="#middleware-layer">Middleware Layer</a></li><li><a href="#storage">Storage</a></li></ul></li><li><a href="#installation">Installation</a></li><li><a href="#cache-options">Cache Options</a></li><li><a href="#usage-default">Usage default</a></li><li><a href="#usage-indexeddb">Usage indexedDB</a><ul class="toc-headings"><li><a href="#example-use-filterkeys-layer">Example use filterKeys Layer</a></li></ul></li><li><a href="#subscribe-and-notify-example-with-hooks">Subscribe and notify example with hooks</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/wora/" class="nav-home"><img src="/wora/img/favicon.ico" alt="Morrys Repositories" width="66" height="58"/></a><div><h5>Docs</h5><a href="/wora/docs/en/introduction.html">about wora</a></div><div><h5>Community</h5><a href="/wora/en/users.html">User Showcase</a></div><div><h5>More</h5><a href="https://github.com/morrys/wora">GitHub</a><a class="github-button" href="https://github.com/morrys/wora" data-icon="octicon-star" data-count-href="https://github.com/morrys/wora/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a><div class="social"><a href="https://twitter.com/m0rrys" class="twitter-follow-button">Follow @m0rrys</a></div></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/wora/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2020 Lorenzo Di Giacomo</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
+<h3><a class="anchor" aria-hidden="true" id="how-do-i-handle-storage-errors-when-saving-data"></a><a href="#how-do-i-handle-storage-errors-when-saving-data" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>How do I handle storage errors when saving data?</h3>
+<pre><code class="hljs css language-ts"><span class="hljs-keyword">import</span> { Cache } <span class="hljs-keyword">from</span> <span class="hljs-string">'@wora/cache-persist'</span>;
+
+<span class="hljs-keyword">const</span> errorHandling = <span class="hljs-function">(<span class="hljs-params">cache: Cache, error: <span class="hljs-built_in">Error</span></span>) =&gt;</span> {
+  <span class="hljs-comment">// your logic</span>
+};
+
+<span class="hljs-keyword">const</span> cache = <span class="hljs-keyword">new</span> Cache({
+    errorHandling,
+});
+<span class="hljs-comment">// ...</span>
+
+<span class="hljs-keyword">await</span> cache.restore();
+
+cache.set(<span class="hljs-string">'name'</span>, <span class="hljs-string">'lorenzo'</span>);
+</code></pre>
+<h2><a class="anchor" aria-hidden="true" id="whats-next"></a><a href="#whats-next" aria-hidden="true" class="hash-link"><svg class="hash-link-icon" aria-hidden="true" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>What’s next</h2>
+<p>For those interested in knowing how it was implemented, I recommend reading:
+<a href="https://medium.com/@morrys/state-persistence-in-javascript-wora-cache-persist-deep-into-its-source-code-56fb86147053">State persistence in JavaScript — wora/cache-persist — Deep into its Source Code</a></p>
+</span></div></article></div><div class="docLastUpdate"><em>Last updated on 2021-1-19 by Lorenzo Di Giacomo</em></div><div class="docs-prevnext"><a class="docs-prev button" href="/wora/docs/introduction"><span class="arrow-prev">← </span><span>wora</span></a><a class="docs-next button" href="/wora/docs/relay-store"><span>Relay Store</span><span class="arrow-next"> →</span></a></div></div></div><nav class="onPageNav"><ul class="toc-headings"><li><a href="#cache-options">Cache Options:</a><ul class="toc-headings"><li><a href="#how-can-i-initialize-the-cache-with-data">How can I initialize the cache with data?</a></li><li><a href="#there-is-data-in-the-storage-that-is-not-compatible-with-the-new-version-of-the-application-how-can-i-migrate-it">There is data in the storage that is not compatible with the new version of the application, how can I migrate it?</a></li><li><a href="#how-can-i-use-the-same-storage-to-manage-different-states-eg-different-state-based-on-the-logged-in-user">How can I use the same storage to manage different states? (e.g. different state based on the logged in user)</a></li><li><a href="#how-can-i-use-indexeddb">How can I use indexedDB?</a></li><li><a href="#how-can-i-use-session-storage">How can I use session storage?</a></li><li><a href="#how-can-i-prevent-some-state-data-from-being-saved-within-the-storage">How can I prevent some state data from being saved within the storage?</a></li><li><a href="#how-can-i-encrypt-the-data-before-it-is-saved-in-the-storage">How can I encrypt the data before it is saved in the storage?</a></li><li><a href="#how-do-i-handle-storage-errors-when-saving-data">How do I handle storage errors when saving data?</a></li></ul></li><li><a href="#whats-next">What’s next</a></li></ul></nav></div><footer class="nav-footer" id="footer"><section class="sitemap"><a href="/wora/" class="nav-home"><img src="/wora/img/favicon.ico" alt="Morrys Repositories" width="66" height="58"/></a><div><h5>Docs</h5><a href="/wora/docs/en/introduction.html">about wora</a></div><div><h5>Community</h5><a href="/wora/en/users.html">User Showcase</a></div><div><h5>More</h5><a href="https://github.com/morrys/wora">GitHub</a><a class="github-button" href="https://github.com/morrys/wora" data-icon="octicon-star" data-count-href="https://github.com/morrys/wora/stargazers" data-show-count="true" data-count-aria-label="# stargazers on GitHub" aria-label="Star this project on GitHub">Star</a><div class="social"><a href="https://twitter.com/m0rrys" class="twitter-follow-button">Follow @m0rrys</a></div></div></section><a href="https://opensource.facebook.com/" target="_blank" rel="noreferrer noopener" class="fbOpenSource"><img src="/wora/img/oss_logo.png" alt="Facebook Open Source" width="170" height="45"/></a><section class="copyright">Copyright © 2021 Lorenzo Di Giacomo</section></footer></div><script type="text/javascript" src="https://cdn.jsdelivr.net/docsearch.js/1/docsearch.min.js"></script><script>window.twttr=(function(d,s, id){var js,fjs=d.getElementsByTagName(s)[0],t=window.twttr||{};if(d.getElementById(id))return t;js=d.createElement(s);js.id=id;js.src='https://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js, fjs);t._e = [];t.ready = function(f) {t._e.push(f);};return t;}(document, 'script', 'twitter-wjs'));</script><script>
                 document.addEventListener('keyup', function(e) {
                   if (e.target !== document.body) {
                     return;
