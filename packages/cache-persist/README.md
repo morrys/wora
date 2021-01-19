@@ -12,4 +12,4 @@ yarn add @wora/cache-persist
 
 ## Documentation
 
-Follow the link: [Cache Persist Documentation](https://github.com/morrys/wora/blob/master/docs/Caching-CachePersist.md)
+Follow the link: [Cache Persist Documentation](https://morrys.github.io/wora/docs/cache-persist)
