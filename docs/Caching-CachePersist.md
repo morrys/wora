@@ -3,11 +3,35 @@ id: cache-persist
 title: Cache Persist
 ---
 
-As already mentioned, this library allows you, with very little effort of work, to manage the state within your application and its persistence in storage.
+**wora/cache-persist** allows you, with very little effort of work, to manage the state within your application and its persistence in storage.
 
 All you need to know to use it is the **Cache class** and the **configurations** it makes available to you.
 
-So why wait, let’s start right now by viewing the wora/cache-persist Cache:
+Let’s start right now by viewing the wora/cache-persist Cache:
+
+```ts
+export interface ICache {
+    // functions to read
+    get(key: string): any;
+    getState(): Readonly<DataCache>;
+    getAllKeys(): Array<string>;
+    has(key: string): boolean;
+    // functions to write
+    set(key: string, value: any): void;
+    delete(key: string): void;
+    remove(key: string): void;
+    purge(): void;
+    replace(data: any): void;
+    // functions to manage persistence
+    isRehydrated(): boolean;
+    restore(): Promise<DataCache>;
+    flush(): Promise<void>;
+}
+
+export type DataCache = {
+    [key: string]: any;
+};
+```
 
 As you can see from the interface above, there are 3 categories of functions:
 
@@ -23,7 +47,7 @@ As you can see from the interface above, there are 3 categories of functions:
 
 Well, now we can see how to use the cache within our application.
 
-First, let’s install the packages we need:
+### First, let’s install the packages we need:
 
  * wora/cache-persist using yarn or npm:
 
@@ -31,7 +55,7 @@ First, let’s install the packages we need:
 yarn add @wora/cache-persist
 ```
 
-Now, I can show you the simplest use case:
+### Now, I can show you the simplest use case:
 
 ```ts
 import { Cache } from "@wora/cache-persist";
