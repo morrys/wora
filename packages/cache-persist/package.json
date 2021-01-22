@@ -36,7 +36,7 @@
     "idb": "^4.0.0"
   },
   "devDependencies": {
-    "react-native-async-storage/async-storage": "1.12.1",
+    "react-native-async-storage/async-storage": "1.13.3",
     "tslib": "^1.11.1"
   }
 }
