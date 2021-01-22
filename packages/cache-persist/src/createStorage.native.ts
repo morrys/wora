@@ -7,7 +7,7 @@ const tslib = require('tslib');
 
 let storage = null;
 try {
-    storage = tslib.__importDefault(require('@react-native-community/async-storage')).default;
+    storage = tslib.__importDefault(require('react-native-async-storage/async-storage')).default;
 } catch (e) {
     if (!RNAsyncStorage) {
         throw e;
