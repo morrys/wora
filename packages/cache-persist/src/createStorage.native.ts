@@ -1,3 +1,5 @@
+/* eslint import/no-extraneous-dependencies:0 */
+
 import { ICacheStorage } from './CacheTypes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
