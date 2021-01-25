@@ -33,10 +33,10 @@
     "test": "jest --coverage"
   },
   "dependencies": {
-    "idb": "^4.0.0"
+    "idb": "^4.0.0",
+    "@react-native-async-storage/async-storage": "1.13.3"
   },
   "devDependencies": {
-    "@react-native-async-storage/async-storage": "1.13.3",
     "tslib": "^1.11.1"
   }
 }
