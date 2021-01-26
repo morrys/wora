@@ -1860,10 +1860,12 @@
     once "^1.4.0"
     universal-user-agent "^4.0.0"
 
-"@react-native-community/async-storage@^1.6.1":
-  version "1.6.1"
-  resolved "https://registry.yarnpkg.com/@react-native-community/async-storage/-/async-storage-1.6.1.tgz#19be07fc1d65c77bdeb20f46108ba12076aad1c5"
-  integrity sha512-1WA28xfdhG+unkTEk/lXnqI2izv6belo0CYw7UdvaeHm8TIYT6eTmIIdGR7oiCa2xSKEnaPQqRMH6h7gyLNbww==
+"@react-native-async-storage/async-storage@1.13.3":
+  version "1.13.3"
+  resolved "https://registry.yarnpkg.com/@react-native-async-storage/async-storage/-/async-storage-1.13.3.tgz#bba0c69541de4da12f3a47fe07698fda84b16135"
+  integrity sha512-s/7KyzFxS3WesYn5RrfRg1Pyz5EYDZAJxIxIuzmJZ1FlvpvaZGAZq9xJmVN2OG6S6NhfiY8Tszkau15hHreRag==
+  dependencies:
+    deep-assign "^3.0.0"
 
 "@react-native-community/cli@^1.2.1":
   version "1.10.0"
@@ -2134,7 +2136,7 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "2.2.0"
   dependencies:
-    "@wora/cache-persist" "file:packages/cache-persist"
+    "@wora/cache-persist" "file:../../Library/Caches/Yarn/v6/npm-@wora-apollo-cache-2.2.0-1e7edac8-41ff-46b5-a71d-4fe16e9444c1-1611579151904/node_modules/@wora/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
   version "2.1.0"
@@ -2149,14 +2151,14 @@
 "@wora/offline-first@file:packages/offline-first":
   version "2.3.0"
   dependencies:
-    "@wora/cache-persist" "file:packages/cache-persist"
-    "@wora/netinfo" "file:packages/netinfo"
+    "@wora/cache-persist" "file:../../Library/Caches/Yarn/v6/npm-@wora-offline-first-2.3.0-bf36c62d-4b58-40c8-a5cc-818b8749c82d-1611579151904/node_modules/@wora/cache-persist"
+    "@wora/netinfo" "file:../../Library/Caches/Yarn/v6/npm-@wora-offline-first-2.3.0-bf36c62d-4b58-40c8-a5cc-818b8749c82d-1611579151904/node_modules/@wora/netinfo"
     fbjs "^3.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
   version "4.0.0"
   dependencies:
-    "@wora/cache-persist" "file:packages/cache-persist"
+    "@wora/cache-persist" "file:../../Library/Caches/Yarn/v6/npm-@wora-relay-store-4.0.0-70893564-1127-4973-9c39-3ec9282a8309-1611579151905/node_modules/@wora/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -3689,6 +3691,13 @@ dedent@^0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/dedent/-/dedent-0.7.0.tgz#2495ddbaf6eb874abb0e1be9df22d2e5a544326c"
   integrity sha1-JJXduvbrh0q7Dhvp3yLS5aVEMmw=
+
+deep-assign@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/deep-assign/-/deep-assign-3.0.0.tgz#c8e4c4d401cba25550a2f0f486a2e75bc5f219a2"
+  integrity sha512-YX2i9XjJ7h5q/aQ/IM9PEwEnDqETAIYbggmdDB3HLTlSgo1CxPsj6pvhPG68rq6SVE0+p+6Ywsm5fTYNrYtBWw==
+  dependencies:
+    is-obj "^1.0.0"
 
 deep-extend@^0.6.0:
   version "0.6.0"
