@@ -46,7 +46,10 @@ export class Environment extends RelayEnvironment {
 
         const options: OfflineFirstOptions<Payload> = {
             execute: (offlineRecord: OfflineRecordCache<Payload>) => this.executeStoreOffline(network, offlineRecord),
-            onComplete: (options: { offlineRecord: OfflineRecordCache<Payload>; response: any }) => {
+            ...others,
+        };
+        if (onComplete) {
+            options.onComplete = (options: { offlineRecord: OfflineRecordCache<Payload>; response: any }) => {
                 const { offlineRecord, response } = options;
                 const {
                     request: {
@@ -56,14 +59,15 @@ export class Environment extends RelayEnvironment {
                 } = offlineRecord;
                 const snapshot = (this as any).lookup(operation.fragment);
                 return onComplete({ id, offlinePayload: offlineRecord, snapshot: snapshot.data as Snapshot, response });
-            },
-            onDiscard: (options: { offlineRecord: OfflineRecordCache<Payload>; error: Error }) => {
+            };
+        }
+        if (onDiscard) {
+            options.onDiscard = (options: { offlineRecord: OfflineRecordCache<Payload>; error: Error }) => {
                 const { offlineRecord, error } = options;
                 const { id } = offlineRecord;
                 return onDiscard({ id, offlinePayload: offlineRecord, error });
-            },
-            ...others,
-        };
+            };
+        }
         this._relayStoreOffline.setOfflineOptions(options);
     }
 
