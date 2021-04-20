@@ -42,7 +42,7 @@ export class RecordSource implements IMutableRecordSourceOffline {
         this._cache.delete(dataID);
     }
 
-    public get(dataID: string): Record {
+    public get(dataID: string): Record<any> {
         return this._cache.get(dataID);
     }
 

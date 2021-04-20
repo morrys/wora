@@ -1,6 +1,6 @@
 {
   "name": "@wora/apollo-cache",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "keywords": [
     "cache",
     "wora",
@@ -13,6 +13,9 @@
   "description": "@wora Apollo Cache",
   "author": {
     "name": "morrys"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/morrys"
   },
   "publishConfig": {
     "access": "public"
