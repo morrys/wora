@@ -100,7 +100,9 @@ export class Environment extends RelayEnvironment {
                 .then((_result) => {
                     this._rehydrated = true;
                     const updateRecords = (this as any)._store.__getUpdatedRecordIDs();
-                    Object.keys((this as any)._store.getSource().toJSON()).forEach((key) => (updateRecords[key] = true));
+                    Object.keys((this as any)._store.getSource().toJSON()).forEach((key) => {
+                        updateRecords.add(key);
+                    });
                     (this as any)._store.notify();
                     return true;
                 })
