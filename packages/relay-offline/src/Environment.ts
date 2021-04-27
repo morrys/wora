@@ -48,7 +48,7 @@ export class Environment extends RelayEnvironment {
             ...others,
         };
         if (onComplete) {
-            options.onComplete = (options: { offlineRecord: OfflineRecordCache<Payload>; response: any }) => {
+            options.onComplete = (options: { offlineRecord: OfflineRecordCache<Payload>; response: any }): Promise<boolean> => {
                 const { offlineRecord, response } = options;
                 const {
                     request: {
@@ -61,7 +61,7 @@ export class Environment extends RelayEnvironment {
             };
         }
         if (onDiscard) {
-            options.onDiscard = (options: { offlineRecord: OfflineRecordCache<Payload>; error: Error }) => {
+            options.onDiscard = (options: { offlineRecord: OfflineRecordCache<Payload>; error: Error }): Promise<boolean> => {
                 const { offlineRecord, error } = options;
                 const { id } = offlineRecord;
                 return onDiscard({ id, offlinePayload: offlineRecord, error });
