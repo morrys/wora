@@ -52,7 +52,7 @@ export class Store extends RelayModernStore {
 
     public purge(): Promise<void[]> {
         const updateRecords = (this as any).__getUpdatedRecordIDs();
-        Object.keys((this as any)._store.getSource().toJSON()).forEach((key) => {
+        Object.keys((this as any).getSource().toJSON()).forEach((key) => {
             updateRecords.add(key);
         });
         this._cache.purge();
