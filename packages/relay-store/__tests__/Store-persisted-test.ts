@@ -4,7 +4,8 @@ import RelayRecordSourceObjectImpl from 'relay-runtime/lib/store/RelayRecordSour
 
 import { getRequest } from 'relay-runtime/lib/query/GraphQLTag';
 import { createOperationDescriptor, createReaderSelector, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
-const { generateAndCompile, simpleClone } = require('relay-test-utils-internal');
+const { simpleClone } = require('relay-test-utils-internal');
+const { generateAndCompile } = require('./TestCompiler');
 jest.useFakeTimers();
 
 function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {

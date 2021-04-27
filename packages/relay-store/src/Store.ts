@@ -2,17 +2,20 @@ import { Store as RelayModernStore } from 'relay-runtime';
 import { Disposable, OperationDescriptor, RequestDescriptor, OperationAvailability, OperationLoader } from 'relay-runtime';
 
 import { Availability } from 'relay-runtime/lib/store/DataChecker';
-import { CheckOptions, Scheduler } from 'relay-runtime/lib/store/RelayStoreTypes';
+import { CheckOptions, LogFunction, Scheduler } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { Cache, CacheOptions } from '@wora/cache-persist';
 import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
+import { GetDataID } from 'relay-runtime/lib/store/RelayResponseNormalizer';
 
 export type StoreOptions = {
     gcScheduler?: Scheduler | null | undefined;
+    log?: LogFunction | null | undefined;
     operationLoader?: OperationLoader | null | undefined;
-    UNSTABLE_DO_NOT_USE_getDataID?: any | null | undefined;
+    GetDataID?: GetDataID | null | undefined;
     gcReleaseBufferSize?: number | null | undefined;
     queryCacheExpirationTime?: number | null | undefined;
+    shouldProcessClientComponents?: boolean | null | undefined;
 };
 const hasOwn = Object.prototype.hasOwnProperty;
 
@@ -28,6 +31,9 @@ export class Store extends RelayModernStore {
         };
         if (!hasOwn.call(options, 'queryCacheExpirationTime')) {
             options.queryCacheExpirationTime = 10 * 60 * 1000;
+        }
+        if (!hasOwn.call(options, 'gcReleaseBufferSize')) {
+            options.gcReleaseBufferSize = 0;
         }
         super(recordSource, options);
 
@@ -172,6 +178,7 @@ export class Store extends RelayModernStore {
             handlers,
             (this as any)._operationLoader,
             (this as any)._getDataID,
+            (this as any)._shouldProcessClientComponents,
         );
 
         return getAvailabilityStatus(

@@ -1,6 +1,6 @@
 {
   "name": "@wora/apollo-offline",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "keywords": [
     "wora",
     "cache-persist",
@@ -16,6 +16,9 @@
   "description": "@wora Apollo Offline Capabilities",
   "author": {
     "name": "morrys"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/morrys"
   },
   "publishConfig": {
     "access": "public"

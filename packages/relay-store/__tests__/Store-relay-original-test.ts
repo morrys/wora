@@ -5,7 +5,9 @@ import RelayRecordSourceMapImpl from 'relay-runtime/lib/store/RelayRecordSourceM
 
 import { getRequest } from 'relay-runtime/lib/query/GraphQLTag';
 import { createOperationDescriptor, createReaderSelector, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
-const { createMockEnvironment, generateAndCompile, simpleClone } = require('relay-test-utils-internal');
+const { createMockEnvironment, simpleClone } = require('relay-test-utils-internal');
+
+const { generateAndCompile } = require('./TestCompiler');
 jest.useFakeTimers();
 
 function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
@@ -176,9 +178,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                             uri: 'https://photo1.jpg',
                         },
                     },
-                    seenRecords: {
-                        ...data,
-                    },
+                    seenRecords: new Set(['4', 'client:1']),
                     isMissingData: false,
                     missingRequiredFields: null,
                 });
@@ -227,9 +227,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         __fragments: { ChildUserFragment: {} },
                         __fragmentOwner: owner.request,
                     },
-                    seenRecords: {
-                        ...data,
-                    },
+                    seenRecords: new Set(['4', 'client:1']),
                     isMissingData: false,
                     missingRequiredFields: null,
                 });
@@ -278,10 +276,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                             uri: 'https://photo1.jpg',
                         },
                     },
-                    seenRecords: {
-                        '4': { ...data['4'], ...nextData['4'] },
-                        'client:2': nextData['client:2'],
-                    },
+                    seenRecords: new Set(['4', 'client:2']),
                     isMissingData: false,
                     missingRequiredFields: null,
                 });
@@ -362,20 +357,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         },
                         emailAddresses: ['a@b.com'],
                     },
-                    seenRecords: {
-                        '4': {
-                            __id: '4',
-                            id: '4',
-                            __typename: 'User',
-                            name: 'Zuck',
-                            'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
-                            emailAddresses: ['a@b.com'],
-                        },
-                        'client:1': {
-                            ...data['client:1'],
-                            uri: 'https://photo2.jpg',
-                        },
-                    },
+                    seenRecords: new Set(['4', 'client:1']),
                 });
             });
 
@@ -424,20 +406,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         },
                         emailAddresses: ['a@b.com'],
                     },
-                    seenRecords: {
-                        '4': {
-                            __id: '4',
-                            id: '4',
-                            __typename: 'User',
-                            name: 'Zuck',
-                            'profilePicture(size:32)': { [REF_KEY]: 'client:1' },
-                            emailAddresses: ['a@b.com'],
-                        },
-                        'client:1': {
-                            ...data['client:1'],
-                            uri: 'https://photo2.jpg',
-                        },
-                    },
+                    seenRecords: new Set(['4', 'client:1']),
                 });
                 expect(callback.mock.calls[0][0].selector).toBe(selector);
             });
@@ -504,17 +473,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         },
                         emailAddresses: ['a@b.com', 'c@d.net'],
                     },
-                    seenRecords: {
-                        '4': {
-                            ...data['4'],
-                            name: 'Mark',
-                            emailAddresses: ['a@b.com', 'c@d.net'],
-                        },
-                        'client:1': {
-                            ...data['client:1'],
-                            uri: 'https://photo3.jpg',
-                        },
-                    },
+                    seenRecords: new Set(['4', 'client:1']),
                 });
             });
 
@@ -563,15 +522,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         },
                         emailAddresses: ['a@b.com'],
                     },
-                    seenRecords: {
-                        '4': {
-                            ...data['4'],
-                            emailAddresses: ['a@b.com'],
-                        },
-                        'client:1': {
-                            ...data['client:1'],
-                        },
-                    },
+                    seenRecords: new Set(['4', 'client:1']),
                 });
             });
 
@@ -606,7 +557,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         profilePicture: undefined,
                     },
                     isMissingData: true,
-                    seenRecords: nextSource.toJSON(),
+                    seenRecords: new Set(['842472']),
                 });
             });
 
@@ -644,7 +595,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         profilePicture: undefined,
                     },
                     isMissingData: true,
-                    seenRecords: nextSource.toJSON(),
+                    seenRecords: new Set(['842472']),
                 });
             });
 
