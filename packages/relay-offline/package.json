@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "keywords": [
     "wora",
     "cache-persist",
@@ -17,6 +17,9 @@
   "author": {
     "name": "morrys"
   },
+  "funding": {
+    "url": "https://github.com/sponsors/morrys"
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -32,7 +35,7 @@
     "compile": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
-    "test": "jest --coverage -t"
+    "test": "jest --coverage"
   },
   "dependencies": {
     "@wora/cache-persist": "file:../cache-persist",
@@ -43,15 +46,15 @@
     "tslib": "^1.11.1"
   },
   "peerDependencies": {
-    "relay-runtime": "^10.1.0"
+    "relay-runtime": "^11.0.2"
   },
   "devDependencies": {
     "@babel/runtime": "^7.7.2",
-    "@types/relay-runtime": "^10.1.6",
-    "babel-plugin-relay": "^10.0.0",
-    "relay-runtime": "^10.1.0",
-    "relay-test-utils-internal" : "^10.1.0",
-    "relay-test-utils": "^10.1.0"
+    "@types/relay-runtime": "^11.0.0",
+    "babel-plugin-relay": "^11.0.2",
+    "relay-runtime": "^11.0.2",
+    "relay-test-utils-internal" : "^11.0.2",
+    "relay-test-utils": "^11.0.2"
   },
   "gitHead": "0ceaff4e89ec8a1a5b5547b803f67bcb9166c5af"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@wora/netinfo",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "keywords": [
     "wora",
     "react-native",
@@ -15,6 +15,9 @@
   "description": "@wora NetInfo",
   "author": {
     "name": "morrys"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/morrys"
   },
   "publishConfig": {
     "access": "public"

@@ -10,12 +10,12 @@
 
 'use strict';
 
-import { fetchQuery } from '../src';
+import { fetchQuery_DEPRECATED as fetchQuery } from '../src';
 
 import { createOperationDescriptor } from 'relay-runtime';
 import { createMockEnvironment } from './RelayModernEnvironmentMock';
 
-const { generateAndCompile } = require('relay-test-utils-internal');
+const { generateAndCompile } = require('./TestCompiler');
 //jest.useFakeTimers();
 describe('fetchQuery', () => {
     describe('fetchQuery with hydrate', () => {

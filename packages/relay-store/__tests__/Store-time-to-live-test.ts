@@ -1,7 +1,9 @@
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
 
 import { createOperationDescriptor, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
-const { generateAndCompile, simpleClone } = require('relay-test-utils-internal');
+const { simpleClone } = require('relay-test-utils-internal');
+
+const { generateAndCompile } = require('./TestCompiler');
 
 jest.useFakeTimers();
 
