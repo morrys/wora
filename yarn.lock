@@ -2134,31 +2134,31 @@
     tsutils "^3.17.1"
 
 "@wora/apollo-cache@file:packages/apollo-cache":
-  version "2.3.0"
+  version "2.3.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.3.0-2a4fae68-a873-416b-8768-9f2f274711e9-1618910283561/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
-  version "2.2.0"
+  version "2.2.1"
   dependencies:
     idb "^4.0.0"
 
 "@wora/netinfo@file:packages/netinfo":
-  version "2.1.0"
+  version "2.1.1"
   dependencies:
     fbjs "^3.0.0"
 
 "@wora/offline-first@file:packages/offline-first":
-  version "2.4.0"
+  version "2.4.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.0-5224d313-87be-46c8-9108-8cf5fd5ad9ed-1618910283559/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.0-5224d313-87be-46c8-9108-8cf5fd5ad9ed-1618910283559/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:packages/cache-persist"
+    "@wora/netinfo" "file:packages/netinfo"
     fbjs "^3.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
-  version "4.1.0"
+  version "5.0.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-4.1.0-260a7b22-6c45-465a-bf4e-14ca00f433ce-1618910283562/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -4560,9 +4560,9 @@ fbjs@^3.0.0:
     ua-parser-js "^0.7.18"
 
 figgy-pudding@^3.4.1, figgy-pudding@^3.5.1:
-  version "3.5.1"
-  resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.1.tgz#862470112901c727a0e495a80744bd5baa1d6790"
-  integrity sha512-vNKxJHTEKNThjfrdJwHc7brvM6eVevuO5nTj6ez8ZQ1qbXTvGthucRF7S4vf2cr71QVnT70V34v0S1DyQsti0w==
+  version "3.5.2"
+  resolved "https://registry.yarnpkg.com/figgy-pudding/-/figgy-pudding-3.5.2.tgz#b4eee8148abb01dcf1d1ac34367d59e12fa61d6e"
+  integrity sha512-0btnI/H8f2pavGMN8w40mlSKOfTK2SVJmBfBeVIj3kNw0swwgzyRq0d5TJVOwodFmtvpPeWPN/MCcfuWF0Ezbw==
 
 figures@^2.0.0:
   version "2.0.0"
@@ -9477,9 +9477,9 @@ sshpk@^1.7.0:
     tweetnacl "~0.14.0"
 
 ssri@^6.0.0, ssri@^6.0.1:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/ssri/-/ssri-6.0.1.tgz#2a3c41b28dd45b62b63676ecb74001265ae9edd8"
-  integrity sha512-3Wge10hNcT1Kur4PDFwEieXSCMCJs/7WvSACcrMYrNp+b8kDL1/0wJch5Ni2WrtwEa2IO8OsVfeKIciKCDx/QA==
+  version "6.0.2"
+  resolved "https://registry.yarnpkg.com/ssri/-/ssri-6.0.2.tgz#157939134f20464e7301ddba3e90ffa8f7728ac5"
+  integrity sha512-cepbSq/neFK7xB6A50KHN0xHDotYzq58wWCa5LeWqnPrHG8GzfEjO/4O8kpmcGW+oaxkvhEJCWgbgNk4/ZV93Q==
   dependencies:
     figgy-pudding "^3.5.1"
 
