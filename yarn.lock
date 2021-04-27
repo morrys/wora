@@ -2136,7 +2136,7 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "2.3.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.3.0-2a4fae68-a873-416b-8768-9f2f274711e9-1618910283561/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
   version "2.2.0"
@@ -2151,14 +2151,14 @@
 "@wora/offline-first@file:packages/offline-first":
   version "2.4.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.0-5224d313-87be-46c8-9108-8cf5fd5ad9ed-1618910283559/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.0-5224d313-87be-46c8-9108-8cf5fd5ad9ed-1618910283559/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:packages/cache-persist"
+    "@wora/netinfo" "file:packages/netinfo"
     fbjs "^3.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
   version "4.1.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-4.1.0-260a7b22-6c45-465a-bf4e-14ca00f433ce-1618910283562/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -10566,9 +10566,9 @@ xtend@~4.0.1:
   integrity sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==
 
 y18n@^3.2.1:
-  version "3.2.1"
-  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.1.tgz#6d15fba884c08679c0d77e88e7759e811e07fa41"
-  integrity sha1-bRX7qITAhnnA136I53WegR4H+kE=
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/y18n/-/y18n-3.2.2.tgz#85c901bd6470ce71fc4bb723ad209b70f7f28696"
+  integrity sha512-uGZHXkHnhF0XeeAPgnKfPv1bgKAYyVvmNL1xlKsPYZPaIHxGti2hHqvOCQv71XMsLxu1QjergkqogUnms5D3YQ==
 
 "y18n@^3.2.1 || ^4.0.0", y18n@^4.0.0:
   version "4.0.0"
