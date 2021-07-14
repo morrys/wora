@@ -54,14 +54,15 @@ function mockDisposableMethod(object: any, key: string) {
 
 function mockObservableMethod(object: any, key: string) {
     const fn = object[key].bind(object);
+    const subscriptions = [];
     object[key] = jest.fn((...args) =>
         fn(...args).do({
             start: (subscription) => {
-                object[key].mock.subscriptions.push(subscription);
+                subscriptions.push(subscription);
             },
         }),
     );
-    object[key].mock.subscriptions = [];
+    object[key].mock.subscriptions = subscriptions;
     const mockClear = object[key].mockClear.bind(object[key]);
     object[key].mockClear = () => {
         mockClear();
@@ -161,7 +162,9 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
             return Observable.from(cachedPayload);
         }
 
-        const currentOperation = pendingOperations.find((op) => op.request.node.params === request && op.request.variables === variables);
+        const currentOperation = pendingOperations.find(
+            (op) => op.request.node.params === request && areEqual(op.request.variables, variables),
+        );
 
         // Handle network responses added by
         if (currentOperation != null && resolversQueue.length > 0) {

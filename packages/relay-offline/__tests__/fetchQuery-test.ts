@@ -10,12 +10,12 @@
 
 'use strict';
 
-import { fetchQuery } from '../src';
+import { fetchQuery_DEPRECATED as fetchQuery } from '../src';
 
 import { createOperationDescriptor } from 'relay-runtime';
 import { createMockEnvironment } from './RelayModernEnvironmentMock';
 
-const { generateAndCompile } = require('relay-test-utils-internal');
+const { generateAndCompile } = require('./TestCompiler');
 //jest.useFakeTimers();
 describe('fetchQuery', () => {
     describe('fetchQuery with hydrate', () => {
@@ -49,8 +49,8 @@ describe('fetchQuery', () => {
             await environment.mock.hydrate();
             expect(environment.execute.mock.calls.length).toBe(1);
             const args = environment.execute.mock.calls[0][0];
-            expect(args).toEqual({ operation, cacheConfig });
-            expect(args.cacheConfig).toBe(cacheConfig);
+            const checkOperation = createOperationDescriptor(query, variables, cacheConfig);
+            expect(args).toEqual({ operation: checkOperation });
         });
 
         it('resolves with the query results after first value', async () => {
@@ -111,8 +111,8 @@ describe('fetchQuery', () => {
             fetchQuery(environment, query, variables, cacheConfig);
             expect(environment.execute.mock.calls.length).toBe(1);
             const args = environment.execute.mock.calls[0][0];
-            expect(args).toEqual({ operation, cacheConfig });
-            expect(args.cacheConfig).toBe(cacheConfig);
+            const operationCache = createOperationDescriptor(query, variables, cacheConfig);
+            expect(args).toEqual({ operation: operationCache });
         });
 
         it('resolves with the query results after first value', async () => {

@@ -17,7 +17,7 @@ jest.mock('fbjs/lib/warning');
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, createOperationDescriptor, createReaderSelector } from 'relay-runtime';
 import { createPersistedStorage } from './Utils';
-const { generateAndCompile } = require('relay-test-utils-internal');
+const { generateAndCompile } = require('./TestCompiler');
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };

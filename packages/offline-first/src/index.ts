@@ -45,7 +45,7 @@ const defaultOfflineOptions = {
 
 export class OfflineFirst<T> {
     private offlineStore: ICache;
-    private busy = false;
+    private busy: Promise<void> | undefined;
     private offlineOptions: OfflineFirstOptions<T> = defaultOfflineOptions;
     private online = isServer;
     private rehydrated = isServer;
@@ -97,21 +97,25 @@ export class OfflineFirst<T> {
         if (!this.promisesRestore) {
             this.promisesRestore = Promise.all([NetInfo.fetch(), this.offlineStore.restore()])
                 .then((result) => {
-                    this.disposeListener = NetInfo.addEventListener((state) => {
-                        const { isConnected } = state;
-                        if (this.online !== isConnected && isConnected && !this.isManualExecution()) {
-                            this.process();
-                        }
-                        this.online = isConnected;
-                    });
+                    const finalize = (): boolean => {
+                        this.disposeListener = NetInfo.addEventListener((state) => {
+                            const { isConnected } = state;
+                            if (this.online !== isConnected && isConnected && !this.isManualExecution()) {
+                                this.process();
+                            }
+                            this.online = isConnected;
+                        });
+                        this.notify();
+                        this.rehydrated = true;
+                        return true;
+                    };
+
                     const { isConnected } = result[0];
                     this.online = isConnected;
                     if (isConnected && !this.isManualExecution()) {
-                        this.process();
+                        return this.process().then(finalize);
                     }
-                    this.notify();
-                    this.rehydrated = true;
-                    return true;
+                    return finalize();
                 })
                 .catch((error) => {
                     this.rehydrated = false;
@@ -158,11 +162,10 @@ export class OfflineFirst<T> {
 
     public process(): Promise<void> {
         if (!this.busy) {
-            this.busy = true;
             const { start, finish, onExecute } = this.offlineOptions;
             const listMutation: Array<OfflineRecordCache<T>> = this.getListMutation();
             let parallelPromises = [];
-            return start(listMutation).then(async (startMutations) => {
+            this.busy = start(listMutation).then(async (startMutations) => {
                 try {
                     for (const mutation of startMutations) {
                         const processMutation = await onExecute(mutation);
@@ -187,10 +190,11 @@ export class OfflineFirst<T> {
                 } catch (error) {
                     return finish(this.getListMutation(), error);
                 } finally {
-                    this.busy = false;
+                    this.busy = undefined;
                 }
             });
         }
+        return this.busy;
     }
 
     public executeMutation(offlineRecord: OfflineRecordCache<T>): Promise<void> {

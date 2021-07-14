@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-store",
-  "version": "3.2.0",
+  "version": "5.0.1",
   "keywords": [
     "cache",
     "wora",
@@ -13,6 +13,9 @@
   "description": "@wora Relay Store",
   "author": {
     "name": "morrys"
+  },
+  "funding": {
+    "url": "https://github.com/sponsors/morrys"
   },
   "publishConfig": {
     "access": "public"
@@ -36,12 +39,15 @@
     "tslib": "^1.11.1"
   },
   "peerDependencies": {
-    "relay-runtime": ">=8.0.0"
+    "relay-runtime": "^11.0.2"
   },
   "devDependencies": {
-    "relay-runtime": "^9.1.0",
-    "relay-test-utils-internal" : "9.0.0",
-    "relay-test-utils": "9.1.0"
+    
+    "@babel/runtime": "^7.7.2",
+    "@types/relay-runtime": "^11.0.0",
+    "relay-runtime": "^11.0.2",
+    "relay-test-utils-internal" : "^11.0.2",
+    "relay-test-utils": "^11.0.2"
   },
   "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"
 }

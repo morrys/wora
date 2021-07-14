@@ -1,4 +1,5 @@
-import * as RelayRecordState from 'relay-runtime/lib/store/RelayRecordState';
+import RelayRecordState from 'relay-runtime/lib/store/RelayRecordState';
+import { RecordState } from 'relay-runtime';
 import { MutableRecordSource, Record, RecordMap } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { Cache, ICache, DataCache, CacheOptions } from '@wora/cache-persist';
 
@@ -20,6 +21,10 @@ export class RecordSource implements IMutableRecordSourceOffline {
         this._cache = new Cache(persistOptionsRecordSource);
     }
 
+    public isRehydrated(): boolean {
+        return this._cache.isRehydrated();
+    }
+
     public purge(): Promise<void> {
         this._cache.purge();
         return this._cache.flush();
@@ -37,7 +42,7 @@ export class RecordSource implements IMutableRecordSourceOffline {
         this._cache.delete(dataID);
     }
 
-    public get(dataID: string): Record {
+    public get(dataID: string): Record<any> {
         return this._cache.get(dataID);
     }
 
@@ -45,7 +50,7 @@ export class RecordSource implements IMutableRecordSourceOffline {
         return this._cache.getAllKeys();
     }
 
-    public getStatus(dataID: string): RelayRecordState {
+    public getStatus(dataID: string): RecordState {
         const state = this._cache.getState();
         if (!this._cache.has(dataID)) {
             return UNKNOWN;

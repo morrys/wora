@@ -1,7 +1,9 @@
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
 
 import { createOperationDescriptor, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
-const { generateAndCompile, simpleClone } = require('relay-test-utils-internal');
+const { simpleClone } = require('relay-test-utils-internal');
+
+const { generateAndCompile } = require('./TestCompiler');
 
 jest.useFakeTimers();
 
@@ -57,7 +59,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             };
             initialData = simpleClone(data);
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { storage: createPersistedStorage(), defaultTTL: 100 });
+            store = new RelayModernStore(source, { storage: createPersistedStorage() }, { queryCacheExpirationTime: 100 });
             await store.hydrate();
             ({ UserQuery } = generateAndCompile(`
             query UserQuery($id: ID!, $size: [Int]) {

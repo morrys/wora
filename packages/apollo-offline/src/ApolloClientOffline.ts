@@ -7,8 +7,10 @@ import { MutationOptions } from '@apollo/client/core/watchQueryOptions';
 import { graphQLResultHasError, tryFunctionOrLogError } from '@apollo/client/utilities/common/errorHandling';
 
 import { CacheOptions } from '@wora/cache-persist';
-import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache } from '@wora/offline-first';
 import { ApolloCache } from '@wora/apollo-cache';
+import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache } from '@wora/offline-first';
+import { NormalizedCacheObject } from 'apollo-cache-inmemory';
+import { MutationOptions } from 'apollo-client/core/watchQueryOptions';
 import { v4 as uuid } from 'uuid';
 import { Payload, OfflineApolloClientOptions, OfflineOptions } from './ApolloOfflineTypes';
 

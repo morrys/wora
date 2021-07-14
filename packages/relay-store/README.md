@@ -32,6 +32,6 @@ await store.hydrate();
 ```
 
 
-### Options
+## Documentation
 
-[CacheOptions](https://github.com/morrys/wora/blob/master/packages/cache-persist/README.md)
+Follow the link: [Relay Store Documentation](https://morrys.github.io/wora/docs/relay-store)
