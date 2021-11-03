@@ -1,7 +1,7 @@
 import * as RelayModernRecord from 'relay-runtime/lib/store/RelayModernRecord';
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
 import * as RelayOptimisticRecordSource from 'relay-runtime/lib/store/RelayOptimisticRecordSource';
-import RelayRecordSourceMapImpl from 'relay-runtime/lib/store/RelayRecordSourceMapImpl';
+import RelayRecordSourceMapImpl from 'relay-runtime/lib/store/RelayRecordSource';
 
 import { getRequest } from 'relay-runtime/lib/query/GraphQLTag';
 import { createOperationDescriptor, createReaderSelector, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
@@ -224,6 +224,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         },
 
                         __id: '4',
+                        __isWithinUnmatchedTypeRefinement: false,
                         __fragments: { ChildUserFragment: {} },
                         __fragmentOwner: owner.request,
                     },

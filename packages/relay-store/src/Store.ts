@@ -7,6 +7,10 @@ import { Cache, CacheOptions } from '@wora/cache-persist';
 import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
 import { GetDataID } from 'relay-runtime/lib/store/RelayResponseNormalizer';
+import {
+    INTERNAL_ACTOR_IDENTIFIER_DO_NOT_USE,
+    assertInternalActorIndentifier,
+} from 'relay-runtime/lib/multi-actor-environment/ActorIdentifier';
 
 export type StoreOptions = {
     gcScheduler?: Scheduler | null | undefined;
@@ -152,7 +156,7 @@ export class Store extends RelayModernStore {
 
     check(operation: OperationDescriptor, options?: CheckOptions): OperationAvailability {
         const selector = operation.root;
-        const source = (this as any)._optimisticSource ?? (this as any)._recordSource;
+        const source = (this as any)._getMutableRecordSource();
         const globalInvalidationEpoch = (this as any)._globalInvalidationEpoch;
 
         const rootEntry = this._cache.get(operation.request.identifier);
@@ -161,7 +165,7 @@ export class Store extends RelayModernStore {
         // Check if store has been globally invalidated
         if (globalInvalidationEpoch != null) {
             // If so, check if the operation we're checking was last written
-            // before or after invalidation occured.
+            // before or after invalidation occurred.
             if (operationLastWrittenAt == null || operationLastWrittenAt <= globalInvalidationEpoch) {
                 // If the operation was written /before/ global invalidation occurred,
                 // or if this operation has never been written to the store before,
@@ -171,11 +175,23 @@ export class Store extends RelayModernStore {
             }
         }
 
-        const target = options?.target ?? source;
+        const getSourceForActor =
+            (options as any)?.getSourceForActor ??
+            ((actorIdentifier) => {
+                assertInternalActorIndentifier(actorIdentifier);
+                return source;
+            });
+        const getTargetForActor =
+            (options as any)?.getTargetForActor ??
+            ((actorIdentifier) => {
+                assertInternalActorIndentifier(actorIdentifier);
+                return source;
+            });
         const handlers = options?.handlers ?? [];
         const operationAvailability = DataChecker.check(
-            source,
-            target,
+            getSourceForActor,
+            getTargetForActor,
+            (options as any)?.defaultActorIdentifier ?? INTERNAL_ACTOR_IDENTIFIER_DO_NOT_USE,
             selector,
             handlers,
             (this as any)._operationLoader,
