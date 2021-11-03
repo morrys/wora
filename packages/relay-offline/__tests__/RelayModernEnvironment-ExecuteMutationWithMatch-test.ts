@@ -12,13 +12,13 @@
 // flowlint ambiguous-object-type:error
 
 'use strict';
-import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment} from '../src';
+import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor, getSingularSelector, createReaderSelector } from 'relay-runtime';
 import { createPersistedStorage } from './Utils';
 const { generateAndCompile } = require('./TestCompiler');
 jest.useFakeTimers();
 const RelayRecordSource = {
-  create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: {...data}})
+  create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } })
 }
 
 const nullthrows = require('fbjs/lib/nullthrows');
@@ -138,7 +138,7 @@ describe('executeMutation() with @match', () => {
     complete = jest.fn();
     error = jest.fn();
     next = jest.fn();
-    callbacks = {complete, error, next};
+    callbacks = { complete, error, next };
     fetch = (_query, _variables, _cacheConfig) => {
       return RelayObservable.create(sink => {
         dataSource = sink;
@@ -153,7 +153,7 @@ describe('executeMutation() with @match', () => {
       get: jest.fn(),
     };
     source = RelayRecordSource.create();
-    store = new RelayModernStore(source, { storage: createPersistedStorage(), defaultTTL: -1});
+    store = new RelayModernStore(source, { storage: createPersistedStorage(), defaultTTL: -1 });
     environment = new RelayModernEnvironment({
       network: RelayNetwork.create(fetch),
       store,
@@ -209,12 +209,12 @@ describe('executeMutation() with @match', () => {
     expect(
       environment
         .getOperationTracker()
-        .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
+        .getPendingOperationsAffectingOwner(queryOperation.request),
     ).toBe(null);
   });
 
   it('calls next() and publishes the initial payload to the store', () => {
-    environment.executeMutation({operation}).subscribe(callbacks);
+    environment.executeMutation({ operation }).subscribe(callbacks);
     const payload = {
       data: {
         commentCreate: {
@@ -258,6 +258,7 @@ describe('executeMutation() with @match', () => {
             nameRenderer: {
               __id:
                 'client:4:nameRenderer(supported:["PlainUserNameRenderer","MarkdownUserNameRenderer"])',
+              __isWithinUnmatchedTypeRefinement: false,
               __fragmentPropName: 'name',
               __fragments: {
                 MarkdownUserNameRenderer_name: {},
@@ -302,12 +303,12 @@ describe('executeMutation() with @match', () => {
     expect(
       environment
         .getOperationTracker()
-        .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
+        .getPendingOperationsAffectingOwner(queryOperation.request),
     ).not.toBe(null);
   });
 
   it('loads the @match fragment and normalizes/publishes the field payload', () => {
-    environment.executeMutation({operation}).subscribe(callbacks);
+    environment.executeMutation({ operation }).subscribe(callbacks);
     const payload = {
       data: {
         commentCreate: {
@@ -382,12 +383,12 @@ describe('executeMutation() with @match', () => {
     expect(
       environment
         .getOperationTracker()
-        .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
+        .getPendingOperationsAffectingOwner(queryOperation.request),
     ).not.toBe(null);
   });
 
   it('calls complete() only after match payloads are processed (network completes first)', () => {
-    environment.executeMutation({operation}).subscribe(callbacks);
+    environment.executeMutation({ operation }).subscribe(callbacks);
     const payload = {
       data: {
         commentCreate: {
@@ -425,7 +426,7 @@ describe('executeMutation() with @match', () => {
     expect(
       environment
         .getOperationTracker()
-        .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
+        .getPendingOperationsAffectingOwner(queryOperation.request),
     ).not.toBe(null);
 
     expect(operationLoader.load).toBeCalledTimes(1);
@@ -443,12 +444,12 @@ describe('executeMutation() with @match', () => {
     expect(
       environment
         .getOperationTracker()
-        .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
+        .getPendingOperationsAffectingOwner(queryOperation.request),
     ).toBe(null);
   });
 
   it('calls complete() only after match payloads are processed (network completes last)', () => {
-    environment.executeMutation({operation}).subscribe(callbacks);
+    environment.executeMutation({ operation }).subscribe(callbacks);
     const payload = {
       data: {
         commentCreate: {
@@ -489,7 +490,7 @@ describe('executeMutation() with @match', () => {
     expect(
       environment
         .getOperationTracker()
-        .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
+        .getPendingOperationsAffectingOwner(queryOperation.request),
     ).not.toBe(null);
 
     expect(complete).toBeCalledTimes(0);
@@ -505,7 +506,7 @@ describe('executeMutation() with @match', () => {
     expect(
       environment
         .getOperationTracker()
-        .getPromiseForPendingOperationsAffectingOwner(queryOperation.request),
+        .getPendingOperationsAffectingOwner(queryOperation.request),
     ).toBe(null);
   });
 
@@ -539,7 +540,7 @@ describe('executeMutation() with @match', () => {
         return markdownRendererNormalizationFragment;
       });
       environment
-        .executeMutation({operation, optimisticResponse})
+        .executeMutation({ operation, optimisticResponse })
         .subscribe(callbacks);
       jest.runAllTimers();
 
@@ -557,6 +558,7 @@ describe('executeMutation() with @match', () => {
               nameRenderer: {
                 __id:
                   'client:4:nameRenderer(supported:["PlainUserNameRenderer","MarkdownUserNameRenderer"])',
+                __isWithinUnmatchedTypeRefinement: false,
                 __fragmentPropName: 'name',
                 __fragments: {
                   MarkdownUserNameRenderer_name: {},
@@ -599,7 +601,7 @@ describe('executeMutation() with @match', () => {
         });
       });
       environment
-        .executeMutation({operation, optimisticResponse})
+        .executeMutation({ operation, optimisticResponse })
         .subscribe(callbacks);
       jest.runAllTimers();
       expect(next.mock.calls.length).toBe(0);
@@ -616,6 +618,7 @@ describe('executeMutation() with @match', () => {
               nameRenderer: {
                 __id:
                   'client:4:nameRenderer(supported:["PlainUserNameRenderer","MarkdownUserNameRenderer"])',
+                __isWithinUnmatchedTypeRefinement: false,
                 __fragmentPropName: 'name',
                 __fragments: {
                   MarkdownUserNameRenderer_name: {},
@@ -627,7 +630,7 @@ describe('executeMutation() with @match', () => {
           },
         },
       });
-      
+
       operationCallback.mockClear();
 
       const matchSelector = nullthrows(
@@ -637,7 +640,7 @@ describe('executeMutation() with @match', () => {
             ?.nameRenderer,
         ),
       );
-      const initialMatchSnapshot = environment.lookup(matchSelector);      
+      const initialMatchSnapshot = environment.lookup(matchSelector);
       expect(initialMatchSnapshot.isMissingData).toBe(false);
       expect(initialMatchSnapshot.data).toEqual({
         __typename: 'MarkdownUserNameRenderer',
@@ -659,7 +662,7 @@ describe('executeMutation() with @match', () => {
       });
 
       environment
-        .executeMutation({operation, optimisticResponse})
+        .executeMutation({ operation, optimisticResponse })
         .subscribe(callbacks);
 
       const serverPayload = {
@@ -705,6 +708,7 @@ describe('executeMutation() with @match', () => {
               nameRenderer: {
                 __id:
                   'client:4:nameRenderer(supported:["PlainUserNameRenderer","MarkdownUserNameRenderer"])',
+                __isWithinUnmatchedTypeRefinement: false,
                 __fragmentPropName: 'name',
                 __fragments: {
                   MarkdownUserNameRenderer_name: {},
@@ -743,7 +747,7 @@ describe('executeMutation() with @match', () => {
         });
       });
       const disposable = environment
-        .executeMutation({operation, optimisticResponse})
+        .executeMutation({ operation, optimisticResponse })
         .subscribe(callbacks);
       disposable.unsubscribe();
 
@@ -775,7 +779,7 @@ describe('executeMutation() with @match', () => {
         throw new Error('<user-error>');
       });
       environment
-        .executeMutation({operation, optimisticResponse})
+        .executeMutation({ operation, optimisticResponse })
         .subscribe(callbacks);
       jest.runAllTimers();
       expect(error.mock.calls.length).toBe(1);

@@ -146,12 +146,13 @@ describe('commitPayload()', () => {
             me: {
                 name: 'Zuck',
                 __id: id,
+                __isWithinUnmatchedTypeRefinement: false,
                 __fragments: { UserFragment: {} },
                 __fragmentOwner: operation.request,
             },
         });
-        expect(fragmentCallback.mock.calls.length).toBe(2);
-        expect(fragmentCallback.mock.calls[1][0].data).toEqual({
+        expect(fragmentCallback.mock.calls.length).toBe(1);
+        expect(fragmentCallback.mock.calls[0][0].data).toEqual({
             username: 'Zucc',
         });
         expect(warning).toBeCalledWith(
@@ -223,17 +224,9 @@ describe('commitPayload()', () => {
             },
         });
         expect(queryCallback.mock.calls.length).toBe(1);
-        expect(fragmentCallback.mock.calls.length).toBe(2);
+        expect(fragmentCallback.mock.calls.length).toBe(1);
         expect(fragmentCallback.mock.calls[0][0].data).toEqual({
-            username: undefined,
-        });
-        expect(fragmentCallback.mock.calls[1][0].data).toEqual({
             username: 'Zucc',
         });
-        expect(warning).toBeCalledWith(
-            true,
-            expect.stringContaining('RelayModernEnvironment: Operation `%s` contains @defer/@stream directives'),
-            'ActorQuery',
-        );
     });
 });

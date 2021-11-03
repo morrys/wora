@@ -168,7 +168,7 @@ describe('executeMutation()', () => {
         // result tested in previous test
 
         // The mutation affecting the query should not be marked as in flight yet
-        expect(environment.getOperationTracker().getPromiseForPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
+        expect(environment.getOperationTracker().getPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
     });
 
     it('reverts the optimistic update if disposed', () => {
@@ -399,6 +399,6 @@ describe('executeMutation()', () => {
 
         // The mutation affecting the query should not be marked as in flight
         // since it was disposed
-        expect(environment.getOperationTracker().getPromiseForPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
+        expect(environment.getOperationTracker().getPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
     });
 });
