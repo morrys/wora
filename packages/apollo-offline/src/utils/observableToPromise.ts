@@ -1,6 +1,7 @@
+/* eslint-disable no-plusplus */
 import { ObservableQuery } from '@apollo/client/core/ObservableQuery';
 import { ApolloQueryResult } from '@apollo/client/core/types';
-import { Observable, Observer, Subscription } from '@apollo/client/utilities/observables/Observable';
+import { Observable, Observer, ObservableSubscription as Subscription } from '@apollo/client/utilities/observables/Observable';
 
 // Returns a normal Observable that can have any number of subscribers,
 // while ensuring the original Observable gets subscribed to at most once.
@@ -22,7 +23,7 @@ export function multiplex<T>(inner: Observable<T>): Observable<T> {
                     observers.forEach((obs) => obs.complete && obs.complete());
                 },
             });
-        return () => {
+        return (): void => {
             if (observers.delete(observer) && !observers.size && sub) {
                 sub.unsubscribe();
                 sub = null;
@@ -63,12 +64,12 @@ export function observableToPromiseAndSubscription(
         let cbIndex = 0;
         const results: any[] = [];
 
-        const tryToResolve = () => {
+        const tryToResolve = (): void => {
             if (!shouldResolve) {
                 return;
             }
 
-            const done = () => {
+            const done = (): void => {
                 subscription.unsubscribe();
                 // XXX: we could pass a few other things out here?
                 resolve(results);
@@ -120,6 +121,6 @@ export function observableToPromiseAndSubscription(
     };
 }
 
-export default function(options: Options, ...cbs: ResultCallback[]): Promise<any[]> {
+export default function (options: Options, ...cbs: ResultCallback[]): Promise<any[]> {
     return observableToPromiseAndSubscription(options, ...cbs).promise;
 }

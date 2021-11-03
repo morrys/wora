@@ -1,8 +1,6 @@
-import { ApolloClientOptions } from 'apollo-client';
-import { ApolloLink } from 'apollo-link';
+import { ApolloLink, NormalizedCacheObject, ApolloClientOptions } from '@apollo/client';
 import { OfflineFirstOptions } from '@wora/offline-first';
 import ApolloStore from '@wora/apollo-cache';
-import { NormalizedCacheObject } from 'apollo-cache-inmemory';
 
 type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type OfflineApolloClientOptions = Omit<ApolloClientOptions<NormalizedCacheObject>, 'cache'> & {

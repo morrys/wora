@@ -1,18 +1,14 @@
-import ApolloStore from '@wora/apollo-cache';
-import { ApolloClient, NormalizedCacheObject, ApolloClientOptions, OperationVariables, ObservableQuery } from '@apollo/client';
+import { ApolloClient, NormalizedCacheObject, OperationVariables, ObservableQuery, FetchResult } from '@apollo/client';
 import { ApolloLink, execute } from '@apollo/client';
 import observableToPromise, { Options, multiplex } from './utils/observableToPromise';
 import { getOperationName } from '@apollo/client/utilities/graphql/getFromAST';
 import { MutationOptions } from '@apollo/client/core/watchQueryOptions';
-import { graphQLResultHasError, tryFunctionOrLogError } from '@apollo/client/utilities/common/errorHandling';
 
 import { CacheOptions } from '@wora/cache-persist';
-import { ApolloCache } from '@wora/apollo-cache';
 import { OfflineFirst, OfflineFirstOptions, OfflineRecordCache } from '@wora/offline-first';
 import { v4 as uuid } from 'uuid';
 import { Payload, OfflineApolloClientOptions, OfflineOptions } from './ApolloOfflineTypes';
-
-const { hasOwnProperty } = Object.prototype;
+import { QueryManager } from '@apollo/client/core/QueryManager';
 
 export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
     private apolloStoreOffline: OfflineFirst<Payload>;
@@ -20,7 +16,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
     private promisesRestore;
 
     constructor(apolloOptions: OfflineApolloClientOptions, persistOptions: CacheOptions = {}) {
-        super(apolloOptions);
+        super(apolloOptions as any);
         (this as any).queryManager.isOnline = (): boolean => this.isOnline();
         const persistOptionsStoreOffline = {
             prefix: 'apollo-offline',
@@ -62,7 +58,7 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
 
     public hydrate(): Promise<boolean> {
         if (!this.promisesRestore) {
-            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as ApolloCache).hydrate()])
+            this.promisesRestore = Promise.all([this.getStoreOffline().hydrate(), (this.cache as any).hydrate()])
                 .then((_result) => {
                     (this.cache as any).broadcastWatches();
                     (this as any).queryManager.broadcastQueries();
@@ -102,44 +98,17 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
     }
 
     public mutateOffline<T>(mutationOptions: MutationOptions): Promise<FetchResult<T>> {
-        const { context, update, fetchPolicy, variables, mutation, updateQueries: updateQueriesByName } = mutationOptions;
+        const { context, update, fetchPolicy, variables, mutation, updateQueries, errorPolicy, optimisticResponse } = mutationOptions;
 
-        const generateUpdateQueriesInfo: () => {
-            [queryId: string]: QueryWithUpdater;
-        } = () => {
-            const ret: { [queryId: string]: QueryWithUpdater } = {};
-
-            if (updateQueriesByName) {
-                (this as any).queries.forEach(({ observableQuery }, queryId) => {
-                    if (observableQuery) {
-                        const { queryName } = observableQuery;
-                        if (queryName && hasOwnProperty.call(updateQueriesByName, queryName)) {
-                            ret[queryId] = {
-                                updater: updateQueriesByName[queryName],
-                                query: (this as any).queryStore.get(queryId),
-                            };
-                        }
-                    }
-                });
-            }
-
-            return ret;
-        };
-
-        const optimisticResponse =
-            typeof mutationOptions.optimisticResponse === 'function'
-                ? mutationOptions.optimisticResponse(variables)
-                : mutationOptions.optimisticResponse;
-
-        const result = { data: optimisticResponse };
+        const result: FetchResult<any> = { data: optimisticResponse };
         const id = uuid();
         // optimistic response is required
         if (fetchPolicy !== 'no-cache' && optimisticResponse) {
-            this.store.markMutationInit({
+            ((this as any).queryManager as QueryManager<any>).markMutationOptimistic(optimisticResponse, {
                 variables,
-                updateQueries: generateUpdateQueriesInfo(),
+                updateQueries,
                 update,
-                optimisticResponse,
+                errorPolicy,
                 document: mutation,
                 mutationId: id,
             });
@@ -154,9 +123,9 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
             optimisticResponse,
         };
 
-        const sink = (this as any).cache.optimisticData.data;
+        const sink = (this as any).cache.optimisticData.cache.toObject();
         const backup = {};
-        const state = (this as any).cache.data.getState();
+        const state = (this as any).cache.toObject();
         Object.keys(sink).forEach((key) => (backup[key] = state[key]));
 
         const request = {
@@ -169,29 +138,27 @@ export class ApolloClientOffline extends ApolloClient<NormalizedCacheObject> {
             .publish({ id, request, serial: true })
             .then((offlineRecord: OfflineRecordCache<Payload>) => {
                 if (fetchPolicy !== 'no-cache' && optimisticResponse) {
-                    this.store.markMutationResult({
+                    ((this as any).queryManager as QueryManager<any>).markMutationResult({
                         result,
                         variables,
-                        updateQueries: generateUpdateQueriesInfo(),
+                        updateQueries,
                         update,
                         mutationId: offlineRecord.id,
+                        errorPolicy,
                         document: mutation,
                     });
-
-                    this.store.markMutationComplete({
-                        mutationId: id,
-                        optimisticResponse,
-                    });
+                    if (optimisticResponse) {
+                        ((this as any).queryManager as QueryManager<any>).cache.removeOptimistic(id);
+                    }
 
                     (this as any).queryManager.broadcastQueries();
                 }
                 return result;
             })
             .catch((error: Error) => {
-                this.store.markMutationComplete({
-                    mutationId: id,
-                    optimisticResponse,
-                });
+                if (optimisticResponse) {
+                    ((this as any).queryManager as QueryManager<any>).cache.removeOptimistic(id);
+                }
                 (this as any).queryManager.broadcastQueries();
                 throw error;
             });
