@@ -177,13 +177,13 @@ export class Store extends RelayModernStore {
 
         const getSourceForActor =
             (options as any)?.getSourceForActor ??
-            ((actorIdentifier) => {
+            ((actorIdentifier): any => {
                 assertInternalActorIndentifier(actorIdentifier);
                 return source;
             });
         const getTargetForActor =
             (options as any)?.getTargetForActor ??
-            ((actorIdentifier) => {
+            ((actorIdentifier): any => {
                 assertInternalActorIndentifier(actorIdentifier);
                 return source;
             });
