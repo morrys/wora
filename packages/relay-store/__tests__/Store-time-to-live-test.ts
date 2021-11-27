@@ -1,25 +1,13 @@
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
 
 import { createOperationDescriptor, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
-const { simpleClone } = require('relay-test-utils-internal');
+import { simpleClone } from 'relay-test-utils-internal';
 
-const { generateAndCompile } = require('./TestCompiler');
+import { createPersistedRecordSource, createPersistedStore, generateAndCompile } from '../src-test';
 
 jest.useFakeTimers();
 
-function createPersistedStorage(clientState = {}) {
-    const state = {};
-    Object.keys(clientState).forEach((key) => (state['relay-records.' + key] = JSON.stringify(clientState[key])));
-    return {
-        getAllKeys: () => Promise.resolve(Object.keys(state)),
-        setItem: (key, value) => Promise.resolve(undefined),
-        removeItem: (key) => Promise.resolve(delete state[key]),
-        getItem: (key) => Promise.resolve(state[key]),
-        getState: () => state,
-    } as any;
-}
-
-function mockDispose(dispose) {
+function mockDispose(dispose): void {
     const realDate = Date.now;
     const date = Date.now();
     Date.now = jest.fn(() => date + 200);
@@ -27,8 +15,8 @@ function mockDispose(dispose) {
     Date.now = realDate;
 }
 
-const getRecordSourceImplementation = (data) =>
-    new WoraRecordSource({ storage: createPersistedStorage({ ...data }), initialState: { ...data } });
+const getRecordSourceImplementation = (data): any =>
+    new WoraRecordSource({ storage: createPersistedRecordSource({ ...data }), initialState: { ...data } });
 const ImplementationName = 'Wora Persist';
 describe(`Relay Store with ${ImplementationName} Record Source`, () => {
     describe('retain()', () => {
@@ -59,7 +47,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             };
             initialData = simpleClone(data);
             source = getRecordSourceImplementation(data);
-            store = new RelayModernStore(source, { storage: createPersistedStorage() }, { queryCacheExpirationTime: 100 });
+            store = new RelayModernStore(source, { storage: createPersistedStore() }, { queryCacheExpirationTime: 100 });
             await store.hydrate();
             ({ UserQuery } = generateAndCompile(`
             query UserQuery($id: ID!, $size: [Int]) {
@@ -126,7 +114,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('only collects unreferenced data after TTL', () => {
-            const { JoeQuery } = generateAndCompile(`
+            const { JoeQuery }: any = generateAndCompile(`
               fragment JoeFragment on Query @argumentDefinitions(
                 id: {type: "ID"}
               ) {

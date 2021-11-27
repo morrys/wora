@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "6.0.0",
+  "version": "6.0.0-rc.1",
   "keywords": [
     "wora",
     "cache-persist",
@@ -29,10 +29,12 @@
     "url": "https://github.com/morrys/wora"
   },
   "scripts": {
-    "clean": "rimraf lib/*",
+    "clean": "rimraf lib/* test/*",
     "clean-dep": "rimraf node_modules",
     "precompile": "npm run clean",
-    "compile": "tsc",
+    "compile": "npm run compile-src && npm run compile-test",
+    "compile-test": "tsc --project ./tsconfig-test.json",
+    "compile-src": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "test": "jest --coverage"

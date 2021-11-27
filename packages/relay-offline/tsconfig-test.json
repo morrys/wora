@@ -1,8 +1,7 @@
 {
     "extends": "../../config/tsconfig.base.json",
     "compilerOptions": {
-        "outDir": "lib",
-        "rootDir": "src",
+        "outDir": "test",
         "lib": [
             "dom",
             "es6",
@@ -10,12 +9,16 @@
             "es2017.object"
         ]
     },
+    "include": [
+        "src-test",
+        "test.ts",
+    ],
     "exclude": [
         "lib",
         "test",
         "__tests__",
         "scripts",
         "__mocks__",
-        "src-test"
+        "src"
     ]
 }
