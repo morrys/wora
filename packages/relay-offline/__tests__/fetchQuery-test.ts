@@ -26,7 +26,7 @@ describe('fetchQuery', () => {
 
         beforeEach(() => {
             jest.resetModules();
-
+            environment && environment.mockClear();
             environment = createMockEnvironment();
             ({ ActorQuery: query } = generateAndCompile(`
       query ActorQuery($fetchSize: Boolean!) {
@@ -45,7 +45,7 @@ describe('fetchQuery', () => {
         it('fetches the query', async () => {
             cacheConfig = { force: true };
             fetchQuery(environment, query, variables, cacheConfig);
-            await environment.mock.hydrate();
+            await environment.hydrate();
             expect(environment.execute.mock.calls.length).toBe(1);
             const args = environment.execute.mock.calls[0][0];
             const checkOperation = createOperationDescriptor(query, variables, cacheConfig);
@@ -54,7 +54,7 @@ describe('fetchQuery', () => {
 
         it('resolves with the query results after first value', async () => {
             const promise = fetchQuery(environment, query, variables);
-            await environment.mock.hydrate();
+            await environment.hydrate();
             environment.mock.nextValue(query, {
                 data: {
                     me: {
@@ -72,7 +72,7 @@ describe('fetchQuery', () => {
 
         it('rejects with query errors', async () => {
             const promise = fetchQuery(environment, query, variables);
-            await environment.mock.hydrate();
+            await environment.hydrate();
             const error = new Error('wtf');
             environment.mock.reject(query, error);
             expect(await promise.catch((err) => err)).toBe(error);

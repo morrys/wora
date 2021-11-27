@@ -389,6 +389,7 @@ export function createMockEnvironment(config?: Partial<any>): RelayMockEnvironme
         mockInstanceMethod(environment, 'getStore');
         mockInstanceMethod(environment, 'lookup');
         mockInstanceMethod(environment, 'check');
+        mockInstanceMethod(environment, 'hydrate');
         mockDisposableMethod(environment, 'subscribe');
         mockDisposableMethod(environment, 'retain');
 
