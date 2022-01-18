@@ -15,8 +15,7 @@
 
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor } from 'relay-runtime';
-import { createPersistedStorage } from './Utils';
-const { generateAndCompile } = require('./TestCompiler');
+import { generateAndCompile, createPersistedStorage } from '../src-test';
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
@@ -60,7 +59,7 @@ describe('check() with local invalidation', () => {
             });
         };
         source = RelayRecordSource.create();
-        store = new RelayModernStore(source, { defaultTTL: -1 });
+        store = new RelayModernStore(source, {}, { queryCacheExpirationTime: null });
         environment = new RelayModernEnvironment({
             network: RelayNetwork.create(fetch),
             store,

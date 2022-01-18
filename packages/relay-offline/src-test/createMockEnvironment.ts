@@ -16,18 +16,33 @@
 
 /* global jest */
 
-const areEqual = require('fbjs/lib/areEqual');
-const invariant = require('fbjs/lib/invariant');
-import { QueryResponseCache, Observable, Network, EnvironmentConfig } from 'relay-runtime';
+import invariant from 'fbjs/lib/invariant';
+import areEqual from 'fbjs/lib/areEqual';
+import {
+    QueryResponseCache,
+    Observable,
+    Network,
+    GraphQLTaggedNode,
+    Variables,
+    createOperationDescriptor,
+    getRequest,
+    OperationDescriptor,
+    ConcreteRequest,
+    GraphQLSingularResponse,
+    CacheConfig,
+    RequestParameters,
+    IEnvironment,
+} from 'relay-runtime';
 
-import { Store, RecordSource, Environment } from '../src';
-import { createPersistedStorage } from './Utils';
+import { Store, RecordSource, Environment } from '../lib';
+import { createPersistedRecordSource, createPersistedStore } from '@wora/relay-store/test';
+import { Sink } from 'relay-runtime/lib/network/RelayObservable';
 
 type PendingRequest = {
-    request: any;
-    variables: any;
-    cacheConfig: any;
-    sink: any;
+    request: RequestParameters;
+    variables: Variables;
+    cacheConfig: CacheConfig;
+    sink: Sink<GraphQLSingularResponse>;
 };
 
 const MAX_SIZE = 10;
@@ -70,22 +85,23 @@ function mockObservableMethod(object: any, key: string) {
     };
 }
 
-type OperationMockResolver = (operation: any) => any | Error;
+type OperationMockResolver = (operation: OperationDescriptor) => GraphQLSingularResponse | Error | undefined;
 
 type MockFunctions = {
     hydrate: () => Promise<any>;
     clearCache: () => void;
-    cachePayload: (request: any | any, variables: any, payload: any) => void;
-    isLoading: (request: any | any, variables: any, cacheConfig?: any) => boolean;
-    reject: (request: any | any, error: Error | string) => void;
-    nextValue: (request: any | any, payload: any) => void;
-    complete: (request: any | any) => void;
-    resolve: (request: any | any, payload: any) => void;
-    getAllOperations: () => ReadonlyArray<any>;
-    findOperation: (findFn: (operation: any) => boolean) => any;
-    getMostRecentOperation: () => any;
-    resolveMostRecentOperation: (payload: any | ((operation: any) => any)) => void;
-    rejectMostRecentOperation: (error: Error | ((operation: any) => Error)) => void;
+    cachePayload: (request: ConcreteRequest | OperationDescriptor, variables: Variables, payload: GraphQLSingularResponse) => void;
+    isLoading: (request: ConcreteRequest | OperationDescriptor, variables: Variables, cacheConfig?: CacheConfig) => boolean;
+    reject: (request: ConcreteRequest | OperationDescriptor, error: Error | string) => void;
+    nextValue: (request: ConcreteRequest | OperationDescriptor, payload: GraphQLSingularResponse) => void;
+    complete: (request: ConcreteRequest | OperationDescriptor) => void;
+    resolve: (request: ConcreteRequest | OperationDescriptor, payload: GraphQLSingularResponse) => void;
+    getAllOperations: () => ReadonlyArray<OperationDescriptor>;
+    findOperation: (findFn: (operation: OperationDescriptor) => boolean) => OperationDescriptor;
+    queuePendingOperation: (query: GraphQLTaggedNode, variables: Variables) => void;
+    getMostRecentOperation: () => OperationDescriptor;
+    resolveMostRecentOperation: (payload: GraphQLSingularResponse | ((operation: OperationDescriptor) => GraphQLSingularResponse)) => void;
+    rejectMostRecentOperation: (error: Error | ((operation: OperationDescriptor) => Error)) => void;
     queueOperationResolver: (resolver: OperationMockResolver) => void;
 };
 
@@ -94,7 +110,7 @@ interface MockEnvironment {
     mockClear: () => void;
 }
 
-export interface RelayMockEnvironment extends MockEnvironment {}
+export interface RelayMockEnvironment extends MockEnvironment, IEnvironment {}
 
 /**
  * Creates an instance of the `Environment` interface defined in
@@ -132,17 +148,25 @@ export interface RelayMockEnvironment extends MockEnvironment {}
  * - rejectMostRecentOperation(...) - should reject the most recent operation
  *   with a specific error
  */
-export function createMockEnvironment(config?: Partial<EnvironmentConfig>): RelayMockEnvironment {
+export function createMockEnvironment(config?: Partial<any>): RelayMockEnvironment {
     const store =
         config?.store ??
-        new Store(new RecordSource({ storage: createPersistedStorage() }), { storage: createPersistedStorage(), defaultTTL: -1 });
+        new Store(
+            new RecordSource({ storage: createPersistedStore() }),
+            { storage: createPersistedRecordSource() },
+            { queryCacheExpirationTime: null },
+        );
     const cache = new QueryResponseCache({
         size: MAX_SIZE,
         ttl: MAX_TTL,
     });
 
     let pendingRequests: ReadonlyArray<PendingRequest> = [];
-    let pendingOperations: ReadonlyArray<any> = [];
+    let pendingOperations: ReadonlyArray<OperationDescriptor> = [];
+    const queuePendingOperation = (query: GraphQLTaggedNode, variables: Variables): void => {
+        const operationDescriptor = createOperationDescriptor(getRequest(query), variables);
+        pendingOperations = pendingOperations.concat([operationDescriptor]);
+    };
     let resolversQueue: ReadonlyArray<OperationMockResolver> = [];
 
     const queueOperationResolver = (resolver: OperationMockResolver): void => {
@@ -150,7 +174,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
     };
 
     // Mock the network layer
-    const execute = (request: any, variables: any, cacheConfig: any) => {
+    const execute = (request: RequestParameters, variables: Variables, cacheConfig: CacheConfig) => {
         const { id, text } = request;
         const cacheID = id ?? text;
 
@@ -194,12 +218,11 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         });
     };
 
-    function getConcreteRequest(input: any | any): any {
-        if (input.kind === 'Request') {
-            const request: any = input as any;
-            return request;
+    function getConcreteRequest(input: ConcreteRequest | OperationDescriptor): ConcreteRequest {
+        if ((input as any).kind === 'Request') {
+            return input as ConcreteRequest;
         } else {
-            const operationDescriptor: any = input as any;
+            const operationDescriptor: OperationDescriptor = input as OperationDescriptor;
             invariant(
                 pendingOperations.includes(operationDescriptor),
                 'RelayModernMockEnvironment: Operation "%s" was not found in the list of pending operations',
@@ -210,13 +233,13 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
     }
 
     // The same request may be made by multiple query renderers
-    function getRequests(input: any | any): ReadonlyArray<PendingRequest> {
-        let concreteRequest: any;
-        let operationDescriptor: any;
-        if (input.kind === 'Request') {
-            concreteRequest = input as any;
+    function getRequests(input: ConcreteRequest | OperationDescriptor): ReadonlyArray<PendingRequest> {
+        let concreteRequest: ConcreteRequest;
+        let operationDescriptor: OperationDescriptor;
+        if ((input as any).kind === 'Request') {
+            concreteRequest = input as ConcreteRequest;
         } else {
-            operationDescriptor = input as any;
+            operationDescriptor = input as OperationDescriptor;
             concreteRequest = operationDescriptor.request.node;
         }
         const foundRequests = pendingRequests.filter((pending) => {
@@ -224,11 +247,11 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
                 return false;
             }
             if (operationDescriptor) {
-                // If we handling `any` we also need to check variables
+                // If we handling `OperationDescriptor` we also need to check variables
                 // and return only pending request with equal variables
                 return areEqual(operationDescriptor.request.variables, pending.variables);
             } else {
-                // In the case we received `any` as input we will return
+                // In the case we received `ConcreteRequest` as input we will return
                 // all pending request, even if they have different variables
                 return true;
             }
@@ -244,7 +267,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         return foundRequests;
     }
 
-    function ensureValidPayload(payload: any) {
+    function ensureValidPayload(payload: GraphQLSingularResponse) {
         invariant(
             typeof payload === 'object' && payload !== null && payload.hasOwnProperty('data'),
             'MockEnvironment(): Expected payload to be an object with a `data` key.',
@@ -252,7 +275,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         return payload;
     }
 
-    const cachePayload = (request: any | any, variables: any, payload: any): void => {
+    const cachePayload = (request: ConcreteRequest | OperationDescriptor, variables: Variables, payload: GraphQLSingularResponse): void => {
         const { id, text } = getConcreteRequest(request).params;
         const cacheID = id ?? text;
         invariant(cacheID != null, 'CacheID should not be null');
@@ -264,7 +287,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
     };
 
     // Helper to determine if a given query/variables pair is pending
-    const isLoading = (request: any | any, variables: any, cacheConfig?: any): boolean => {
+    const isLoading = (request: ConcreteRequest | OperationDescriptor, variables: Variables, cacheConfig?: CacheConfig): boolean => {
         return pendingRequests.some(
             (pending) =>
                 areEqual(pending.request, getConcreteRequest(request).params) &&
@@ -274,7 +297,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
     };
 
     // Helpers to reject or resolve the payload for an individual request.
-    const reject = (request: any | any, error: Error | string): void => {
+    const reject = (request: ConcreteRequest | OperationDescriptor, error: Error | string): void => {
         const rejectError = typeof error === 'string' ? new Error(error) : error;
         getRequests(request).forEach((foundRequest) => {
             const { sink } = foundRequest;
@@ -283,7 +306,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         });
     };
 
-    const nextValue = (request: any | any, payload: any): void => {
+    const nextValue = (request: ConcreteRequest | OperationDescriptor, payload: GraphQLSingularResponse): void => {
         getRequests(request).forEach((foundRequest) => {
             const { sink } = foundRequest;
             invariant(sink !== null, 'Sink should be defined.');
@@ -291,7 +314,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         });
     };
 
-    const complete = (request: any | any): void => {
+    const complete = (request: ConcreteRequest | OperationDescriptor): void => {
         getRequests(request).forEach((foundRequest) => {
             const { sink } = foundRequest;
             invariant(sink !== null, 'Sink should be defined.');
@@ -299,7 +322,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         });
     };
 
-    const resolve = (request: any | any, payload: any): void => {
+    const resolve = (request: ConcreteRequest | OperationDescriptor, payload: GraphQLSingularResponse): void => {
         getRequests(request).forEach((foundRequest) => {
             const { sink } = foundRequest;
             invariant(sink !== null, 'Sink should be defined.');
@@ -308,13 +331,13 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         });
     };
 
-    const getMostRecentOperation = (): any => {
+    const getMostRecentOperation = (): OperationDescriptor => {
         const mostRecentOperation = pendingOperations[pendingOperations.length - 1];
         invariant(mostRecentOperation != null, 'RelayModernMockEnvironment: There are no pending operations in the list');
         return mostRecentOperation;
     };
 
-    const findOperation = (findFn: (operation: any) => boolean): any => {
+    const findOperation = (findFn: (operation: OperationDescriptor) => boolean): OperationDescriptor => {
         const pendingOperation = pendingOperations.find(findFn);
         invariant(pendingOperation != null, 'RelayModernMockEnvironment: Operation was not found in the list of pending operations');
         return pendingOperation;
@@ -366,11 +389,13 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
         mockInstanceMethod(environment, 'getStore');
         mockInstanceMethod(environment, 'lookup');
         mockInstanceMethod(environment, 'check');
+        mockInstanceMethod(environment, 'hydrate');
         mockDisposableMethod(environment, 'subscribe');
         mockDisposableMethod(environment, 'retain');
 
         // @ts-ignore
         mockObservableMethod(environment, 'execute');
+        mockObservableMethod(environment, 'executeWithSource');
         // @ts-ignore
         mockObservableMethod(environment, 'executeMutation');
 
@@ -403,6 +428,7 @@ export function createMockEnvironment(config?: Partial<EnvironmentConfig>): Rela
             return reject(operation, rejector);
         },
         findOperation,
+        queuePendingOperation,
         getAllOperations() {
             return pendingOperations;
         },

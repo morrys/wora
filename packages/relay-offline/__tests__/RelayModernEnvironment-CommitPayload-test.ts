@@ -16,8 +16,7 @@
 jest.mock('fbjs/lib/warning');
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, createOperationDescriptor, createReaderSelector } from 'relay-runtime';
-import { createPersistedStorage } from './Utils';
-const { generateAndCompile } = require('./TestCompiler');
+import { generateAndCompile, createPersistedStorage } from '../src-test';
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
@@ -146,12 +145,13 @@ describe('commitPayload()', () => {
             me: {
                 name: 'Zuck',
                 __id: id,
+                __isWithinUnmatchedTypeRefinement: false,
                 __fragments: { UserFragment: {} },
                 __fragmentOwner: operation.request,
             },
         });
-        expect(fragmentCallback.mock.calls.length).toBe(2);
-        expect(fragmentCallback.mock.calls[1][0].data).toEqual({
+        expect(fragmentCallback.mock.calls.length).toBe(1);
+        expect(fragmentCallback.mock.calls[0][0].data).toEqual({
             username: 'Zucc',
         });
         expect(warning).toBeCalledWith(
@@ -223,17 +223,9 @@ describe('commitPayload()', () => {
             },
         });
         expect(queryCallback.mock.calls.length).toBe(1);
-        expect(fragmentCallback.mock.calls.length).toBe(2);
+        expect(fragmentCallback.mock.calls.length).toBe(1);
         expect(fragmentCallback.mock.calls[0][0].data).toEqual({
-            username: undefined,
-        });
-        expect(fragmentCallback.mock.calls[1][0].data).toEqual({
             username: 'Zucc',
         });
-        expect(warning).toBeCalledWith(
-            true,
-            expect.stringContaining('RelayModernEnvironment: Operation `%s` contains @defer/@stream directives'),
-            'ActorQuery',
-        );
     });
 });

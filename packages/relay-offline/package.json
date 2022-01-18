@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-offline",
-  "version": "5.0.1",
+  "version": "6.0.0",
   "keywords": [
     "wora",
     "cache-persist",
@@ -29,10 +29,12 @@
     "url": "https://github.com/morrys/wora"
   },
   "scripts": {
-    "clean": "rimraf lib/*",
-    "clean-dep": "rimraf node_modules/*",
+    "clean": "rimraf lib/* test/*",
+    "clean-dep": "rimraf node_modules",
     "precompile": "npm run clean",
-    "compile": "tsc",
+    "compile": "npm run compile-src && npm run compile-test",
+    "compile-test": "tsc --project ./tsconfig-test.json",
+    "compile-src": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
     "test": "jest --coverage"
@@ -51,10 +53,10 @@
   "devDependencies": {
     "@babel/runtime": "^7.7.2",
     "@types/relay-runtime": "^11.0.0",
-    "babel-plugin-relay": "^11.0.2",
-    "relay-runtime": "^11.0.2",
-    "relay-test-utils-internal" : "^11.0.2",
-    "relay-test-utils": "^11.0.2"
+    "babel-plugin-relay": "^12.0.0",
+    "relay-runtime": "^12.0.0",
+    "relay-test-utils-internal" : "^12.0.0",
+    "relay-test-utils": "^12.0.0"
   },
   "gitHead": "0ceaff4e89ec8a1a5b5547b803f67bcb9166c5af"
 }

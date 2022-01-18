@@ -1,16 +1,16 @@
 import * as RelayModernRecord from 'relay-runtime/lib/store/RelayModernRecord';
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
 import * as RelayOptimisticRecordSource from 'relay-runtime/lib/store/RelayOptimisticRecordSource';
-import RelayRecordSourceMapImpl from 'relay-runtime/lib/store/RelayRecordSourceMapImpl';
+import RelayRecordSourceMapImpl from 'relay-runtime/lib/store/RelayRecordSource';
 
 import { getRequest } from 'relay-runtime/lib/query/GraphQLTag';
 import { createOperationDescriptor, createReaderSelector, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
-const { createMockEnvironment, simpleClone } = require('relay-test-utils-internal');
+import { createMockEnvironment, simpleClone } from 'relay-test-utils-internal';
 
-const { generateAndCompile } = require('./TestCompiler');
+import { generateAndCompile } from '../src-test';
 jest.useFakeTimers();
 
-function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
+function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
     if (!value) {
         throw new Error('Expected value to be a non-null object or array of objects');
     }
@@ -25,9 +25,9 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
 }
 
 ([
-    [(data) => new WoraRecordSource({ initialState: { ...data } }), 'Wora'],
-    [(data) => new RelayRecordSourceMapImpl(data), 'Map'],
-    [(data) => RelayOptimisticRecordSource.create(new RelayRecordSourceMapImpl(data)), 'Optimistic'],
+    [(data): any => new WoraRecordSource({ initialState: { ...data } }), 'Wora'],
+    [(data): any => new RelayRecordSourceMapImpl(data), 'Map'],
+    [(data): any => RelayOptimisticRecordSource.create(new RelayRecordSourceMapImpl(data)), 'Optimistic'],
 ] as any).forEach(([getRecordSourceImplementation, ImplementationName]) => {
     describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         describe('retain()', () => {
@@ -224,6 +224,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>) {
                         },
 
                         __id: '4',
+                        __isWithinUnmatchedTypeRefinement: false,
                         __fragments: { ChildUserFragment: {} },
                         __fragmentOwner: owner.request,
                     },

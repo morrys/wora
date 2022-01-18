@@ -20,7 +20,15 @@ module.exports = {
     testEnvironment: 'jsdom',
 
     testMatch: ['<rootDir>/__tests__/**/*-test.ts'],
-    testPathIgnorePatterns: ['../../node_modules/', '/node_modules/', '/lib/', '<rootDir>/lib/', '<rootDir>/node_modules/'],
+    testPathIgnorePatterns: [
+        '../../node_modules/',
+        '/node_modules/',
+        '/lib/',
+        '<rootDir>/lib/',
+        '<rootDir>/node_modules/',
+        '/test/',
+        '<rootDir>/test/',
+    ],
     transformIgnorePatterns: ['node_modules/(?!(@react-native-community|react-native))'],
     coverageThreshold: {
         global: {

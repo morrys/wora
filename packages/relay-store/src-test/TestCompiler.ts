@@ -19,10 +19,7 @@ import { GeneratedNode } from 'relay-runtime';
  * transforms is not specified), and returns a mapping of definition name to
  * its basic generated representation.
  */
-export function generateWithTransforms(
-    text: string,
-    transforms?: Array<any> | null,
-): { [key: string]: GeneratedNode } {
+export function generateWithTransforms(text: string, transforms?: Array<any> | null): { [key: string]: GeneratedNode } {
     return generate(
         text,
         TestSchema,
@@ -50,12 +47,7 @@ export function generateAndCompile(
     return generate(text, schema ?? TestSchema, IRTransforms, moduleMap ?? null);
 }
 
-function generate(
-    text: string,
-    schema: any,
-    transforms: any,
-    moduleMap: { [key: string]: any } | null,
-): { [key: string]: GeneratedNode } {
+function generate(text: string, schema: any, transforms: any, moduleMap: { [key: string]: any } | null): { [key: string]: GeneratedNode } {
     const relaySchema = schema.extend(IRTransforms.schemaExtensions);
     const { definitions, schema: extendedSchema } = parseGraphQLText(relaySchema, text);
     const compilerContext = new CompilerContext(extendedSchema).addAll(definitions);

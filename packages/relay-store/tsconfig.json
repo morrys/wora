@@ -12,8 +12,10 @@
     },
     "exclude": [
         "lib",
+        "test",
         "__tests__",
         "scripts",
-        "__mocks__"
+        "__mocks__",
+        "src-test",
     ]
 }

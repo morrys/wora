@@ -15,8 +15,7 @@
 
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor, createReaderSelector } from 'relay-runtime';
-import { createPersistedStorage } from './Utils';
-const { generateAndCompile } = require('./TestCompiler');
+import { generateAndCompile, createPersistedStorage } from '../src-test';
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
@@ -168,7 +167,7 @@ describe('executeMutation()', () => {
         // result tested in previous test
 
         // The mutation affecting the query should not be marked as in flight yet
-        expect(environment.getOperationTracker().getPromiseForPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
+        expect(environment.getOperationTracker().getPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
     });
 
     it('reverts the optimistic update if disposed', () => {
@@ -399,6 +398,6 @@ describe('executeMutation()', () => {
 
         // The mutation affecting the query should not be marked as in flight
         // since it was disposed
-        expect(environment.getOperationTracker().getPromiseForPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
+        expect(environment.getOperationTracker().getPendingOperationsAffectingOwner(queryOperation.request)).toBe(null);
     });
 });
