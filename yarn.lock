@@ -2335,7 +2335,7 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "2.3.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.3.1-4514e891-e520-4cc6-b610-fd74cb7b5922-1635977546888/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
   version "2.2.1"
@@ -2350,14 +2350,14 @@
 "@wora/offline-first@file:packages/offline-first":
   version "2.4.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.1-4feb1f58-c921-4629-9840-be502e9d73de-1635977546883/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.1-4feb1f58-c921-4629-9840-be502e9d73de-1635977546883/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:packages/cache-persist"
+    "@wora/netinfo" "file:packages/netinfo"
     fbjs "^3.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
-  version "5.0.1"
+  version "6.0.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-5.0.1-0e20e2a0-1f74-481f-a658-6ea4d14d19e0-1635977546892/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -6895,9 +6895,9 @@ lodash.uniq@^4.5.0:
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
 lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.5, lodash@^4.2.1, lodash@^4.3.0, lodash@^4.6.1:
-  version "4.17.20"
-  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.20.tgz#b44a9b6297bcb698f1c51a3545a2b3b368d59c52"
-  integrity sha512-PlhdFcillOINfeV7Ni6oF1TAEayyZBoZ8bcshTHqOYJYlrqzRK5hagpagky5o4HfCzzd1TRkXPMFq6cKk9rGmA==
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
+  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
 loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.3.1, loose-envify@^1.4.0:
   version "1.4.0"
