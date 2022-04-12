@@ -1,6 +1,6 @@
 import RelayRecordState from 'relay-runtime/lib/store/RelayRecordState';
 import { RecordState } from 'relay-runtime';
-import { MutableRecordSource, Record, RecordMap } from 'relay-runtime/lib/store/RelayStoreTypes';
+import { MutableRecordSource, Record } from 'relay-runtime/lib/store/RelayStoreTypes';
 import { Cache, ICache, DataCache, CacheOptions } from '@wora/cache-persist';
 
 const { EXISTENT, NONEXISTENT, UNKNOWN } = RelayRecordState;
@@ -74,7 +74,7 @@ export class RecordSource implements IMutableRecordSourceOffline {
         return this._cache.getAllKeys().length;
     }
 
-    public toJSON(): RecordMap {
+    public toJSON(): { [key: string]: Record } {
         return this._cache.getState();
     }
 }

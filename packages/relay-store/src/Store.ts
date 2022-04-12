@@ -151,7 +151,7 @@ export class Store extends RelayModernStore {
     }
 
     private isCurrent(fetchTime: number, ttl: number): boolean {
-        return ttl && fetchTime + ttl >= Date.now();
+        return !!(ttl && fetchTime + ttl >= Date.now());
     }
 
     check(operation: OperationDescriptor, options?: CheckOptions): OperationAvailability {
