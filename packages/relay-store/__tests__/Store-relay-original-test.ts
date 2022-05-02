@@ -4,7 +4,7 @@ import * as RelayOptimisticRecordSource from 'relay-runtime/lib/store/RelayOptim
 import RelayRecordSourceMapImpl from 'relay-runtime/lib/store/RelayRecordSource';
 
 import { getRequest } from 'relay-runtime/lib/query/GraphQLTag';
-import { createOperationDescriptor, createReaderSelector, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
+import { createOperationDescriptor, createReaderSelector, graphql, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
 import { createMockEnvironment, simpleClone } from 'relay-test-utils-internal';
 
 import { generateAndCompile } from '../src-test';
@@ -23,6 +23,48 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
         }
     }
 }
+
+const UserProfileFragment = graphql`
+    fragment StoreRelayOriginalTestUserProfileFragment on User {
+        name
+        profilePicture(size: $size) {
+            uri
+        }
+    }
+`;
+
+const UserProfileQuery = graphql`
+    query StoreRelayOriginalTestUserProfileQuery($size: [Int]) {
+        me {
+            ...StoreRelayOriginalTestUserProfileFragment
+        }
+    }
+`;
+
+const UserProfileNodeQuery = graphql`
+    query StoreRelayOriginalTestUserQuery($id: ID!, $size: [Int]) {
+        node(id: $id) {
+            ...StoreRelayOriginalTestUserProfileFragment
+        }
+    }
+`;
+
+const UserEmailFragment = graphql`
+    fragment StoreRelayOriginalTestUserEmailFragment on User {
+        name
+        profilePicture(size: $size) {
+            uri
+        }
+        emailAddresses
+    }
+`;
+const UserEmailQuery = graphql`
+    query StoreRelayOriginalTestUserEmailQuery($size: [Int]) {
+        me {
+            ...StoreRelayOriginalTestUserEmailFragment
+        }
+    }
+`;
 
 ([
     [(data): any => new WoraRecordSource({ initialState: { ...data } }), 'Wora'],
@@ -59,20 +101,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                 initialData = simpleClone(data);
                 source = getRecordSourceImplementation(data);
                 store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
-                ({ UserQuery } = generateAndCompile(`
-                query UserQuery($id: ID!, $size: Int) {
-                    node(id: $id) {
-                      ...UserFragment
-                    }
-                  }
-
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-          }
-        `));
+                UserQuery = UserProfileNodeQuery;
             });
 
             it('prevents data from being collected', () => {
@@ -90,20 +119,20 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
             });
 
             it('only collects unreferenced data', () => {
-                const { JoeQuery } = generateAndCompile(`
-                    fragment JoeFragment on Query @argumentDefinitions(
-                        id: {type: "ID"}
-                    ) {
+                const frag = graphql`
+                    fragment StoreRelayOriginalTestJoeFragment on Query @argumentDefinitions(id: { type: "ID" }) {
                         node(id: $id) {
-                        ... on User {
-                            name
-                        }
+                            ... on User {
+                                name
+                            }
                         }
                     }
-                    query JoeQuery($id: ID!) {
-                        ...JoeFragment @arguments(id: $id)
+                `;
+                const JoeQuery = graphql`
+                    query StoreRelayOriginalTestJoeQuery($id: ID!) {
+                        ...StoreRelayOriginalTestJoeFragment @arguments(id: $id)
                     }
-                `);
+                `;
                 const nextSource = getRecordSourceImplementation({
                     '842472': {
                         __id: '842472',
@@ -150,20 +179,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                 };
                 source = getRecordSourceImplementation(data);
                 store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
-                ({ UserFragment, UserQuery } = generateAndCompile(`
-                    fragment UserFragment on User {
-                        name
-                        profilePicture(size: $size) {
-                        uri
-                        }
-                    }
-
-                    query UserQuery($size: Int) {
-                        me {
-                        ...UserFragment
-                        }
-                    }
-                `));
+                UserFragment = UserProfileFragment;
+                UserQuery = UserProfileQuery;
             });
 
             it('returns selector data', () => {
@@ -179,6 +196,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                         },
                     },
                     seenRecords: new Set(['4', 'client:1']),
+                    relayResolverErrors: [],
+                    missingClientEdges: null,
                     isMissingData: false,
                     missingRequiredFields: null,
                 });
@@ -191,25 +210,27 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
             });
 
             it('includes fragment owner in selector data when owner is provided', () => {
-                ({ UserQuery, UserFragment } = generateAndCompile(`
-                    query UserQuery($size: Float!) {
-                        me {
-                        ...UserFragment
-                        }
-                    }
-
-                    fragment UserFragment on User {
-                        name
-                        profilePicture(size: $size) {
-                        uri
-                        }
-                        ...ChildUserFragment
-                    }
-
-                    fragment ChildUserFragment on User {
+                const frag = graphql`
+                    fragment StoreRelayOriginalTestChildFragment on User {
                         username
                     }
-                `));
+                `;
+                UserFragment = graphql`
+                    fragment StoreRelayOriginalTestChildUserFragment on User {
+                        name
+                        profilePicture(size: $size) {
+                            uri
+                        }
+                        ...StoreRelayOriginalTestChildFragment
+                    }
+                `;
+                UserQuery = graphql`
+                    query StoreRelayOriginalTestUserChildQuery($size: [Int]!) {
+                        me {
+                            ...StoreRelayOriginalTestChildUserFragment
+                        }
+                    }
+                `;
                 const queryNode = getRequest(UserQuery);
                 const owner = createOperationDescriptor(queryNode, { size: 32 });
                 const selector = createReaderSelector(UserFragment, '4', { size: 32 }, owner.request);
@@ -225,10 +246,12 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
 
                         __id: '4',
                         __isWithinUnmatchedTypeRefinement: false,
-                        __fragments: { ChildUserFragment: {} },
+                        __fragments: { StoreRelayOriginalTestChildFragment: {} },
                         __fragmentOwner: owner.request,
                     },
                     seenRecords: new Set(['4', 'client:1']),
+                    relayResolverErrors: [],
+                    missingClientEdges: null,
                     isMissingData: false,
                     missingRequiredFields: null,
                 });
@@ -278,6 +301,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                         },
                     },
                     seenRecords: new Set(['4', 'client:2']),
+                    relayResolverErrors: [],
+                    missingClientEdges: null,
                     isMissingData: false,
                     missingRequiredFields: null,
                 });
@@ -314,21 +339,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                 };
                 source = getRecordSourceImplementation(data);
                 store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: 1 });
-                ({ UserFragment, UserQuery } = generateAndCompile(`
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-            emailAddresses
-          }
-
-          query UserQuery($size: Int) {
-            me {
-              ...UserFragment
-            }
-          }
-        `));
+                UserFragment = UserEmailFragment;
+                UserQuery = UserEmailQuery;
             });
 
             it('calls subscribers whose data has changed since previous notify', () => {
@@ -364,21 +376,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
 
             it('calls subscribers and reads data with fragment owner if one is available in subscription snapshot', () => {
                 // subscribe(), publish(), notify() -> subscriber called
-                ({ UserQuery, UserFragment } = generateAndCompile(`
-          query UserQuery($size: Float!) {
-            me {
-              ...UserFragment
-            }
-          }
-
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-            emailAddresses
-          }
-        `));
+                UserFragment = UserEmailFragment;
+                UserQuery = UserEmailQuery;
                 const queryNode = getRequest(UserQuery);
                 const owner = createOperationDescriptor(queryNode, { size: 32 });
                 const selector = createReaderSelector(UserFragment, '4', { size: 32 }, owner.request);
@@ -514,6 +513,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                 expect(callback.mock.calls.length).toBe(1);
                 expect(callback.mock.calls[0][0]).toEqual({
                     ...snapshot,
+                    relayResolverErrors: [],
+                    missingClientEdges: null,
                     isMissingData: false,
                     missingRequiredFields: null,
                     data: {
@@ -557,6 +558,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                         name: 'Joe',
                         profilePicture: undefined,
                     },
+                    relayResolverErrors: [],
+                    missingClientEdges: null,
                     isMissingData: true,
                     seenRecords: new Set(['842472']),
                 });
@@ -595,6 +598,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                         name: 'Joe',
                         profilePicture: undefined,
                     },
+                    relayResolverErrors: [],
+                    missingClientEdges: null,
                     isMissingData: true,
                     seenRecords: new Set(['842472']),
                 });
@@ -715,19 +720,8 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                 source = getRecordSourceImplementation(data);
                 store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
                 environment = createMockEnvironment({ store });
-                ({ UserQuery } = generateAndCompile(`
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-          }
-          query UserQuery($id: ID!, $size: [Int]) {
-            node(id: $id) {
-              ...UserFragment
-            }
-          }
-        `));
+
+                UserQuery = UserProfileNodeQuery;
             });
 
             it('returns available if all data exists in the cache', () => {
@@ -1086,20 +1080,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
                 };
                 source = getRecordSourceImplementation(data);
                 store = new RelayModernStore(source);
-                ({ UserQuery } = generateAndCompile(`
-                  fragment UserFragment on User {
-                    name
-                    profilePicture(size: $size) {
-                      uri
-                    }
-                  }
-        
-                  query UserQuery($id: ID!, $size: [Int]) {
-                    node(id: $id) {
-                      ...UserFragment
-                    }
-                  }
-                `));
+                UserQuery = UserProfileNodeQuery;
                 environment = createMockEnvironment({ store });
             });
 
@@ -1645,19 +1626,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
             scheduler = jest.fn(callbacks.push.bind(callbacks));
             source = getRecordSourceImplementation(data);
             store = new RelayModernStore(source, undefined, { gcScheduler: scheduler, queryCacheExpirationTime: null });
-            ({ UserQuery } = generateAndCompile(`
-                fragment UserFragment on User {
-                    name
-                    profilePicture(size: $size) {
-                    uri
-                    }
-                }
-                query UserQuery($id: ID!, $size: [Int]) {
-                    node(id: $id) {
-                    ...UserFragment
-                    }
-                }
-                `));
+            UserQuery = UserProfileNodeQuery;
         });
 
         it('calls the gc scheduler function when GC should run', () => {
@@ -1706,19 +1675,7 @@ function assertIsDeeplyFrozen(value: {} | ReadonlyArray<{}>): any {
             initialData = simpleClone(data);
             source = getRecordSourceImplementation(data);
             store = new RelayModernStore(source, undefined, { queryCacheExpirationTime: null });
-            ({ UserQuery } = generateAndCompile(`
-                    fragment UserFragment on User {
-                        name
-                        profilePicture(size: $size) {
-                        uri
-                        }
-                    }
-                    query UserQuery($id: ID!, $size: [Int]) {
-                        node(id: $id) {
-                        ...UserFragment
-                        }
-                    }
-                `));
+            UserQuery = UserProfileNodeQuery;
         });
 
         it('prevents data from being collected with disabled GC, and reruns GC when it is enabled', () => {

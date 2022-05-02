@@ -1,10 +1,10 @@
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor, createReaderSelector } from 'relay-runtime';
-import { generateAndCompile, createPersistedStorage } from '../src-test';
+import { createPersistedStorage } from '../src-test';
+import { graphql } from 'relay-runtime';
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
-jest.useFakeTimers();
 
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -29,44 +29,47 @@ describe(`Relay Offline`, () => {
     let variables;
     let queryVariables;
 
-    beforeEach(async () => {
+    beforeEach(() => {
         jest.resetModules();
         commentID = 'comment-id';
-
-        ({ CreateCommentMutation, CreateCommentWithSpreadMutation, CommentFragment, CommentQuery } = generateAndCompile(`
-            mutation CreateCommentMutation($input: CommentCreateInput!) {
-              commentCreate(input: $input) {
-                comment {
-                  id
-                  body {
-                    text
-                  }
-                }
-              }
-            }
-    
-            fragment CommentFragment on Comment {
-              id
-              body {
-                text
-              }
-            }
-    
-            mutation CreateCommentWithSpreadMutation($input: CommentCreateInput!) {
-              commentCreate(input: $input) {
-                comment {
-                  ...CommentFragment
-                }
-              }
-            }
-    
-            query CommentQuery($id: ID!) {
-              node(id: $id) {
+        CommentFragment = graphql`
+            fragment RelayOfflineTestCommentFragment on Comment {
                 id
-                ...CommentFragment
-              }
+                body {
+                    text
+                }
             }
-          `));
+        `;
+        CreateCommentMutation = graphql`
+            mutation RelayOfflineTestCreateCommentMutation($input: CommentCreateInput!) {
+                commentCreate(input: $input) {
+                    comment {
+                        id
+                        body {
+                            text
+                        }
+                    }
+                }
+            }
+        `;
+        CreateCommentWithSpreadMutation = graphql`
+            mutation RelayOfflineTestCreateCommentWithSpreadMutation($input: CommentCreateInput!) {
+                commentCreate(input: $input) {
+                    comment {
+                        ...RelayOfflineTestCommentFragment
+                    }
+                }
+            }
+        `;
+
+        CommentQuery = graphql`
+            query RelayOfflineTestCommentQuery($id: ID!) {
+                node(id: $id) {
+                    id
+                    ...RelayOfflineTestCommentFragment
+                }
+            }
+        `;
         variables = {
             input: {
                 clientMutationId: '0',
@@ -99,8 +102,9 @@ describe(`Relay Offline`, () => {
     });
 
     describe('hydrate', () => {
-        it('online', async () => {
-            await environment.hydrate();
+        it('online', () => {
+            environment.hydrate();
+            jest.runAllTimers();
             expect(environment.isOnline()).toBeTruthy();
         });
     });
@@ -113,13 +117,13 @@ describe(`Relay Offline`, () => {
             let start;
             let finish;
             let onPublish;
-            beforeEach(async () => {
+            beforeEach(() => {
                 start = jest.fn((_mutations) => Promise.resolve(_mutations));
                 finish = jest.fn((_mutations, _error) => Promise.resolve(undefined));
                 onPublish = jest.fn((offlineRecord) => Promise.resolve(offlineRecord));
             });
 
-            it('start/finish called when online', async () => {
+            it('start/finish called when online', () => {
                 const offlineOptions = {
                     start,
                     execute,
@@ -129,11 +133,12 @@ describe(`Relay Offline`, () => {
 
                 expect(start).toHaveBeenCalledTimes(0);
                 expect(finish).toHaveBeenCalledTimes(0);
-                await environment.hydrate();
+                environment.hydrate();
+                jest.runAllTimers();
                 expect(start).toHaveBeenCalledTimes(1);
                 expect(finish).toHaveBeenCalledTimes(1);
             });
-            it('start/finish not called when offline', async () => {
+            it('start/finish not called when offline', () => {
                 const offlineOptions = {
                     start,
                     execute,
@@ -145,18 +150,20 @@ describe(`Relay Offline`, () => {
 
                 expect(start).toHaveBeenCalledTimes(0);
                 expect(finish).toHaveBeenCalledTimes(0);
-                await environment.hydrate();
+                environment.hydrate();
+                jest.runAllTimers();
                 expect(start).toHaveBeenCalledTimes(0);
                 expect(finish).toHaveBeenCalledTimes(0);
             });
-            it('publish', async () => {
+            it('publish', () => {
                 const offlineOptions = {
                     start,
                     execute,
                     onPublish,
                 } as any;
                 environment.setOfflineOptions(offlineOptions);
-                await environment.hydrate();
+                environment.hydrate();
+                jest.runAllTimers();
                 expect(onPublish).toHaveBeenCalledTimes(0);
 
                 onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
@@ -186,7 +193,7 @@ describe(`Relay Offline`, () => {
             let executeReject;
             let start;
             let onPublish;
-            beforeEach(async () => {
+            beforeEach(() => {
                 start = jest.fn((_mutations) => Promise.resolve(_mutations));
                 onExecute = jest.fn((mutation) => Promise.resolve(mutation));
                 executeReject = jest.fn((_offlineRecord) => Promise.reject(_offlineRecord));
@@ -195,7 +202,7 @@ describe(`Relay Offline`, () => {
                 onPublish = jest.fn((offlineRecord) => Promise.resolve(offlineRecord));
             });
 
-            it('onExecute onComplete', async () => {
+            it('onExecute onComplete', () => {
                 const offlineOptions = {
                     start,
                     onExecute,
@@ -205,7 +212,8 @@ describe(`Relay Offline`, () => {
                 environment.setOfflineOptions(offlineOptions);
                 onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
                 onlineGetter.mockReturnValue(false);
-                await environment.hydrate();
+                environment.hydrate();
+                jest.runAllTimers();
                 expect(environment.isOnline()).not.toBeTruthy();
                 environment.executeMutation({ operation }).subscribe(callbacks);
                 jest.runAllTimers();
@@ -238,7 +246,7 @@ describe(`Relay Offline`, () => {
                 expect(environment.getStoreOffline().getListMutation().length).toEqual(0);
             });
 
-            it('onExecute onDiscard', async () => {
+            it('onExecute onDiscard', () => {
                 const offlineOptions = {
                     start,
                     onExecute,
@@ -248,7 +256,8 @@ describe(`Relay Offline`, () => {
                 environment.setOfflineOptions(offlineOptions);
                 onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
                 onlineGetter.mockReturnValue(false);
-                await environment.hydrate();
+                environment.hydrate();
+                jest.runAllTimers();
                 expect(environment.isOnline()).not.toBeTruthy();
                 environment.executeMutation({ operation }).subscribe(callbacks);
                 jest.runAllTimers();
@@ -271,11 +280,12 @@ describe(`Relay Offline`, () => {
         });
 
         describe('update store', () => {
-            beforeEach(async () => {
+            beforeEach(() => {
                 jest.resetModules();
                 onlineGetter = jest.spyOn(window.navigator, 'onLine', 'get');
                 onlineGetter.mockReturnValue(false);
                 environment.hydrate();
+                jest.runAllTimers();
             });
             it('commits optimistic response with fragment spread', () => {
                 operation = createOperationDescriptor(CreateCommentWithSpreadMutation, variables);

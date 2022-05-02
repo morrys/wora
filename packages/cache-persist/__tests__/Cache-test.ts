@@ -3,7 +3,7 @@ import { ICache } from '../src/CacheTypes';
 import { createStorage } from '../src/createStorage';
 import { prefixLayer } from '../src/layers/prefixLayer';
 
-jest.mock('../src/createStorage', () => require.requireActual('../__mocks__/createStorage'));
+jest.mock('../src/createStorage', () => jest.requireActual('../__mocks__/createStorage'));
 
 const INITIAL_STATE = { restore: true, data: 1 };
 function sleep(ms) {

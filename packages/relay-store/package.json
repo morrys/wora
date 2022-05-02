@@ -34,21 +34,34 @@
     "compile-src": "tsc",
     "format": "prettier --write \"src/**/*.{j,t}s*\"",
     "eslint": "eslint ./src --ext .js,.jsx,.ts,.tsx",
-    "test": "jest --coverage"
+    "relay-compile-test": "relay-compiler",
+    "test": "npm run relay-compile-test && jest --coverage"
+  },
+  "relay": {
+    "src": "./__tests__",
+    "schema": "../../node_modules/relay-test-utils-internal/lib/testschema.graphql",
+    "excludes": [
+      "__generated__",
+      "node_modules"
+    ],
+    "language": "typescript",
+    "artifactDirectory": "./__tests__/__generated__/"
   },
   "dependencies": {
     "@wora/cache-persist": "file:../cache-persist",
     "tslib": "^1.11.1"
   },
   "peerDependencies": {
-    "relay-runtime": "^12.0.0"
+    "relay-runtime": "^13.0.0"
   },
   "devDependencies": {
-    "@babel/runtime": "^7.7.2",
-    "@types/relay-runtime": "^11.0.0",
-    "relay-runtime": "^12.0.0",
-    "relay-test-utils-internal": "^12.0.0",
-    "relay-test-utils": "^12.0.0"
+    "@babel/runtime": "7.12.5",
+    "@types/relay-runtime": "^13.0.0",
+    "relay-runtime": "^13.0.0",
+    "relay-compiler": "^13.0.0",
+    "relay-test-utils-internal": "^13.0.0",
+    "relay-test-utils": "^13.0.0",
+    "ts-relay-plugin": "1.0.1"
   },
   "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"
 }

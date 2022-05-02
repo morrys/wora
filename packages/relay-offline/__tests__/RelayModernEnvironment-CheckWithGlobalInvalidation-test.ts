@@ -15,7 +15,8 @@
 
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor } from 'relay-runtime';
-import { generateAndCompile, createPersistedStorage } from '../src-test';
+import { createPersistedStorage } from '../src-test';
+import { graphql } from 'relay-runtime';
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
@@ -36,17 +37,17 @@ describe('check() with global invalidation', () => {
 
     beforeEach(async () => {
         jest.resetModules();
-        ({ ParentQuery } = generateAndCompile(`
-        query ParentQuery($size: [Int]!) {
-          me {
-            id
-            name
-            profilePicture(size: $size) {
-              uri
+        ParentQuery = graphql`
+            query RelayModernEnvironmentCheckWithGlobalInvalidationTestParentQuery($size: [Int]!) {
+                me {
+                    id
+                    name
+                    profilePicture(size: $size) {
+                        uri
+                    }
+                }
             }
-          }
-        }
-      `));
+        `;
         operation = createOperationDescriptor(ParentQuery, { size: 32 });
 
         complete = jest.fn();
@@ -285,21 +286,22 @@ describe('check() with global invalidation', () => {
 
     describe('when query has incremental payloads', () => {
         beforeEach(() => {
-            ({ ParentQuery } = generateAndCompile(`
-        query ParentQuery($size: [Int]!) {
-          me {
-            id
-            name
-            ...UserFragment @defer(label: "UserFragment")
-          }
-        }
-
-        fragment UserFragment on User {
-          profilePicture(size: $size) {
-            uri
-          }
-        }
-      `));
+            const frag = graphql`
+                fragment RelayModernEnvironmentCheckWithGlobalInvalidationTestFragment on User {
+                    profilePicture(size: $size) {
+                        uri
+                    }
+                }
+            `;
+            ParentQuery = graphql`
+                query RelayModernEnvironmentCheckWithGlobalInvalidationTestParent2Query($size: [Int]!) {
+                    me {
+                        id
+                        name
+                        ...RelayModernEnvironmentCheckWithGlobalInvalidationTestFragment @defer(label: "UserFragment")
+                    }
+                }
+            `;
             operation = createOperationDescriptor(ParentQuery, { size: 32 });
         });
 
@@ -337,7 +339,7 @@ describe('check() with global invalidation', () => {
                             uri: 'https://...',
                         },
                     },
-                    label: 'ParentQuery$defer$UserFragment',
+                    label: 'RelayModernEnvironmentCheckWithGlobalInvalidationTestParent2Query$defer$UserFragment',
                     path: ['me'],
                 });
                 dataSource.complete();

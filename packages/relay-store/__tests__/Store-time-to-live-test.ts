@@ -1,9 +1,9 @@
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
 
-import { createOperationDescriptor, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
+import { createOperationDescriptor, graphql, REF_KEY, ROOT_ID, ROOT_TYPE } from 'relay-runtime';
 import { simpleClone } from 'relay-test-utils-internal';
 
-import { createPersistedRecordSource, createPersistedStore, generateAndCompile } from '../src-test';
+import { createPersistedRecordSource, createPersistedStore } from '../src-test';
 
 jest.useFakeTimers();
 
@@ -18,9 +18,23 @@ function mockDispose(dispose): void {
 const getRecordSourceImplementation = (data): any =>
     new WoraRecordSource({ storage: createPersistedRecordSource({ ...data }), initialState: { ...data } });
 const ImplementationName = 'Wora Persist';
+const StoreTimeToLiveTestUserFragment = graphql`
+    fragment StoreTimeToLiveTestUserFragment on User {
+        name
+        profilePicture(size: $size) {
+            uri
+        }
+    }
+`;
+const StoreTimeToLiveTestUserQuery: any = graphql`
+    query StoreTimeToLiveTestUserQuery($id: ID!, $size: [Int]) {
+        node(id: $id) {
+            ...StoreTimeToLiveTestUserFragment
+        }
+    }
+`;
 describe(`Relay Store with ${ImplementationName} Record Source`, () => {
     describe('retain()', () => {
-        let UserQuery;
         let data;
         let initialData;
         let source;
@@ -49,30 +63,16 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             source = getRecordSourceImplementation(data);
             store = new RelayModernStore(source, { storage: createPersistedStore() }, { queryCacheExpirationTime: 100 });
             await store.hydrate();
-            ({ UserQuery } = generateAndCompile(`
-            query UserQuery($id: ID!, $size: [Int]) {
-              node(id: $id) {
-                ...UserFragment
-              }
-            }
-
-          fragment UserFragment on User {
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-          }
-        `));
         });
 
         it('prevents data from being collected', () => {
-            store.retain(createOperationDescriptor(UserQuery, { id: '4', size: 32 }));
+            store.retain(createOperationDescriptor(StoreTimeToLiveTestUserQuery, { id: '4', size: 32 }));
             jest.runAllTimers();
             expect(source.toJSON()).toEqual(initialData);
         });
 
         it('prevents data when disposed before TTL', () => {
-            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: '4', size: 32 }));
+            const { dispose } = store.retain(createOperationDescriptor(StoreTimeToLiveTestUserQuery, { id: '4', size: 32 }));
             dispose();
             expect(data).toEqual(initialData);
             jest.runAllTimers();
@@ -80,7 +80,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('frees data when disposed after TTL', () => {
-            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: '4', size: 32 }));
+            const { dispose } = store.retain(createOperationDescriptor(StoreTimeToLiveTestUserQuery, { id: '4', size: 32 }));
             mockDispose(dispose);
             expect(data).toEqual(initialData);
             jest.runAllTimers();
@@ -88,7 +88,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('fetchTime - prevents data when disposed before TTL', () => {
-            const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
+            const operation = createOperationDescriptor(StoreTimeToLiveTestUserQuery, { id: '4', size: 32 });
             let fetchTime = Date.now();
             jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
             const { dispose } = store.retain(operation);
@@ -101,7 +101,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('fetchTime - frees data when disposed after TTL', () => {
-            const operation = createOperationDescriptor(UserQuery, { id: '4', size: 32 });
+            const operation = createOperationDescriptor(StoreTimeToLiveTestUserQuery, { id: '4', size: 32 });
             let fetchTime = Date.now();
             jest.spyOn(global.Date, 'now').mockImplementation(() => fetchTime);
             const { dispose } = store.retain(operation);
@@ -114,20 +114,20 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
         });
 
         it('only collects unreferenced data after TTL', () => {
-            const { JoeQuery }: any = generateAndCompile(`
-              fragment JoeFragment on Query @argumentDefinitions(
-                id: {type: "ID"}
-              ) {
-                node(id: $id) {
-                  ... on User {
-                    name
-                  }
+            const JoeFragment: any = graphql`
+                fragment StoreTimeToLiveTestJoeFragment on Query @argumentDefinitions(id: { type: "ID" }) {
+                    node(id: $id) {
+                        ... on User {
+                            name
+                        }
+                    }
                 }
-              }
-              query JoeQuery($id: ID!) {
-                ...JoeFragment @arguments(id: $id)
-              }
-            `);
+            `;
+            const JoeQuery: any = graphql`
+                query StoreTimeToLiveTestJoeQuery($id: ID!) {
+                    ...StoreTimeToLiveTestJoeFragment @arguments(id: $id)
+                }
+            `;
             const nextSource = getRecordSourceImplementation({
                 '842472': {
                     __id: '842472',
@@ -143,7 +143,7 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             });
 
             store.publish(nextSource);
-            const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: '4', size: 32 }));
+            const { dispose } = store.retain(createOperationDescriptor(StoreTimeToLiveTestUserQuery, { id: '4', size: 32 }));
             store.retain(createOperationDescriptor(JoeQuery, { id: '842472' }));
             mockDispose(dispose); // release one of the holds but not the other
             jest.runAllTimers();

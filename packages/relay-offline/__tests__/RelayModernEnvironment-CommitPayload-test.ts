@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/camelcase */
 /**
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -16,14 +17,13 @@
 jest.mock('fbjs/lib/warning');
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, createOperationDescriptor, createReaderSelector } from 'relay-runtime';
-import { generateAndCompile, createPersistedStorage } from '../src-test';
+import { createPersistedStorage } from '../src-test';
+import { graphql } from 'relay-runtime';
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
 //const
 const warning = require('fbjs/lib/warning');
-
-jest.useFakeTimers();
 
 describe('commitPayload()', () => {
     let ActorQuery;
@@ -34,13 +34,13 @@ describe('commitPayload()', () => {
 
     beforeEach(async () => {
         jest.resetModules();
-        ({ ActorQuery } = generateAndCompile(`
-        query ActorQuery {
-          me {
-            name
-          }
-        }
-      `));
+        ActorQuery = graphql`
+            query RelayModernEnvironmentCommitPayloadTestActorQuery {
+                me {
+                    name
+                }
+            }
+        `;
         operation = createOperationDescriptor(ActorQuery, {});
         source = RelayRecordSource.create();
         store = new RelayModernStore(source);
@@ -108,18 +108,20 @@ describe('commitPayload()', () => {
 
     it('applies payload on @defer fragments', () => {
         const id = '4';
-        const query = generateAndCompile(`
-        query ActorQuery {
-          me {
-            name
-            ...UserFragment @defer
-          }
-        }
-
-        fragment UserFragment on User {
-          username
-        }
-      `);
+        const query: any = {};
+        query.UserFragment = graphql`
+            fragment RelayModernEnvironmentCommitPayloadTestActorUserFragment on User {
+                username
+            }
+        `;
+        query.ActorQuery = graphql`
+            query RelayModernEnvironmentCommitPayloadTestActorUserQuery {
+                me {
+                    name
+                    ...RelayModernEnvironmentCommitPayloadTestActorUserFragment @defer
+                }
+            }
+        `;
         operation = createOperationDescriptor(query.ActorQuery, {});
 
         const selector = createReaderSelector(query.UserFragment, id, {}, operation.request);
@@ -146,7 +148,7 @@ describe('commitPayload()', () => {
                 name: 'Zuck',
                 __id: id,
                 __isWithinUnmatchedTypeRefinement: false,
-                __fragments: { UserFragment: {} },
+                __fragments: { RelayModernEnvironmentCommitPayloadTestActorUserFragment: {} },
                 __fragmentOwner: operation.request,
             },
         });
@@ -154,36 +156,34 @@ describe('commitPayload()', () => {
         expect(fragmentCallback.mock.calls[0][0].data).toEqual({
             username: 'Zucc',
         });
-        expect(warning).toBeCalledWith(
-            true,
-            expect.stringContaining('RelayModernEnvironment: Operation `%s` contains @defer/@stream directives'),
-            'ActorQuery',
-        );
     });
 
     it('applies payload on @defer fragments in a query with modules', () => {
         const id = '4';
-        const query = generateAndCompile(`
-        query ActorQuery {
-          me {
-            name
-            nameRenderer {
-              ...MarkdownUserNameRenderer_name
-                @module(name: "MarkdownUserNameRenderer.react")
+        const query: any = {};
+        query.UserFragment = graphql`
+            fragment RelayModernEnvironmentCommitPayloadTestActorUser2Fragment on User {
+                username
             }
-            ...UserFragment @defer
-          }
-        }
-
-        fragment MarkdownUserNameRenderer_name on MarkdownUserNameRenderer {
-          __typename
-          markdown
-        }
-
-        fragment UserFragment on User {
-          username
-        }
-      `);
+        `;
+        query.MarkdownUserNameRenderer_name = graphql`
+            fragment RelayModernEnvironmentCommitPayloadTestMarkdownUserNameRenderer_name on MarkdownUserNameRenderer {
+                __typename
+                markdown
+            }
+        `;
+        query.ActorQuery = graphql`
+            query RelayModernEnvironmentCommitPayloadTestActorMarkQuery {
+                me {
+                    name
+                    nameRenderer {
+                        ...RelayModernEnvironmentCommitPayloadTestMarkdownUserNameRenderer_name
+                            @module(name: "MarkdownUserNameRenderer.react")
+                    }
+                    ...RelayModernEnvironmentCommitPayloadTestActorUser2Fragment @defer
+                }
+            }
+        `;
 
         environment = new RelayModernEnvironment({
             network: RelayNetwork.create(jest.fn()),
