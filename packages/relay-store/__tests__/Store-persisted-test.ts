@@ -25,6 +25,10 @@ const UserQuery: any = graphql`
         }
     }
 `;
+const flushPromises = function flushPromises() {
+    return new Promise((resolve) => setImmediate(resolve));
+};
+
 describe(`Relay Store with ${ImplementationName} Record Source`, () => {
     describe('backward compatibility persisted retain()', () => {
         let data;
@@ -99,12 +103,11 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             expect(source.toJSON()).toEqual(initialData);
         });
 
-        it('dispose old persisted query', () => {
-            store.hydrate();
-            jest.runAllTimers();
+        it('dispose old persisted query', async () => {
+            await store.hydrate();
             const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: 'fake', size: 32 }));
             dispose();
-            jest.runOnlyPendingTimers();
+            await flushPromises();
             expect(source.toJSON()).toEqual({});
         });
     });
