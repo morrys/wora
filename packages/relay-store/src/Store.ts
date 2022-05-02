@@ -7,10 +7,9 @@ import { Cache, CacheOptions } from '@wora/cache-persist';
 import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
 import { GetDataID } from 'relay-runtime/lib/store/RelayResponseNormalizer';
-import {
-    INTERNAL_ACTOR_IDENTIFIER_DO_NOT_USE,
-    assertInternalActorIndentifier,
-} from 'relay-runtime/lib/multi-actor-environment/ActorIdentifier';
+import { assertInternalActorIndentifier } from 'relay-runtime/lib/multi-actor-environment/ActorIdentifier';
+
+const INTERNAL_ACTOR_IDENTIFIER_DO_NOT_USE = 'INTERNAL_ACTOR_IDENTIFIER_DO_NOT_USE';
 
 export type StoreOptions = {
     gcScheduler?: Scheduler | null | undefined;
