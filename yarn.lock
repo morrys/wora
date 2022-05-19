@@ -2437,7 +2437,7 @@
 "@wora/apollo-cache@file:packages/apollo-cache":
   version "2.3.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-apollo-cache-2.3.1-d0e36e3f-ec4d-4535-bc73-a3e105b09433-1651511636554/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
 
 "@wora/cache-persist@file:packages/cache-persist":
   version "2.2.1"
@@ -2452,14 +2452,14 @@
 "@wora/offline-first@file:packages/offline-first":
   version "2.4.1"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.1-e025a453-0bfe-480b-a421-e50938d52880-1651511636551/node_modules/@wora/cache-persist"
-    "@wora/netinfo" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-offline-first-2.4.1-e025a453-0bfe-480b-a421-e50938d52880-1651511636551/node_modules/@wora/netinfo"
+    "@wora/cache-persist" "file:packages/cache-persist"
+    "@wora/netinfo" "file:packages/netinfo"
     fbjs "^3.0.0"
 
 "@wora/relay-store@file:packages/relay-store":
-  version "6.0.1"
+  version "7.0.0"
   dependencies:
-    "@wora/cache-persist" "file:../../../../../Users/lorenzo.digiacomo/AppData/Local/Yarn/Cache/v6/npm-@wora-relay-store-6.0.1-3850948b-bfed-446a-a59d-b7a41337d510-1651511636552/node_modules/@wora/cache-persist"
+    "@wora/cache-persist" "file:packages/cache-persist"
     tslib "^1.11.1"
 
 "@wry/context@^0.4.0":
@@ -3844,14 +3844,7 @@ create-react-class@^15.6.3:
     loose-envify "^1.3.1"
     object-assign "^4.1.1"
 
-cross-fetch@^3.0.4:
-  version "3.0.6"
-  resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.0.6.tgz#3a4040bc8941e653e0e9cf17f29ebcd177d3365c"
-  integrity sha512-KBPUbqgFjzWlVcURG+Svp9TlhA5uliYtiNx/0r8nv0pdypeQCRJ9IaSIc3q/x3q8t3F75cHuwxVql1HFGHCNJQ==
-  dependencies:
-    node-fetch "2.6.1"
-
-cross-fetch@^3.1.5:
+cross-fetch@^3.0.4, cross-fetch@^3.1.5:
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/cross-fetch/-/cross-fetch-3.1.5.tgz#e1389f44d9e7ba767907f7af8454787952ab534f"
   integrity sha512-lvb1SBsI0Z7GDwmuid+mU3kWVBwTVUbe7S0H52yaaAdQOXq2YktTCZdlAcNKFzE6QtRz0snpw9bNiPeOIkkQvw==
@@ -7931,12 +7924,7 @@ node-fetch-npm@^2.0.2:
     json-parse-better-errors "^1.0.0"
     safe-buffer "^5.1.1"
 
-node-fetch@2.6.1:
-  version "2.6.1"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.1.tgz#045bd323631f76ed2e2b55573394416b639a0052"
-  integrity sha512-V4aYg89jEoVRxRb2fJdAg8FHvI7cEyYdVAh94HH0UIK8oJxUfkjlDQN9RbMx+bEjP7+ggMiFRprSti032Oipxw==
-
-node-fetch@2.6.7:
+node-fetch@2.6.7, node-fetch@^2.2.0, node-fetch@^2.3.0, node-fetch@^2.5.0:
   version "2.6.7"
   resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.7.tgz#24de9fba827e3b4ae44dc8b20256a379160052ad"
   integrity sha512-ZjMPFEfVx5j+y2yF35Kzx5sF7kDzxuDj6ziH4FFbOp87zKDZNx8yExJIb05OGF4Nlt9IHFIMBkRl41VdvcNdbQ==
@@ -7950,11 +7938,6 @@ node-fetch@^1.0.1:
   dependencies:
     encoding "^0.1.11"
     is-stream "^1.0.1"
-
-node-fetch@^2.2.0, node-fetch@^2.3.0, node-fetch@^2.5.0:
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.0.tgz#e633456386d4aa55863f676a7ab0daa8fdecb0fd"
-  integrity sha512-8dG4H5ujfvFiqDmVu9fQ5bOHUC15JMjMY/Zumv26oOvvVJjM67KF8koCWIabKQ1GJIa9r2mMZscBq/TbdOcmNA==
 
 node-gyp@^5.0.2:
   version "5.0.3"
