@@ -15,7 +15,8 @@
 
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor, createReaderSelector } from 'relay-runtime';
-import { generateAndCompile, createPersistedStorage } from '../src-test';
+import { createPersistedStorage } from '../src-test';
+import { graphql } from 'relay-runtime';
 jest.useFakeTimers();
 
 const RelayRecordSource = {
@@ -43,33 +44,35 @@ describe('executeMutation() with global invalidation', () => {
     beforeEach(async () => {
         jest.resetModules();
         commentID = 'comment-id';
-
-        ({ CreateCommentMutation, CommentFragment, CommentQuery } = generateAndCompile(`
-        mutation CreateCommentMutation($input: CommentCreateInput!) {
-          commentCreate(input: $input) {
-            comment {
-              id
-              body {
-                text
-              }
+        CommentFragment = graphql`
+            fragment RelayModernEnvironmentExecuteMutationWithGlobalInvalidationTestCommentFragment on Comment {
+                id
+                body {
+                    text
+                }
             }
-          }
-        }
+        `;
+        CreateCommentMutation = graphql`
+            mutation RelayModernEnvironmentExecuteMutationWithGlobalInvalidationTestCreateCommentMutation($input: CommentCreateInput!) {
+                commentCreate(input: $input) {
+                    comment {
+                        id
+                        body {
+                            text
+                        }
+                    }
+                }
+            }
+        `;
 
-        fragment CommentFragment on Comment {
-          id
-          body {
-            text
-          }
-        }
-
-        query CommentQuery($id: ID!) {
-          node(id: $id) {
-            id
-            ...CommentFragment
-          }
-        }
-      `));
+        CommentQuery = graphql`
+            query RelayModernEnvironmentExecuteMutationWithGlobalInvalidationTestCommentQuery($id: ID!) {
+                node(id: $id) {
+                    id
+                    ...RelayModernEnvironmentExecuteMutationWithGlobalInvalidationTestCommentFragment
+                }
+            }
+        `;
         variables = {
             input: {
                 clientMutationId: '0',

@@ -1,36 +1,42 @@
 import { Store as RelayModernStore, RecordSource as WoraRecordSource } from '../src';
 
-import { createOperationDescriptor, REF_KEY } from 'relay-runtime';
+import { createOperationDescriptor, graphql, REF_KEY } from 'relay-runtime';
 import { simpleClone } from 'relay-test-utils-internal';
-import { createPersistedRecordSource, createPersistedStore, generateAndCompile } from '../src-test';
-jest.useFakeTimers();
+import { createPersistedRecordSource, createPersistedStore } from '../src-test';
+//jest.useFakeTimers();
 
 const getRecordSourceImplementation = (data): any =>
     new WoraRecordSource({ storage: createPersistedRecordSource({ ...data }), initialState: { ...data } });
 const ImplementationName = 'Wora Persist';
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const userFragment: any = graphql`
+    fragment StorePersistedTestUserFragment on User {
+        name
+        profilePicture(size: $size) {
+            uri
+        }
+    }
+`;
+const UserQuery: any = graphql`
+    query StorePersistedTestUserQuery($id: ID!, $size: [Int]) {
+        node(id: $id) {
+            ...StorePersistedTestUserFragment
+        }
+    }
+`;
+const flushPromises = function flushPromises() {
+    return new Promise((resolve) => setImmediate(resolve));
+};
+
 describe(`Relay Store with ${ImplementationName} Record Source`, () => {
     describe('backward compatibility persisted retain()', () => {
-        let UserQuery;
         let data;
         let initialData;
         let source;
         let store;
 
         beforeEach(async () => {
-            ({ UserQuery } = generateAndCompile(`
-            query UserQuery($id: ID!, $size: Int) {
-                node(id: $id) {
-                  ...UserFragment
-                }
-              }
-
-      fragment UserFragment on User {
-        name
-        profilePicture(size: $size) {
-          uri
-        }
-      }
-        `));
             data = {
                 '4': {
                     __id: '4',
@@ -101,33 +107,18 @@ describe(`Relay Store with ${ImplementationName} Record Source`, () => {
             await store.hydrate();
             const { dispose } = store.retain(createOperationDescriptor(UserQuery, { id: 'fake', size: 32 }));
             dispose();
-            jest.runOnlyPendingTimers();
+            await flushPromises();
             expect(source.toJSON()).toEqual({});
         });
     });
 
     describe('persisted retain()', () => {
-        let UserQuery;
         let data;
         let initialData;
         let source;
         let store;
 
         beforeEach(async () => {
-            ({ UserQuery } = generateAndCompile(`
-            query UserQuery($id: ID!, $size: Int) {
-                node(id: $id) {
-                  ...UserFragment
-                }
-              }
-
-      fragment UserFragment on User {
-        name
-        profilePicture(size: $size) {
-          uri
-        }
-      }
-        `));
             data = {
                 '4': {
                     __id: '4',

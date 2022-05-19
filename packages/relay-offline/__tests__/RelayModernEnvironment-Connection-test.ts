@@ -15,7 +15,8 @@
 
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, Observable as RelayObservable, createOperationDescriptor, getSingularSelector } from 'relay-runtime';
-import { generateAndCompile, createPersistedStorage } from '../src-test';
+import { createPersistedStorage } from '../src-test';
+import { graphql } from 'relay-runtime';
 const RelayRecordSource = {
     create: (data?: any) => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
@@ -43,41 +44,35 @@ describe('@connection', () => {
         jest.resetModules();
         //jest.mock('warning');
         jest.spyOn(console, 'warn').mockImplementation(() => undefined);
-
-        ({ FeedbackQuery: query, FeedbackFragment: fragment, PaginationQuery: paginationQuery } = generateAndCompile(`
-      query FeedbackQuery($id: ID!) {
-        node(id: $id) {
-          ...FeedbackFragment
-        }
-      }
-
-      query PaginationQuery(
-        $id: ID!
-        $count: Int!
-        $cursor: ID!
-      ) {
-        node(id: $id) {
-          ...FeedbackFragment @arguments(count: $count, cursor: $cursor)
-        }
-      }
-
-      fragment FeedbackFragment on Feedback @argumentDefinitions(
-        count: {type: "Int", defaultValue: 2},
-        cursor: {type: "ID"}
-      ) {
-        id
-        comments(after: $cursor, first: $count, orderby: "date") @connection(
-          key: "FeedbackFragment_comments"
-          filters: ["orderby"]
-        ) {
-          edges {
-            node {
-              id
+        fragment = graphql`
+            fragment RelayModernEnvironmentConnectionTestFeedbackFragment on Feedback
+                @argumentDefinitions(count: { type: "Int", defaultValue: 2 }, cursor: { type: "ID" }) {
+                id
+                comments(after: $cursor, first: $count, orderby: "date")
+                    @connection(key: "RelayModernEnvironmentConnectionTestFeedbackFragment_comments", filters: ["orderby"]) {
+                    edges {
+                        node {
+                            id
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-    `));
+        `;
+        paginationQuery = graphql`
+            query RelayModernEnvironmentConnectionTestPaginationQuery($id: ID!, $count: Int!, $cursor: ID!) {
+                node(id: $id) {
+                    ...RelayModernEnvironmentConnectionTestFeedbackFragment @arguments(count: $count, cursor: $cursor)
+                }
+            }
+        `;
+
+        query = graphql`
+            query RelayModernEnvironmentConnectionTestFeedbackQuery($id: ID!) {
+                node(id: $id) {
+                    ...RelayModernEnvironmentConnectionTestFeedbackFragment
+                }
+            }
+        `;
         const variables = {
             id: '<feedbackid>',
         };
@@ -149,7 +144,7 @@ describe('@connection', () => {
                 __isWithinUnmatchedTypeRefinement: false,
 
                 __fragments: {
-                    FeedbackFragment: {},
+                    RelayModernEnvironmentConnectionTestFeedbackFragment: {},
                 },
 
                 __fragmentOwner: operation.request,

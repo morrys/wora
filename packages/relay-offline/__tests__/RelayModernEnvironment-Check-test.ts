@@ -15,31 +15,32 @@
 
 import { Store as RelayModernStore, RecordSource, Environment as RelayModernEnvironment } from '../src';
 import { Network as RelayNetwork, createOperationDescriptor } from 'relay-runtime';
-import { generateAndCompile, createPersistedStorage } from '../src-test';
+import { createPersistedStorage } from '../src-test';
+import { graphql } from 'relay-runtime';
 const RelayRecordSource = {
     create: (data?: any): RecordSource => new RecordSource({ storage: createPersistedStorage(), initialState: { ...data } }),
 };
 
+const ParentQuery = graphql`
+    query RelayModernEnvironmentCheckTestParentQuery($size: [Int]!) {
+        me {
+            id
+            name
+            profilePicture(size: $size) {
+                uri
+            }
+        }
+    }
+`;
+
 describe('check()', () => {
     let environment;
     let operationDescriptor;
-    let ParentQuery;
     let source;
     let store;
 
     beforeEach(async () => {
         jest.resetModules();
-        ({ ParentQuery } = generateAndCompile(`
-        query ParentQuery($size: [Int]!) {
-          me {
-            id
-            name
-            profilePicture(size: $size) {
-              uri
-            }
-          }
-        }
-      `));
 
         source = RelayRecordSource.create();
         store = new RelayModernStore(source);

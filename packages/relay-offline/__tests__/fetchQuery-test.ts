@@ -13,7 +13,18 @@
 import { fetchQuery_DEPRECATED as fetchQuery } from '../src';
 
 import { createOperationDescriptor } from 'relay-runtime';
-import { createMockEnvironment, generateAndCompile } from '../src-test';
+import { createMockEnvironment } from '../src-test';
+import { graphql } from 'relay-runtime';
+const query: any = graphql`
+    query fetchQueryTestActorQuery($fetchSize: Boolean!) {
+        me {
+            name
+            profilePicture(size: 42) @include(if: $fetchSize) {
+                uri
+            }
+        }
+    }
+`;
 
 //jest.useFakeTimers();
 describe('fetchQuery', () => {
@@ -21,23 +32,12 @@ describe('fetchQuery', () => {
         let cacheConfig;
         let environment;
         let operation;
-        let query;
         let variables;
 
         beforeEach(() => {
             jest.resetModules();
             environment && environment.mockClear();
             environment = createMockEnvironment();
-            ({ ActorQuery: query } = generateAndCompile(`
-      query ActorQuery($fetchSize: Boolean!) {
-        me {
-          name
-          profilePicture(size: 42) @include(if: $fetchSize) {
-            uri
-          }
-        }
-      }
-    `));
             variables = { fetchSize: false };
             operation = createOperationDescriptor(query, variables);
         });
@@ -83,23 +83,12 @@ describe('fetchQuery', () => {
         let cacheConfig;
         let environment;
         let operation;
-        let query;
         let variables;
 
         beforeEach(async () => {
             jest.resetModules();
 
             environment = createMockEnvironment();
-            ({ ActorQuery: query } = generateAndCompile(`
-    query ActorQuery($fetchSize: Boolean!) {
-      me {
-        name
-        profilePicture(size: 42) @include(if: $fetchSize) {
-          uri
-        }
-      }
-    }
-  `));
             variables = { fetchSize: false };
             operation = createOperationDescriptor(query, variables);
             await environment.hydrate();
