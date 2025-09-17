@@ -141,7 +141,6 @@ describe('@connection', () => {
         expect(nextOperationSnapshot.data).toEqual({
             node: {
                 __id: '<feedbackid>',
-                __isWithinUnmatchedTypeRefinement: false,
 
                 __fragments: {
                     RelayModernEnvironmentConnectionTestFeedbackFragment: {},

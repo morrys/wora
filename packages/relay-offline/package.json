@@ -49,15 +49,15 @@
     "tslib": "^1.11.1"
   },
   "peerDependencies": {
-    "relay-runtime": "^13.0.0"
+    "relay-runtime": "^20.1.1"
   },
   "devDependencies": {
     "@babel/runtime": "7.12.5",
-    "@types/relay-runtime": "^13.0.0",
-    "relay-runtime": "^13.0.0",
-    "relay-compiler": "^13.0.0",
-    "relay-test-utils-internal": "^13.0.0",
-    "relay-test-utils": "^13.0.0",
+    "@types/relay-runtime": "19.0.2",
+    "relay-runtime": "^20.1.1",
+    "relay-compiler": "^20.1.1",
+    "relay-test-utils-internal": "^20.1.1",
+    "relay-test-utils": "^20.1.1",
     "ts-relay-plugin": "1.0.1"
   },
   "relay": {
