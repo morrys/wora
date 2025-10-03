@@ -147,7 +147,6 @@ describe('commitPayload()', () => {
             me: {
                 name: 'Zuck',
                 __id: id,
-                __isWithinUnmatchedTypeRefinement: false,
                 __fragments: { RelayModernEnvironmentCommitPayloadTestActorUserFragment: {} },
                 __fragmentOwner: operation.request,
             },

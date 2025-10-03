@@ -7,7 +7,7 @@ import { Cache, CacheOptions } from '@wora/cache-persist';
 import { RecordSource } from './RecordSource';
 import * as DataChecker from 'relay-runtime/lib/store/DataChecker';
 import { GetDataID } from 'relay-runtime/lib/store/RelayResponseNormalizer';
-import { assertInternalActorIndentifier } from 'relay-runtime/lib/multi-actor-environment/ActorIdentifier';
+import { assertInternalActorIdentifier } from 'relay-runtime/lib/multi-actor-environment/ActorIdentifier';
 
 const INTERNAL_ACTOR_IDENTIFIER_DO_NOT_USE = 'INTERNAL_ACTOR_IDENTIFIER_DO_NOT_USE';
 
@@ -45,6 +45,9 @@ export class Store extends RelayModernStore {
         this._cache = new Cache(persistOptionsStore);
         (this._cache as any).values = (): any => {
             return Object.values(this._cache.getState());
+        };
+        (this._cache as any).entries = (): any => {
+            return Object.entries(this._cache.getState());
         };
         (this as any)._roots = this._cache;
     }
@@ -138,15 +141,7 @@ export class Store extends RelayModernStore {
         if ((this as any)._optimisticSource != null || !this.checkGC()) {
             return;
         }
-        if ((this as any)._gcHoldCounter > 0) {
-            (this as any)._shouldScheduleGC = true;
-            return;
-        }
-        if ((this as any)._gcRun) {
-            return;
-        }
-        (this as any)._gcRun = (this as any)._collect();
-        (this as any)._gcScheduler((this as any)._gcStep);
+        super.scheduleGC();
     }
 
     private isCurrent(fetchTime: number, ttl: number): boolean {
@@ -157,6 +152,10 @@ export class Store extends RelayModernStore {
         const selector = operation.root;
         const source = (this as any)._getMutableRecordSource();
         const globalInvalidationEpoch = (this as any)._globalInvalidationEpoch;
+        const useExecTimeResolvers =
+            operation.request.node.operation.use_exec_time_resolvers ??
+            operation.request.node.operation.exec_time_resolvers_enabled_provider?.get() === true ??
+            false;
 
         const rootEntry = this._cache.get(operation.request.identifier);
         const operationLastWrittenAt = rootEntry != null ? rootEntry.epoch : null;
@@ -177,13 +176,13 @@ export class Store extends RelayModernStore {
         const getSourceForActor =
             (options as any)?.getSourceForActor ??
             ((actorIdentifier): any => {
-                assertInternalActorIndentifier(actorIdentifier);
+                assertInternalActorIdentifier(actorIdentifier);
                 return source;
             });
         const getTargetForActor =
             (options as any)?.getTargetForActor ??
             ((actorIdentifier): any => {
-                assertInternalActorIndentifier(actorIdentifier);
+                assertInternalActorIdentifier(actorIdentifier);
                 return source;
             });
         const handlers = options?.handlers ?? [];
@@ -196,6 +195,8 @@ export class Store extends RelayModernStore {
             (this as any)._operationLoader,
             (this as any)._getDataID,
             (this as any)._shouldProcessClientComponents,
+            (this as any).__log,
+            useExecTimeResolvers,
         );
 
         return getAvailabilityStatus(

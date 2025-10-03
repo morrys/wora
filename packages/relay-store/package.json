@@ -1,6 +1,6 @@
 {
   "name": "@wora/relay-store",
-  "version": "7.0.0",
+  "version": "8.0.0-rc.1",
   "keywords": [
     "cache",
     "wora",
@@ -52,15 +52,15 @@
     "tslib": "^1.11.1"
   },
   "peerDependencies": {
-    "relay-runtime": "^13.0.0"
+    "relay-runtime": "^20.1.1"
   },
   "devDependencies": {
     "@babel/runtime": "7.12.5",
-    "@types/relay-runtime": "^13.0.0",
-    "relay-runtime": "^13.0.0",
-    "relay-compiler": "^13.0.0",
-    "relay-test-utils-internal": "^13.0.0",
-    "relay-test-utils": "^13.0.0",
+    "@types/relay-runtime": "19.0.3",
+    "relay-runtime": "^20.1.1",
+    "relay-compiler": "^20.1.1",
+    "relay-test-utils-internal": "^20.1.1",
+    "relay-test-utils": "^20.1.1",
     "ts-relay-plugin": "1.0.1"
   },
   "gitHead": "07b6de318f2db9d94622d54be6c60940871f3629"

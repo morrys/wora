@@ -196,10 +196,10 @@ const UserEmailQuery = graphql`
                         },
                     },
                     seenRecords: new Set(['4', 'client:1']),
-                    relayResolverErrors: [],
+                    missingLiveResolverFields: [],
                     missingClientEdges: null,
                     isMissingData: false,
-                    missingRequiredFields: null,
+                    fieldErrors: null,
                 });
                 for (const id in snapshot.seenRecords) {
                     if (snapshot.seenRecords.hasOwnProperty(id)) {
@@ -245,15 +245,14 @@ const UserEmailQuery = graphql`
                         },
 
                         __id: '4',
-                        __isWithinUnmatchedTypeRefinement: false,
                         __fragments: { StoreRelayOriginalTestChildFragment: {} },
                         __fragmentOwner: owner.request,
                     },
                     seenRecords: new Set(['4', 'client:1']),
-                    relayResolverErrors: [],
                     missingClientEdges: null,
                     isMissingData: false,
-                    missingRequiredFields: null,
+                    fieldErrors: null,
+                    missingLiveResolverFields: [],
                 });
                 expect(snapshot.data.__fragmentOwner).toBe(owner.request); // expect(snapshot.data?.__fragmentOwner).toBe(owner.request);
                 for (const id in snapshot.seenRecords) {
@@ -301,10 +300,10 @@ const UserEmailQuery = graphql`
                         },
                     },
                     seenRecords: new Set(['4', 'client:2']),
-                    relayResolverErrors: [],
                     missingClientEdges: null,
                     isMissingData: false,
-                    missingRequiredFields: null,
+                    fieldErrors: null,
+                    missingLiveResolverFields: [],
                 });
             });
         });
@@ -513,10 +512,9 @@ const UserEmailQuery = graphql`
                 expect(callback.mock.calls.length).toBe(1);
                 expect(callback.mock.calls[0][0]).toEqual({
                     ...snapshot,
-                    relayResolverErrors: [],
+                    fieldErrors: null,
                     missingClientEdges: null,
                     isMissingData: false,
-                    missingRequiredFields: null,
                     data: {
                         name: 'Zuck',
                         profilePicture: {
@@ -558,10 +556,22 @@ const UserEmailQuery = graphql`
                         name: 'Joe',
                         profilePicture: undefined,
                     },
-                    relayResolverErrors: [],
+                    fieldErrors: [
+                        {
+                            owner: 'StoreRelayOriginalTestUserEmailFragment',
+                            kind: 'missing_expected_data.log',
+                            fieldPath: 'profilePicture',
+                        },
+                        {
+                            owner: 'StoreRelayOriginalTestUserEmailFragment',
+                            kind: 'missing_expected_data.log',
+                            fieldPath: 'emailAddresses',
+                        },
+                    ],
+                    missingLiveResolverFields: [],
                     missingClientEdges: null,
                     isMissingData: true,
-                    seenRecords: new Set(['842472']),
+                    seenRecords: new Set(Object.keys(nextSource.toJSON())),
                 });
             });
 
@@ -598,9 +608,20 @@ const UserEmailQuery = graphql`
                         name: 'Joe',
                         profilePicture: undefined,
                     },
-                    relayResolverErrors: [],
                     missingClientEdges: null,
                     isMissingData: true,
+                    fieldErrors: [
+                        {
+                            owner: 'StoreRelayOriginalTestUserEmailFragment',
+                            kind: 'missing_expected_data.log',
+                            fieldPath: 'profilePicture',
+                        },
+                        {
+                            owner: 'StoreRelayOriginalTestUserEmailFragment',
+                            kind: 'missing_expected_data.log',
+                            fieldPath: 'emailAddresses',
+                        },
+                    ],
                     seenRecords: new Set(['842472']),
                 });
             });

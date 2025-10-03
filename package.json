@@ -7,7 +7,8 @@
         "compile": "lerna run compile",
         "clean": "lerna run clean",
         "clean-dep": "lerna run clean-dep",
-        "deploy": "lerna run compile && lerna run test && lerna publish from-package",
+        "deploy": "lerna run build && lerna publish from-package",
+        "deploy-beta": "lerna run build && lerna publish from-package --dist-tag beta",
         "eslint": "lerna run eslint",
         "format": "lerna run format",
         "test": "lerna run test"
